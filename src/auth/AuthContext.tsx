@@ -1,30 +1,50 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 
 type AuthContextType = {
   isAuthenticated: boolean;
+  isLoading: boolean;
+  user: any;
   login: () => void;
   logout: () => void;
+  getAccessTokenSilently: () => Promise<string>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('auth') === 'true'
-  );
+  const {
+    isAuthenticated,
+    isLoading,
+    user,
+    loginWithRedirect,
+    logout: auth0Logout,
+    getAccessTokenSilently
+  } = useAuth0();
 
   const login = () => {
-    setIsAuthenticated(true);
-    sessionStorage.setItem('auth', 'true');
+    loginWithRedirect();
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('auth');
+    auth0Logout({
+      logoutParams: {
+        returnTo: window.location.origin
+      }
+    });
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider 
+      value={{ 
+        isAuthenticated, 
+        isLoading, 
+        user, 
+        login, 
+        logout, 
+        getAccessTokenSilently 
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
