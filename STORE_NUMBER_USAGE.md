@@ -8,6 +8,8 @@ The StoreNumber is extracted from the Auth0 token's `app_metadata` after success
 
 - **Token Utilities**: Functions to decode JWT tokens and extract metadata
 - **AuthContext Enhancement**: Updated context to include StoreNumber array and metadata
+- **StoreContext**: Manages the currently selected store for the application
+- **Store Selector**: Dropdown in the header to switch between stores
 - **Custom Hooks**: Easy-to-use hooks for accessing StoreNumber throughout the app
 - **UI Components**: Components to display and manage StoreNumber information
 
@@ -31,77 +33,92 @@ The StoreNumber is expected to be an array of numbers in the token:
 }
 ```
 
+## Store Selection
+
+The application automatically selects the first store when the user logs in. Users can switch between stores using the dropdown in the header.
+
+### Store Selector Features
+
+- **Auto-selection**: First store is automatically selected on login
+- **Visual Indicator**: Current store is displayed in the header
+- **Dropdown Menu**: Easy switching between available stores
+- **API Integration**: Selected store is automatically included in API requests
+- **State Management**: Store selection persists across page navigation
+
 ## How to Use
 
-### 1. Using the Custom Hook (Recommended)
+### 1. Using the Selected Store Hook (Recommended)
 
 ```tsx
-import { useStoreNumber } from '../auth/useStoreNumber';
+import { useSelectedStore } from '../auth/useSelectedStore';
 
 function MyComponent() {
   const { 
-    storeNumber, 
-    isLoading, 
-    hasStoreNumber, 
-    refreshStoreNumber,
-    storeNumberCount,
-    firstStoreNumber,
-    allStoreNumbers
-  } = useStoreNumber();
+    selectedStore, 
+    switchToStore, 
+    availableStores, 
+    hasSelectedStore,
+    canSwitchStores 
+  } = useSelectedStore();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!hasStoreNumber) {
-    return <div>No store numbers available</div>;
+  if (!hasSelectedStore) {
+    return <div>No store selected</div>;
   }
 
   return (
     <div>
-      <h2>Store Numbers ({storeNumberCount}):</h2>
-      <div>
-        {allStoreNumbers.map((number, index) => (
-          <span key={index} className="store-number">
-            {number}
-          </span>
-        ))}
-      </div>
-      <p>First Store: {firstStoreNumber}</p>
-      <button onClick={refreshStoreNumber}>Refresh</button>
+      <h2>Current Store: {selectedStore}</h2>
+      {canSwitchStores && (
+        <div>
+          <p>Switch to:</p>
+          {availableStores.map(store => (
+            <button
+              key={store}
+              onClick={() => switchToStore(store)}
+              className={store === selectedStore ? 'active' : ''}
+            >
+              Store {store}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 ```
 
-### 2. Using the AuthContext Directly
+### 2. Using the Store Context Directly
 
 ```tsx
-import { useAuth } from '../auth/AuthContext';
+import { useStore } from '../auth/StoreContext';
 
 function MyComponent() {
-  const { storeNumber, metadata, refreshStoreNumber } = useAuth();
+  const { selectedStore, setSelectedStore, availableStores } = useStore();
 
   return (
     <div>
-      <p>Store Numbers: {storeNumber ? storeNumber.join(', ') : 'Not available'}</p>
-      <p>App Metadata: {JSON.stringify(metadata.app_metadata)}</p>
-      <button onClick={refreshStoreNumber}>Refresh Store Numbers</button>
+      <p>Current Store: {selectedStore || 'None'}</p>
+      <p>Available Stores: {availableStores.join(', ')}</p>
+      <button onClick={() => setSelectedStore(availableStores[1])}>
+        Switch to Store {availableStores[1]}
+      </button>
     </div>
   );
 }
 ```
 
-### 3. Using the StoreInfo Component
+### 3. Using the Store Selector Component
+
+The StoreSelector is automatically included in the header, but you can also use it elsewhere:
 
 ```tsx
-import StoreInfo from '../components/StoreInfo';
+import StoreSelector from '../components/StoreSelector';
 
-function Dashboard() {
+function MyComponent() {
   return (
     <div>
-      <h1>Dashboard</h1>
-      <StoreInfo />
+      <h2>Store Selection</h2>
+      <StoreSelector />
     </div>
   );
 }
@@ -109,13 +126,63 @@ function Dashboard() {
 
 ## API Integration
 
-The StoreNumber array is automatically included in API requests through the updated API interceptor. The token is automatically attached to all API calls:
+The selected store is automatically included in all API requests:
+
+### Headers
+```
+X-Selected-Store: 1126
+```
+
+### Query Parameters (GET requests)
+```
+?storeId=1126
+```
+
+### Usage in API Calls
 
 ```tsx
 import { getDashboardData } from '../api';
 
-// The token (including StoreNumber array) is automatically included
+// The selected store is automatically included in the request
 const data = await getDashboardData();
+// Request will include: GET /dashboard?storeId=1126
+// Headers: X-Selected-Store: 1126
+```
+
+## Store Switching Behavior
+
+When a user switches stores:
+
+1. **UI Updates**: All components using `useSelectedStore()` automatically re-render
+2. **API Requests**: New requests include the updated store ID
+3. **Data Refresh**: Components can trigger data reloads based on store changes
+4. **State Persistence**: Store selection persists during navigation
+
+### Example: Data Loading on Store Change
+
+```tsx
+import { useEffect, useState } from 'react';
+import { useSelectedStore } from '../auth/useSelectedStore';
+import { getDashboardData } from '../api';
+
+function Dashboard() {
+  const { selectedStore } = useSelectedStore();
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    if (selectedStore) {
+      // Automatically reload data when store changes
+      getDashboardData().then(setData);
+    }
+  }, [selectedStore]); // Dependency on selectedStore
+
+  return (
+    <div>
+      <h1>Dashboard for Store {selectedStore}</h1>
+      {/* Data display */}
+    </div>
+  );
+}
 ```
 
 ## Token Structure
@@ -137,6 +204,7 @@ The implementation includes comprehensive error handling:
 - **Token Decoding Errors**: Gracefully handled with console logging
 - **Missing StoreNumber**: Returns `null` instead of throwing errors
 - **Empty Arrays**: Handles empty StoreNumber arrays
+- **Store Switching**: Validates store availability before switching
 - **Network Errors**: API requests handle token retrieval failures
 - **Loading States**: Proper loading indicators during token extraction
 
@@ -156,6 +224,7 @@ The implementation includes comprehensive error handling:
 3. **Cached Tokens**: Log out and log back in to get fresh tokens
 4. **Missing Metadata**: Check that users have `StoreNumber` in their `app_metadata`
 5. **Wrong Format**: Ensure StoreNumber is an array of numbers
+6. **Store Not Selected**: Check if auto-selection is working properly
 
 ## TypeScript Support
 
@@ -166,6 +235,7 @@ import { TokenMetadata } from '../auth/tokenUtils';
 
 interface MyComponentProps {
   storeNumber: number[] | null;
+  selectedStore: number | null;
   metadata: {
     app_metadata?: TokenMetadata;
     user_metadata?: any;
@@ -178,16 +248,19 @@ interface MyComponentProps {
 To test the StoreNumber functionality:
 
 1. **Login**: Authenticate with a user that has StoreNumber array in their metadata
-2. **Check Dashboard**: Visit the dashboard to see the StoreInfo component
-3. **API Calls**: Verify that API requests include the token
-4. **Refresh**: Use the refresh button to re-extract the StoreNumber array
+2. **Check Header**: Verify the store selector appears in the header
+3. **Auto-selection**: Confirm the first store is automatically selected
+4. **Store Switching**: Test switching between different stores
+5. **API Integration**: Verify API requests include the selected store
+6. **Data Updates**: Check that data refreshes when switching stores
 
 ## Security Notes
 
 - **Client-Side Only**: Token decoding is done client-side without verification
 - **No Sensitive Data**: Only extract necessary data from tokens
 - **Token Expiry**: Tokens are automatically refreshed by Auth0
-- **Logout**: StoreNumber array is cleared on logout
+- **Logout**: StoreNumber array and selection are cleared on logout
+- **Store Validation**: Only available stores can be selected
 
 ## Future Enhancements
 
@@ -195,6 +268,7 @@ Potential improvements:
 
 1. **Server-Side Verification**: Add server-side token verification
 2. **Caching**: Implement caching for StoreNumber array to reduce token decoding
-3. **Store Selection**: Add UI for users to select which store to work with
+3. **Store Permissions**: Add role-based access control for different stores
 4. **Store Validation**: Add validation for StoreNumber array format
-5. **Store Permissions**: Add role-based access control for different stores 
+5. **Store History**: Remember user's last selected store
+6. **Store Analytics**: Track which stores users access most frequently 

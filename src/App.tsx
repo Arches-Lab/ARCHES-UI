@@ -6,6 +6,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
+import { StoreProvider } from './auth/StoreContext';
 import PrivateRoute from './auth/PrivateRoute';
 
 function App() {
@@ -45,24 +46,26 @@ function App() {
       useRefreshTokens={true}
     >
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <MainLayout />
-                </PrivateRoute>
-              }
-            >
-              <Route index element={<Dashboard />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+        <StoreProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <MainLayout />
+                  </PrivateRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="settings" element={<Settings />} />
+              </Route>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </StoreProvider>
       </AuthProvider>
     </Auth0Provider>
   );
