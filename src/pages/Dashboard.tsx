@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { getDashboardData } from '../api';
 import StoreInfo from '../components/StoreInfo';
 import DebugInfo from '../components/DebugInfo';
+import AppMetadataManager from '../components/AppMetadataManager';
+import TokenScopeTest from '../components/TokenScopeTest';
 import { useStore } from '../auth/StoreContext';
 
 export default function Dashboard() {
@@ -61,6 +63,9 @@ export default function Dashboard() {
           </p>
         </div>
       )}
+
+      {/* App Metadata Manager */}
+      <AppMetadataManager />
       
       {/* Debug Information Section */}
       <DebugInfo />
