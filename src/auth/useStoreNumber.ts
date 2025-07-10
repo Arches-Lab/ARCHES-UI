@@ -5,17 +5,19 @@ import { useAuth } from './AuthContext';
  * @returns Object containing storeNumber array and loading state
  */
 export function useStoreNumber() {
-  const { storeNumber, isLoading, isAuthenticated, refreshStoreNumber } = useAuth();
+  const { storeNumber, selectedStoreNumber, isLoading, isAuthenticated, refreshStoreNumber } = useAuth();
 
   return {
     storeNumber,
+    selectedStoreNumber,
     isLoading,
     isAuthenticated,
     refreshStoreNumber,
     hasStoreNumber: !!storeNumber && storeNumber.length > 0,
     storeNumberCount: storeNumber ? storeNumber.length : 0,
     firstStoreNumber: storeNumber && storeNumber.length > 0 ? storeNumber[0] : null,
-    allStoreNumbers: storeNumber || []
+    allStoreNumbers: storeNumber || [],
+    hasSelectedStoreNumber: selectedStoreNumber !== null
   };
 }
 

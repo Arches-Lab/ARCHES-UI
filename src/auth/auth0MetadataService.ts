@@ -6,6 +6,7 @@ const AUTH0_DOMAIN = import.meta.env.VITE_AUTH0_DOMAIN;
 
 export interface UserMetadataUpdate {
   selectedStore?: number;
+  SelectedStore?: number | string;
   StoreNumber?: number[];
   customValue?: string;
   [key: string]: any;
@@ -97,6 +98,18 @@ export async function saveCustomValue(
   const metadata: UserMetadataUpdate = {};
   metadata[key] = value;
   return updateUserAppMetadata(userId, metadata);
+}
+
+/**
+ * Updates the user's selected store in app_metadata
+ */
+export async function updateSelectedStore(
+  userId: string,
+  selectedStore: number
+): Promise<boolean> {
+  console.log(`🔄 Updating SelectedStoreNumber to ${selectedStore} for user ${userId}`);
+  
+  return saveCustomValue(userId, 'SelectedStoreNumber', selectedStore.toString());
 }
 
 /**

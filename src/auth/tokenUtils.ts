@@ -4,6 +4,7 @@
 
 export interface TokenMetadata {
   StoreNumber?: number[] | string;
+  SelectedStoreNumber?: number | string;
   [key: string]: any;
 }
 
@@ -140,6 +141,76 @@ export function extractStoreNumber(token: string, domain: string): number[] | nu
     return null;
   } catch (error) {
     console.error('❌ Error extracting StoreNumber from token:', error);
+    return null;
+  }
+}
+
+/**
+ * Extracts SelectedStoreNumber from an Auth0 token
+ * @param token - The Auth0 access token or ID token
+ * @param domain - The Auth0 domain (e.g., 'your-domain.auth0.com')
+ * @returns The SelectedStoreNumber if found, null otherwise
+ */
+export function extractSelectedStoreNumber(token: string, domain: string): number | null {
+  console.log('🚀 Starting SelectedStoreNumber extraction...');
+  console.log('🚀 Domain:', domain);
+  console.log('🚀 Token length:', token.length);
+  
+  try {
+    const decoded = decodeToken(token);
+    if (!decoded) {
+      console.error('❌ Failed to decode token');
+      return null;
+    }
+
+    console.log('✅ Token decoded successfully');
+    console.log('📋 Decoded token keys:', Object.keys(decoded));
+
+    // Find the correct app metadata key
+    const appMetadataKey = findAppMetadataKey(decoded, domain);
+    
+    if (appMetadataKey) {
+      const appMetadata = decoded[appMetadataKey] as TokenMetadata;
+      console.log('📦 App metadata found:', appMetadata);
+      
+      if (appMetadata && appMetadata.SelectedStoreNumber) {
+        console.log(`✅ Found SelectedStoreNumber:`, appMetadata.SelectedStoreNumber);
+        
+        // Handle both number and string formats
+        if (typeof appMetadata.SelectedStoreNumber === 'number') {
+          console.log(`✅ SelectedStoreNumber is a number:`, appMetadata.SelectedStoreNumber);
+          return appMetadata.SelectedStoreNumber;
+        } else if (typeof appMetadata.SelectedStoreNumber === 'string') {
+          console.log(`✅ SelectedStoreNumber is a string: ${appMetadata.SelectedStoreNumber}`);
+          const number = parseInt(appMetadata.SelectedStoreNumber, 10);
+          if (!isNaN(number)) {
+            console.log(`✅ Converted SelectedStoreNumber to number:`, number);
+            return number;
+          }
+        }
+      } else {
+        console.log('❌ SelectedStoreNumber not found in app metadata');
+        console.log('📦 App metadata keys:', appMetadata ? Object.keys(appMetadata) : 'null');
+      }
+    }
+
+    // Fallback: check for SelectedStoreNumber directly in the token
+    if (decoded.SelectedStoreNumber) {
+      console.log(`✅ Found SelectedStoreNumber directly in token:`, decoded.SelectedStoreNumber);
+      if (typeof decoded.SelectedStoreNumber === 'number') {
+        return decoded.SelectedStoreNumber;
+      } else if (typeof decoded.SelectedStoreNumber === 'string') {
+        const number = parseInt(decoded.SelectedStoreNumber, 10);
+        if (!isNaN(number)) {
+          return number;
+        }
+      }
+    }
+
+    console.log('❌ SelectedStoreNumber not found anywhere in token');
+    return null;
+  } catch (error) {
+    console.error('❌ Error extracting SelectedStoreNumber from token:', error);
     return null;
   }
 }

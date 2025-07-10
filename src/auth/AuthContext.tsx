@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { extractStoreNumber, extractMetadata, TokenMetadata } from './tokenUtils';
+import { extractStoreNumber, extractSelectedStoreNumber, extractMetadata, TokenMetadata } from './tokenUtils';
 import { setTokenGetter } from '../api';
 
 type AuthContextType = {
@@ -12,6 +12,7 @@ type AuthContextType = {
   getAccessTokenSilently: () => Promise<string>;
   getIdTokenClaims: () => Promise<any>;
   storeNumber: number[] | null;
+  selectedStoreNumber: number | null;
   metadata: {
     app_metadata?: TokenMetadata;
     user_metadata?: any;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useAuth0();
 
   const [storeNumber, setStoreNumber] = useState<number[] | null>(null);
+  const [selectedStoreNumber, setSelectedStoreNumber] = useState<number | null>(null);
   const [metadata, setMetadata] = useState<{
     app_metadata?: TokenMetadata;
     user_metadata?: any;
@@ -68,26 +70,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('🔍 Extracting StoreNumber from ID token...');
       const extractedStoreNumberFromId = extractStoreNumber(JSON.stringify(idTokenClaims), domain);
       
+      console.log('🔍 Extracting SelectedStoreNumber from access token...');
+      const extractedSelectedStoreNumberFromAccess = extractSelectedStoreNumber(accessToken, domain);
+      
+      console.log('🔍 Extracting SelectedStoreNumber from ID token...');
+      const extractedSelectedStoreNumberFromId = extractSelectedStoreNumber(JSON.stringify(idTokenClaims), domain);
+      
       console.log('🔍 Extracting metadata from access token...');
       const extractedMetadata = extractMetadata(accessToken, domain);
       
       console.log('📊 Extraction results:');
       console.log('  - StoreNumber from access token:', extractedStoreNumberFromAccess);
       console.log('  - StoreNumber from ID token:', extractedStoreNumberFromId);
+      console.log('  - SelectedStoreNumber from access token:', extractedSelectedStoreNumberFromAccess);
+      console.log('  - SelectedStoreNumber from ID token:', extractedSelectedStoreNumberFromId);
       console.log('  - Metadata:', extractedMetadata);
       
       // Use the first available StoreNumber
       const finalStoreNumber = extractedStoreNumberFromAccess || extractedStoreNumberFromId;
       
+      // Use the first available SelectedStoreNumber
+      const finalSelectedStoreNumber = extractedSelectedStoreNumberFromAccess || extractedSelectedStoreNumberFromId;
+      
       setStoreNumber(finalStoreNumber);
+      setSelectedStoreNumber(finalSelectedStoreNumber);
       setMetadata(extractedMetadata);
       
       console.log('✅ StoreNumber extraction completed');
       console.log('  - Final storeNumber state:', finalStoreNumber);
+      console.log('  - Final selectedStoreNumber state:', finalSelectedStoreNumber);
       console.log('  - Final metadata state:', extractedMetadata);
     } catch (error) {
       console.error('❌ Error extracting StoreNumber from token:', error);
       setStoreNumber(null);
+      setSelectedStoreNumber(null);
       setMetadata({});
     }
   };
@@ -102,12 +118,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       extractStoreNumberFromToken();
     } else if (!isAuthenticated) {
       setStoreNumber(null);
+      setSelectedStoreNumber(null);
       setMetadata({});
     }
   }, [isAuthenticated, isLoading, domain]);
 
-  const login = () => {
-    loginWithRedirect();
+  const login = () => {    
+    try {
+      loginWithRedirect();
+    } catch (error) {
+      console.error('🔐 AuthContext: Error in login():', error);
+    }
   };
 
   const logout = () => {
@@ -129,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         getAccessTokenSilently,
         getIdTokenClaims,
         storeNumber,
+        selectedStoreNumber,
         metadata,
         refreshStoreNumber
       }}
