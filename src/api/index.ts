@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://api.example.com',
+  baseURL: 'http://localhost:3000/api',
 });
 
 // Create functions to get the token and selected store dynamically
@@ -61,6 +61,11 @@ export const getUserProfile = async () => {
 
 export const updateSettings = async (payload: any) => {
   const { data } = await api.post('/settings', payload);
+  return data;
+};
+
+export const getEmployees = async () => {
+  const { data } = await api.get('/employees-auth0');
   return data;
 };
 

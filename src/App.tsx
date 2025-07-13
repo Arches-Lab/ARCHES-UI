@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Employees from './pages/Employees';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -61,6 +62,7 @@ function App() {
                 <Route index element={<Dashboard />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="employees" element={<Employees />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
