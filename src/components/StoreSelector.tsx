@@ -1,11 +1,59 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../auth/StoreContext';
+import { getEmployeeStores } from '../api';
+
+interface Store {
+  id: number;
+  storenumber: number;
+}
 
 export default function StoreSelector() {
-  const { selectedStore, setSelectedStore, availableStores, isLoading, isAuthenticated } = useStore();
+  const { selectedStore, setSelectedStore, isLoading: contextLoading, isAuthenticated } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch stores from API
+  useEffect(() => {
+    const fetchStores = async () => {
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getEmployeeStores();
+        console.log('Employee stores:', data);
+        
+        // Handle different response formats
+        if (Array.isArray(data)) {
+          setStores(data);
+          console.log("stores", stores);
+        } else if (data && Array.isArray(data.stores)) {
+          setStores(data.stores);
+        } else if (data && Array.isArray(data.storeNumbers)) {
+          // If API returns just store numbers, convert to Store objects
+          setStores(data.storeNumbers.map((num: number) => ({ id: num, number: num })));
+        } else {
+          console.warn('Unexpected stores data format:', data);
+          setStores([]);
+        }
+      } catch (err) {
+        console.error('Error fetching employee stores:', err);
+        setError('Failed to load stores');
+        setStores([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStores();
+  }, [isAuthenticated]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -21,11 +69,26 @@ export default function StoreSelector() {
     };
   }, []);
 
-  if (!isAuthenticated || isLoading) {
-    return null;
+  if (!isAuthenticated || contextLoading || loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-gray-500">
+        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Loading stores...</span>
+      </div>
+    );
   }
 
-  if (availableStores.length === 0) {
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-red-500">
+        <span>Error loading stores</span>
+      </div>
+    );
+  }
+
+  if (stores.length === 0) {
     return (
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <span>No stores available</span>
@@ -76,20 +139,20 @@ export default function StoreSelector() {
             <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide border-b border-gray-100">
               Select Store
             </div>
-            {availableStores.map((storeNumber) => (
+            {stores.map((store) => (
               <button
-                key={storeNumber}
-                onClick={() => handleStoreSelect(storeNumber)}
+                key={store.id}
+                onClick={() => handleStoreSelect(store.storenumber)}
                 disabled={isUpdating}
                 className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  selectedStore === storeNumber 
+                  selectedStore === store.storenumber 
                     ? 'bg-blue-50 text-blue-700 font-medium' 
                     : 'text-gray-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span>Store {storeNumber}</span>
-                  {selectedStore === storeNumber && (
+                  <span>{`Store ${store.storenumber}`}</span>
+                  {selectedStore === store.storenumber && (
                     <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>

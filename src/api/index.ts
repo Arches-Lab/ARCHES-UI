@@ -69,4 +69,9 @@ export const getEmployees = async () => {
   return data;
 };
 
+export const getEmployeeStores = async () => {
+  const { data } = await api.get('/employee-stores/me');
+  return data;
+};
+
 export default api;
