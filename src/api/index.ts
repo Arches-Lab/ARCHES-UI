@@ -84,4 +84,9 @@ export const getDefaultStore = async () => {
   return data;
 };
 
+export const getMessages = async () => {
+  const { data } = await api.get('/messages');
+  return data;
+};
+
 export default api;
