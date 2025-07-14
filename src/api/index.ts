@@ -89,4 +89,19 @@ export const getMessages = async () => {
   return data;
 };
 
+export const createMessage = async (messageData: {
+  storenumber: number;
+  message: string;
+  createdfor?: string;
+  notification: boolean;
+}) => {
+  const { data } = await api.post('/messages', messageData);
+  return data;
+};
+
+export const archiveMessage = async (messageId: string) => {
+  const { data } = await api.put(`/messages/${messageId}/archive`);
+  return data;
+};
+
 export default api;

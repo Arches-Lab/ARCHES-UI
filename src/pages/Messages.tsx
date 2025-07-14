@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getMessages } from '../api';
-import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell } from 'react-icons/fa';
+import { getMessages, archiveMessage } from '../api';
+import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell, FaPlus, FaArchive } from 'react-icons/fa';
+import CreateMessage from '../components/CreateMessage';
 
 interface Message {
   messageid: string;
@@ -27,23 +28,24 @@ export default function Messages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const fetchMessages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getMessages();
+      console.log('Messages data:', data);
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      setError('Failed to load messages. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getMessages();
-        console.log('Messages data:', data);
-        setMessages(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error('Error fetching messages:', err);
-        setError('Failed to load messages. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMessages();
   }, []);
 
@@ -58,6 +60,17 @@ export default function Messages() {
 
   const isArchived = (message: Message) => {
     return message.archivedon !== null;
+  };
+
+  const handleArchiveMessage = async (messageId: string) => {
+    try {
+      await archiveMessage(messageId);
+      // Refresh the messages list to show updated archive status
+      fetchMessages();
+    } catch (error) {
+      console.error('Error archiving message:', error);
+      // You could add a toast notification here for better UX
+    }
   };
 
   if (loading) {
@@ -90,8 +103,17 @@ export default function Messages() {
           <FaEnvelope className="text-3xl text-blue-600" />
           <h2 className="text-2xl font-semibold">Messages</h2>
         </div>
-        <div className="text-sm text-gray-600">
-          {messages.length} message{messages.length !== 1 ? 's' : ''}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600">
+            {messages.length} message{messages.length !== 1 ? 's' : ''}
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            New Message
+          </button>
         </div>
       </div>
 
@@ -132,9 +154,21 @@ export default function Messages() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <FaClock className="w-3 h-3" />
-                  <span>{formatTimestamp(message.createdon)}</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <FaClock className="w-3 h-3" />
+                    <span>{formatTimestamp(message.createdon)}</span>
+                  </div>
+                  {!isArchived(message) && (
+                    <button
+                      onClick={() => handleArchiveMessage(message.messageid)}
+                      className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
+                      title="Archive message"
+                    >
+                      <FaArchive className="w-3 h-3" />
+                      Archive
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -163,6 +197,17 @@ export default function Messages() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Create Message Modal */}
+      {showCreateModal && (
+        <CreateMessage
+          onMessageCreated={() => {
+            setShowCreateModal(false);
+            fetchMessages(); // Refresh the messages list
+          }}
+          onCancel={() => setShowCreateModal(false)}
+        />
       )}
     </div>
   );
