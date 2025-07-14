@@ -1,7 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useStoreNumber } from './useStoreNumber';
-import { setSelectedStoreGetter } from '../api';
-import { updateSelectedStore } from './auth0MetadataService';
+import { setSelectedStoreGetter, updateDefaultStore, getDefaultStore } from '../api';
 import { useAuth } from './AuthContext';
 
 type StoreContextType = {
@@ -15,29 +14,64 @@ type StoreContextType = {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const { storeNumber, selectedStoreNumber, isLoading, isAuthenticated } = useStoreNumber();
+  const { storeNumber, isLoading, isAuthenticated } = useStoreNumber();
   const { user: auth0User } = useAuth();
   const [selectedStore, setSelectedStore] = useState<number | null>(null);
+  const [defaultStoreLoading, setDefaultStoreLoading] = useState(false);
 
   // Set up the selected store getter for API requests
   useEffect(() => {
     setSelectedStoreGetter(() => selectedStore);
   }, [selectedStore]);
 
-  // Auto-select store when store numbers become available
+  // Fetch default store from API when authenticated
   useEffect(() => {
-    if (storeNumber && storeNumber.length > 0 && !selectedStore) {
-      // First, try to use the SelectedStoreNumber from the token
-      if (selectedStoreNumber && storeNumber.includes(selectedStoreNumber)) {
-        console.log('🔄 Auto-selecting store from token SelectedStoreNumber:', selectedStoreNumber);
-        setSelectedStore(selectedStoreNumber);
-      } else {
-        // Fall back to the first store if SelectedStoreNumber is not available or not in the list
-        console.log('🔄 Auto-selecting first store (fallback):', storeNumber[0]);
-        setSelectedStore(storeNumber[0]);
+    const fetchDefaultStore = async () => {
+      if (!isAuthenticated) {
+        setSelectedStore(null);
+        return;
       }
+
+      try {
+        setDefaultStoreLoading(true);
+        const data = await getDefaultStore();
+        console.log('Default store from API:', data);
+        
+        // Handle different response formats
+        let defaultStoreNumber: number | null = null;
+        if (data && typeof data.storeNumber === 'number') {
+          defaultStoreNumber = data.storeNumber;
+        } else if (data && typeof data.defaultStore === 'number') {
+          defaultStoreNumber = data.defaultStore;
+        } else if (data && typeof data.storenumber === 'number') {
+          defaultStoreNumber = data.storenumber;
+        } else if (typeof data === 'number') {
+          defaultStoreNumber = data;
+        }
+        
+        if (defaultStoreNumber) {
+          console.log('🔄 Setting default store from API:', defaultStoreNumber);
+          setSelectedStore(defaultStoreNumber);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching default store from API:', error);
+        // Don't set selectedStore to null here, let the fallback logic handle it
+      } finally {
+        setDefaultStoreLoading(false);
+      }
+    };
+
+    fetchDefaultStore();
+  }, [isAuthenticated]);
+
+  // Auto-select store when store numbers become available (fallback logic)
+  useEffect(() => {
+    if (storeNumber && storeNumber.length > 0 && !selectedStore && !defaultStoreLoading) {
+      // Fall back to the first store if no default store is set
+      console.log('🔄 Auto-selecting first store (fallback):', storeNumber[0]);
+      setSelectedStore(storeNumber[0]);
     }
-  }, [storeNumber, selectedStoreNumber, selectedStore]);
+  }, [storeNumber, selectedStore, defaultStoreLoading]);
 
   // Clear selected store when user logs out
   useEffect(() => {
@@ -50,18 +84,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     console.log('🔄 Switching to store:', storeNumber);
     setSelectedStore(storeNumber);
     
-    // Update the SelectedStoreNumber in Auth0 app_metadata
-    if (storeNumber && auth0User?.sub) {
+    // Update the default store via API
+    if (storeNumber) {
       try {
-        console.log('🔄 Updating SelectedStoreNumber in Auth0 app_metadata...');
-        const success = await updateSelectedStore(auth0User.sub, storeNumber);
+        console.log('🔄 Updating default store via API...');
+        const success = await updateDefaultStore(storeNumber);
         if (success) {
-          console.log('✅ Successfully updated SelectedStoreNumber in Auth0 app_metadata');
+          console.log('✅ Successfully updated default store via API');
         } else {
-          console.error('❌ Failed to update SelectedStoreNumber in Auth0 app_metadata');
+          console.error('❌ Failed to update default store via API');
         }
       } catch (error) {
-        console.error('❌ Error updating SelectedStoreNumber in Auth0 app_metadata:', error);
+        console.error('❌ Error updating default store via API:', error);
       }
     }
   };
@@ -72,7 +106,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         selectedStore,
         setSelectedStore: handleSetSelectedStore,
         availableStores: storeNumber || [],
-        isLoading,
+        isLoading: isLoading || defaultStoreLoading,
         isAuthenticated
       }}
     >

@@ -28,23 +28,23 @@ api.interceptors.request.use(async (config) => {
     }
   }
 
-  // Add selected store to request headers or query params
-  if (getSelectedStore) {
-    const selectedStore = getSelectedStore();
-    if (selectedStore) {
-      // Add as header
-      config.headers['X-Selected-Store'] = selectedStore.toString();
+  // // Add selected store to request headers or query params
+  // if (getSelectedStore) {
+  //   const selectedStore = getSelectedStore();
+  //   if (selectedStore) {
+  //     // Add as header
+  //     config.headers['X-Selected-Store'] = selectedStore.toString();
       
-      // Also add as query parameter for GET requests
-      if (config.method === 'get' && config.params) {
-        config.params.storeId = selectedStore;
-      } else if (config.method === 'get') {
-        config.params = { storeId: selectedStore };
-      }
+  //     // Also add as query parameter for GET requests
+  //     if (config.method === 'get' && config.params) {
+  //       config.params.storeId = selectedStore;
+  //     } else if (config.method === 'get') {
+  //       config.params = { storeId: selectedStore };
+  //     }
       
-      console.log(`🔄 API Request for Store ${selectedStore}:`, config.url);
-    }
-  }
+  //     console.log(`🔄 API Request for Store ${selectedStore}:`, config.url);
+  //   }
+  // }
 
   return config;
 });
@@ -71,6 +71,16 @@ export const getEmployees = async () => {
 
 export const getEmployeeStores = async () => {
   const { data } = await api.get('/employee-stores/me');
+  return data;
+};
+
+export const updateDefaultStore = async (storeNumber: number) => {
+  const { data } = await api.put('/employee-stores/default', { storenumber: storeNumber });
+  return data;
+};
+
+export const getDefaultStore = async () => {
+  const { data } = await api.get('/employee-stores/default');
   return data;
 };
 
