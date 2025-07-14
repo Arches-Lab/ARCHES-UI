@@ -1,7 +1,16 @@
-import { useState } from 'react';
-import { createMessage } from '../api';
-import { FaPlus, FaSpinner, FaTimes, FaBell, FaStore } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { createMessage, getEmployees } from '../api';
+import { FaPlus, FaSpinner, FaTimes, FaBell, FaStore, FaUser } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
+
+interface Employee {
+  id: string;
+  employeeid: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  active: boolean;
+}
 
 interface CreateMessageProps {
   onMessageCreated: () => void;
@@ -12,9 +21,32 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
   const { selectedStore } = useStore();
   const [message, setMessage] = useState('');
   const [notification, setNotification] = useState(false);
-  const [recipientEmail, setRecipientEmail] = useState('');
+  const [selectedRecipient, setSelectedRecipient] = useState<string>('');
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch employees for recipient selection
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setEmployeesLoading(true);
+        const data = await getEmployees();
+        // Filter to only active employees
+        const activeEmployees = Array.isArray(data) ? data.filter((emp: Employee) => emp.active) : [];
+        setEmployees(activeEmployees);
+        console.log("employees", activeEmployees);
+      } catch (err) {
+        console.error('Error fetching employees:', err);
+        setError('Failed to load employees for recipient selection');
+      } finally {
+        setEmployeesLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +69,7 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
         storenumber: selectedStore,
         message: message.trim(),
         notification,
-        ...(recipientEmail.trim() && { createdfor: recipientEmail.trim() })
+        ...(selectedRecipient && { createdfor: selectedRecipient })
       };
 
       await createMessage(messageData);
@@ -45,7 +77,7 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
       // Reset form
       setMessage('');
       setNotification(false);
-      setRecipientEmail('');
+      setSelectedRecipient('');
       
       // Notify parent component
       onMessageCreated();
@@ -97,20 +129,31 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
             />
           </div>
 
-          {/* Recipient Email */}
+          {/* Recipient Selection */}
           <div>
             <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-2">
-              Recipient Email (optional)
+              Recipient (optional)
             </label>
-            <input
-              type="email"
+            <select
               id="recipient"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
+              value={selectedRecipient}
+              onChange={(e) => setSelectedRecipient(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter recipient email..."
-              disabled={isSubmitting}
-            />
+              disabled={isSubmitting || employeesLoading}
+            >
+              <option value="">Select a recipient</option>
+              {employeesLoading ? (
+                <option value="">Loading recipients...</option>
+              ) : employees.length === 0 ? (
+                <option value="">No active employees found.</option>
+              ) : (
+                employees.map((employee) => (
+                  <option key={employee.employeeid} value={employee.employeeid}>
+                    {employee.firstname} {employee.lastname}
+                  </option>
+                ))
+              )}
+            </select>
           </div>
 
           {/* Notification Toggle */}
