@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getLeads } from '../api';
-import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag } from 'react-icons/fa';
+import { getLeads, getActivities } from '../api';
+import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt } from 'react-icons/fa';
 
 interface Lead {
   leadid: string;
@@ -25,28 +25,54 @@ interface Lead {
   status: string;
 }
 
+interface Activity {
+  activityid: string;
+  storenumber: number;
+  parentid: string;
+  parenttypecode: string;
+  activitytypecode: string;
+  details: string;
+  createdby: string;
+  creator: {
+    email: string | null;
+    lastname: string;
+    firstname: string;
+  };
+  createdon: string;
+}
+
 export default function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchLeads = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await getLeads();
-        console.log('Leads data:', data);
-        setLeads(Array.isArray(data) ? data : []);
+        
+        // Fetch leads and activities in parallel
+        const [leadsData, activitiesData] = await Promise.all([
+          getLeads(),
+          getActivities()
+        ]);
+        
+        console.log('Leads data:', leadsData);
+        console.log('Activities data:', activitiesData);
+        
+        setLeads(Array.isArray(leadsData) ? leadsData : []);
+        setActivities(Array.isArray(activitiesData) ? activitiesData : []);
       } catch (err) {
-        console.error('Error fetching leads:', err);
-        setError('Failed to load leads. Please try again later.');
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLeads();
+    fetchData();
   }, []);
 
   const formatTimestamp = (timestamp: string) => {
@@ -62,6 +88,10 @@ export default function Leads() {
     if (!phone) return 'N/A';
     // Basic phone formatting - you can enhance this
     return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+  };
+
+  const getActivitiesForLead = (leadId: string) => {
+    return activities.filter(activity => activity.parenttypecode === 'LEAD' && activity.parentid === leadId);
   };
 
   if (loading) {
@@ -113,7 +143,7 @@ export default function Leads() {
               className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
             >
               {/* Header */}
-              <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <FaStore className="w-4 h-4 text-gray-500" />
@@ -128,7 +158,7 @@ export default function Leads() {
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
+                <div className="flex items-center gap-4 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <FaClock className="w-3 h-3" />
                     <span>{formatTimestamp(lead.createdon)}</span>
@@ -153,7 +183,7 @@ export default function Leads() {
               </div>
 
               {/* Contact Information */}
-              <div className="space-y-3">
+              <div className="space-y-3 mb-4">
                 {lead.contactname && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <FaUserTie className="w-4 h-4 text-blue-500" />
@@ -185,6 +215,44 @@ export default function Leads() {
                   </div>
                 )}
               </div>
+
+              {/* Activities */}
+              {(() => {
+                const leadActivities = getActivitiesForLead(lead.leadid);
+                return leadActivities.length > 0 ? (
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FaListAlt className="w-4 h-4 text-purple-500" />
+                      <h4 className="text-sm font-semibold text-gray-900">Activities ({leadActivities.length})</h4>
+                    </div>
+                    <div className="space-y-3">
+                      {leadActivities.map((activity) => (
+                        <div key={activity.activityid} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
+                          {/* Activity Header */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <FaUser className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm font-medium text-gray-700">
+                                {activity.creator.firstname} {activity.creator.lastname}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <FaClock className="w-3 h-3" />
+                              <span>{formatTimestamp(activity.createdon)}</span>
+                            </div>
+                          </div>
+
+                          {/* Activity Details */}
+                          <div>
+                            <h5 className="text-sm font-semibold text-gray-900 mb-1">Activity Details</h5>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
 
 
             </div>

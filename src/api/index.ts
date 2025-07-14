@@ -109,4 +109,9 @@ export const getLeads = async () => {
   return data;
 };
 
+export const getActivities = async () => {
+  const { data } = await api.get('/activities');
+  return data;
+};
+
 export default api;
