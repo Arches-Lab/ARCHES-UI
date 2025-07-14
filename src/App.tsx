@@ -6,6 +6,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Employees from './pages/Employees';
 import Messages from './pages/Messages';
+import Leads from './pages/Leads';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -65,6 +66,7 @@ function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="employees" element={<Employees />} />
                 <Route path="messages" element={<Messages />} />
+                <Route path="leads" element={<Leads />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

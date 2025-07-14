@@ -1,10 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb } from 'react-icons/fa';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
   { to: '/employees', label: 'Employees', icon: <FaUsers /> },
   { to: '/messages', label: 'Messages', icon: <FaEnvelope /> },
+  { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/profile', label: 'Profile', icon: <FaUser /> },
   { to: '/settings', label: 'Settings', icon: <FaCog /> },
 ];

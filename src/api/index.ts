@@ -104,4 +104,9 @@ export const archiveMessage = async (messageId: string) => {
   return data;
 };
 
+export const getLeads = async () => {
+  const { data } = await api.get('/leads');
+  return data;
+};
+
 export default api;
