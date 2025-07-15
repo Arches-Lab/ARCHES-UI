@@ -1,9 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Auth0Provider } from '@auth0/auth0-react';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-import Login from './pages/Login';
+import Login from './components/Login';
 import Employees from './pages/Employees';
 import Messages from './pages/Messages';
 import Leads from './pages/Leads';
@@ -13,23 +12,22 @@ import { StoreProvider } from './auth/StoreContext';
 import PrivateRoute from './auth/PrivateRoute';
 
 function App() {
-  const domain = import.meta.env.VITE_AUTH0_DOMAIN;
-  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
-  const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   // Debug logging
-  console.log('Auth0 Config:', { domain, clientId, audience });
+  console.log('Supabase Config:', { supabaseUrl, supabaseAnonKey: supabaseAnonKey ? '***' : undefined });
 
-  if (!domain || !clientId) {
+  if (!supabaseUrl || !supabaseAnonKey) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
           <p className="text-gray-600">
-            Auth0 configuration is missing. Please check your .env.local file.
+            Supabase configuration is missing. Please check your .env.local file.
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Required: VITE_AUTH0_DOMAIN, VITE_AUTH0_CLIENT_ID
+            Required: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
           </p>
         </div>
       </div>
@@ -37,43 +35,31 @@ function App() {
   }
 
   return (
-    <Auth0Provider
-      domain={domain}
-      clientId={clientId}
-      authorizationParams={{
-        redirect_uri: window.location.origin,
-        audience: audience,
-        scope: 'openid profile email'
-      }}
-      cacheLocation="localstorage"
-      useRefreshTokens={true}
-    >
+    <BrowserRouter>
       <AuthProvider>
         <StoreProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/"
-                element={
-                  <PrivateRoute>
-                    <MainLayout />
-                  </PrivateRoute>
-                }
-              >
-                <Route index element={<Dashboard />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="employees" element={<Employees />} />
-                <Route path="messages" element={<Messages />} />
-                <Route path="leads" element={<Leads />} />
-              </Route>
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <MainLayout />
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="employees" element={<Employees />} />
+              <Route path="messages" element={<Messages />} />
+              <Route path="leads" element={<Leads />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </StoreProvider>
       </AuthProvider>
-    </Auth0Provider>
+    </BrowserRouter>
   );
 }
 

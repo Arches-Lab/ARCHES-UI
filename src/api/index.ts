@@ -65,7 +65,7 @@ export const updateSettings = async (payload: any) => {
 };
 
 export const getEmployees = async () => {
-  const { data } = await api.get('/employees-auth0');
+  const { data } = await api.get('/employees');
   return data;
 };
 
