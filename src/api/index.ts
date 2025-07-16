@@ -114,6 +114,19 @@ export const getLeads = async () => {
   return data;
 };
 
+export const createLead = async (leadData: {
+  storenumber: number;
+  description: string;
+  contactname: string;
+  phone: string;
+  email: string;
+  assignedto: string;
+  status: string;
+}) => {
+  const { data } = await api.post('/leads', leadData);
+  return data;
+};
+
 export const getActivities = async () => {
   const { data } = await api.get('/activities');
   return data;

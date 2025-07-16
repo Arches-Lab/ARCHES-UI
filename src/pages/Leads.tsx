@@ -3,6 +3,7 @@ import { getLeads, getActivities } from '../api';
 import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaPlus } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import CreateActivity from '../components/CreateActivity';
+import CreateLead from '../components/CreateLead';
 
 interface Lead {
   leadid: string;
@@ -50,6 +51,7 @@ export default function Leads() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [showCreateLeadModal, setShowCreateLeadModal] = useState(false);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -129,6 +131,18 @@ export default function Leads() {
     }
   };
 
+  const handleLeadCreated = async () => {
+    setShowCreateLeadModal(false);
+    
+    // Refresh leads data
+    try {
+      const leadsData = await getLeads();
+      setLeads(Array.isArray(leadsData) ? leadsData : []);
+    } catch (error) {
+      console.error('Error refreshing leads:', error);
+    }
+  };
+
   const getActivityIcon = (activityType: string) => {
     const type = activityType.toLowerCase();
     
@@ -194,8 +208,17 @@ export default function Leads() {
           <FaLightbulb className="text-3xl text-yellow-600" />
           <h2 className="text-2xl font-semibold">Leads</h2>
         </div>
-        <div className="text-sm text-gray-600">
-          {leads.length} lead{leads.length !== 1 ? 's' : ''}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600">
+            {leads.length} lead{leads.length !== 1 ? 's' : ''}
+          </div>
+          <button
+            onClick={() => setShowCreateLeadModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            New Lead
+          </button>
         </div>
       </div>
 
@@ -350,6 +373,14 @@ export default function Leads() {
             setShowCreateModal(false);
             setSelectedLead(null);
           }}
+        />
+      )}
+
+      {/* Create Lead Modal */}
+      {showCreateLeadModal && (
+        <CreateLead
+          onLeadCreated={handleLeadCreated}
+          onCancel={() => setShowCreateLeadModal(false)}
         />
       )}
     </div>
