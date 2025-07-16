@@ -119,4 +119,15 @@ export const getActivities = async () => {
   return data;
 };
 
+export const createActivity = async (activityData: {
+  storenumber: number;
+  parentid: string;
+  parenttypecode: string;
+  activitytypecode: string;
+  details: string;
+}) => {
+  const { data } = await api.post('/activities', activityData);
+  return data;
+};
+
 export default api;

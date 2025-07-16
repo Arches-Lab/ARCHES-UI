@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getLeads, getActivities } from '../api';
-import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle } from 'react-icons/fa';
+import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaPlus } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
+import CreateActivity from '../components/CreateActivity';
 
 interface Lead {
   leadid: string;
@@ -47,6 +48,8 @@ export default function Leads() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -106,6 +109,24 @@ export default function Leads() {
 
   const getActivitiesForLead = (leadId: string) => {
     return activities.filter(activity => activity.parenttypecode === 'LEAD' && activity.parentid === leadId);
+  };
+
+  const handleAddActivity = (lead: Lead) => {
+    setSelectedLead(lead);
+    setShowCreateModal(true);
+  };
+
+  const handleActivityCreated = async () => {
+    setShowCreateModal(false);
+    setSelectedLead(null);
+    
+    // Refresh activities data
+    try {
+      const activitiesData = await getActivities();
+      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+    } catch (error) {
+      console.error('Error refreshing activities:', error);
+    }
   };
 
   const getActivityIcon = (activityType: string) => {
@@ -268,47 +289,72 @@ export default function Leads() {
               {/* Activities */}
               {(() => {
                 const leadActivities = getActivitiesForLead(lead.leadid);
-                return leadActivities.length > 0 ? (
+                return (
                   <div className="border-t border-gray-100 pt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FaListAlt className="w-4 h-4 text-purple-500" />
-                      <h4 className="text-sm font-semibold text-gray-900">Activities ({leadActivities.length})</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <FaListAlt className="w-4 h-4 text-purple-500" />
+                        <h4 className="text-sm font-semibold text-gray-900">Activities ({leadActivities.length})</h4>
+                      </div>
+                      <button
+                        onClick={() => handleAddActivity(lead)}
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                        title="Add activity"
+                      >
+                        <FaPlus className="w-3 h-3" />
+                        Add Activity
+                      </button>
                     </div>
-                    <div className="space-y-3">
-                      {leadActivities.map((activity) => (
-                        <div key={activity.activityid} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-                          {/* Activity Header */}
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              {getActivityIcon(activity.activitytypecode)}
-                              <span className="text-sm font-medium text-gray-700">
-                                {activity.activitytypecode}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <FaUser className="w-3 h-3" />
-                                <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                    {leadActivities.length > 0 && (
+                      <div className="space-y-3">
+                        {leadActivities.map((activity) => (
+                          <div key={activity.activityid} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
+                            {/* Activity Header */}
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                {getActivityIcon(activity.activitytypecode)}
+                                <span className="text-sm font-medium text-gray-700">
+                                  {activity.activitytypecode}
+                                </span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <FaClock className="w-3 h-3" />
-                                <span>{formatTimestamp(activity.createdon)}</span>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <FaUser className="w-3 h-3" />
+                                  <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <FaClock className="w-3 h-3" />
+                                  <span>{formatTimestamp(activity.createdon)}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Activity Details */}
-                          {activity.details && (
-                            <div>
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null;
-              })()}
+                            {/* Activity Details */}
+                            {activity.details && (
+                              <div>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                              </div>
+      )}
+
+      {/* Create Activity Modal */}
+      {showCreateModal && selectedLead && (
+        <CreateActivity
+          leadId={selectedLead.leadid}
+          leadDescription={selectedLead.description}
+          onActivityCreated={handleActivityCreated}
+          onCancel={() => {
+            setShowCreateModal(false);
+            setSelectedLead(null);
+          }}
+        />
+      )}
+    </div>
+  );
+})()}
 
 
             </div>
