@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getEmployees } from '../api';
 import { FaUsers, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { useStore } from '../auth/StoreContext';
 
 interface Employee {
   id: string;
@@ -15,14 +16,18 @@ export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selectedStore } = useStore();
 
   useEffect(() => {
+    console.log(`🔄 Employees useEffect - selectedStore: ${selectedStore}`);
+    
     const fetchEmployees = async () => {
       try {
         setLoading(true);
         setError(null);
+        console.log(`🔄 Fetching employees for store: ${selectedStore}`);
         const data = await getEmployees();
-        console.log("data", data);
+        console.log("Employees data received:", data);
         setEmployees(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Error fetching employees:', err);
@@ -32,8 +37,18 @@ export default function Employees() {
       }
     };
 
-    fetchEmployees();
-  }, []);
+    // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
+    if (selectedStore !== null && selectedStore !== undefined) {
+      console.log(`🔄 Loading employees for store: ${selectedStore}`);
+      fetchEmployees();
+    } else {
+      // Clear data only when no store is selected
+      console.log(`🔄 No store selected, clearing employees data`);
+      setEmployees([]);
+      setLoading(false);
+      setError(null);
+    }
+  }, [selectedStore]);
 
   if (loading) {
     return (

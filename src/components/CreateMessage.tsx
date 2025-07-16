@@ -18,7 +18,7 @@ interface CreateMessageProps {
 }
 
 export default function CreateMessage({ onMessageCreated, onCancel }: CreateMessageProps) {
-  const { selectedStore } = useStore();
+  const { selectedStore, refreshTrigger } = useStore();
   const [message, setMessage] = useState('');
   const [notification, setNotification] = useState(false);
   const [selectedRecipient, setSelectedRecipient] = useState<string>('');
@@ -32,11 +32,12 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
     const fetchEmployees = async () => {
       try {
         setEmployeesLoading(true);
+        console.log(`🔄 Fetching employees for recipient selection (store: ${selectedStore})`);
         const data = await getEmployees();
         // Filter to only active employees
         const activeEmployees = Array.isArray(data) ? data.filter((emp: Employee) => emp.active) : [];
         setEmployees(activeEmployees);
-        console.log("employees", activeEmployees);
+        console.log("Active employees for recipient selection:", activeEmployees);
       } catch (err) {
         console.error('Error fetching employees:', err);
         setError('Failed to load employees for recipient selection');
@@ -45,8 +46,15 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
       }
     };
 
-    fetchEmployees();
-  }, []);
+    // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
+    if (selectedStore !== null && selectedStore !== undefined) {
+      fetchEmployees();
+    } else {
+      // Clear employees when no store is selected
+      setEmployees([]);
+      setEmployeesLoading(false);
+    }
+  }, [selectedStore, refreshTrigger]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

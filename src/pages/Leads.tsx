@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getLeads, getActivities } from '../api';
 import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt } from 'react-icons/fa';
+import { useStore } from '../auth/StoreContext';
 
 interface Lead {
   leadid: string;
@@ -46,12 +47,15 @@ export default function Leads() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selectedStore } = useStore();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
+        
+        console.log(`🔄 Fetching leads and activities for store: ${selectedStore}`);
         
         // Fetch leads and activities in parallel
         const [leadsData, activitiesData] = await Promise.all([
@@ -72,8 +76,18 @@ export default function Leads() {
       }
     };
 
-    fetchData();
-  }, []);
+    // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
+    if (selectedStore !== null && selectedStore !== undefined) {
+      console.log(`🔄 Loading leads and activities for store: ${selectedStore}`);
+      fetchData();
+    } else {
+      // Clear data only when no store is selected
+      setLeads([]);
+      setActivities([]);
+      setLoading(false);
+      setError(null);
+    }
+  }, [selectedStore]);
 
   const formatTimestamp = (timestamp: string) => {
     try {
