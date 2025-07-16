@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getLeads, getActivities } from '../api';
-import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaPlus } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { getLeads } from '../api';
+import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaPlus, FaEye } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
-import CreateActivity from '../components/CreateActivity';
 import CreateLead from '../components/CreateLead';
 
 interface Lead {
@@ -28,29 +28,11 @@ interface Lead {
   status: string;
 }
 
-interface Activity {
-  activityid: string;
-  storenumber: number;
-  parentid: string;
-  parenttypecode: string;
-  activitytypecode: string;
-  details: string;
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-}
-
 export default function Leads() {
+  const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showCreateLeadModal, setShowCreateLeadModal] = useState(false);
   const { selectedStore } = useStore();
 
@@ -60,19 +42,13 @@ export default function Leads() {
         setLoading(true);
         setError(null);
         
-        console.log(`🔄 Fetching leads and activities for store: ${selectedStore}`);
+        console.log(`🔄 Fetching leads for store: ${selectedStore}`);
         
-        // Fetch leads and activities in parallel
-        const [leadsData, activitiesData] = await Promise.all([
-          getLeads(),
-          getActivities()
-        ]);
+        const leadsData = await getLeads();
         
         console.log('Leads data:', leadsData);
-        console.log('Activities data:', activitiesData);
         
         setLeads(Array.isArray(leadsData) ? leadsData : []);
-        setActivities(Array.isArray(activitiesData) ? activitiesData : []);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
@@ -83,12 +59,11 @@ export default function Leads() {
 
     // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
     if (selectedStore !== null && selectedStore !== undefined) {
-      console.log(`🔄 Loading leads and activities for store: ${selectedStore}`);
+      console.log(`🔄 Loading leads for store: ${selectedStore}`);
       fetchData();
     } else {
       // Clear data only when no store is selected
       setLeads([]);
-      setActivities([]);
       setLoading(false);
       setError(null);
     }
@@ -109,28 +84,6 @@ export default function Leads() {
     return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
   };
 
-  const getActivitiesForLead = (leadId: string) => {
-    return activities.filter(activity => activity.parenttypecode === 'LEAD' && activity.parentid === leadId);
-  };
-
-  const handleAddActivity = (lead: Lead) => {
-    setSelectedLead(lead);
-    setShowCreateModal(true);
-  };
-
-  const handleActivityCreated = async () => {
-    setShowCreateModal(false);
-    setSelectedLead(null);
-    
-    // Refresh activities data
-    try {
-      const activitiesData = await getActivities();
-      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
-    } catch (error) {
-      console.error('Error refreshing activities:', error);
-    }
-  };
-
   const handleLeadCreated = async () => {
     setShowCreateLeadModal(false);
     
@@ -143,39 +96,8 @@ export default function Leads() {
     }
   };
 
-  const getActivityIcon = (activityType: string) => {
-    const type = activityType.toLowerCase();
-    
-    if (type.includes('phone') || type.includes('call')) {
-      return <FaPhone className="w-4 h-4 text-green-500" />;
-    }
-    if (type.includes('voice') || type.includes('voicemail')) {
-      return <FaVoicemail className="w-4 h-4 text-blue-500" />;
-    }
-    if (type.includes('email') || type.includes('mail')) {
-      return <FaEnvelope className="w-4 h-4 text-red-500" />;
-    }
-    if (type.includes('meeting') || type.includes('appointment')) {
-      return <FaCalendar className="w-4 h-4 text-purple-500" />;
-    }
-    if (type.includes('note') || type.includes('comment')) {
-      return <FaComment className="w-4 h-4 text-gray-500" />;
-    }
-    if (type.includes('document') || type.includes('file')) {
-      return <FaFileAlt className="w-4 h-4 text-orange-500" />;
-    }
-    if (type.includes('follow') || type.includes('follow-up')) {
-      return <FaHandshake className="w-4 h-4 text-teal-500" />;
-    }
-    if (type.includes('quote') || type.includes('proposal')) {
-      return <FaChartLine className="w-4 h-4 text-indigo-500" />;
-    }
-    if (type.includes('issue') || type.includes('problem')) {
-      return <FaExclamationCircle className="w-4 h-4 text-red-500" />;
-    }
-    
-    // Default icon
-    return <FaListAlt className="w-4 h-4 text-gray-400" />;
+  const handleViewLead = (leadId: string) => {
+    navigate(`/leads/${leadId}`);
   };
 
   if (loading) {
@@ -236,7 +158,7 @@ export default function Leads() {
               className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
             >
               {/* Header */}
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <FaStore className="w-4 h-4 text-gray-500" />
@@ -251,32 +173,42 @@ export default function Leads() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <FaClock className="w-3 h-3" />
-                    <span>{formatTimestamp(lead.createdon)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <FaUser className="w-3 h-3" />
-                    <span>Created by: {lead.creator.firstname} {lead.creator.lastname}</span>
-                  </div>
-                  {lead.assigned && (
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
-                      <FaUserTie className="w-3 h-3" />
-                      <span>Assigned to: {lead.assigned.firstname} {lead.assigned.lastname}</span>
+                      <FaClock className="w-3 h-3" />
+                      <span>{formatTimestamp(lead.createdon)}</span>
                     </div>
-                  )}
+                    <div className="flex items-center gap-1">
+                      <FaUser className="w-3 h-3" />
+                      <span>Created by: {lead.creator.firstname} {lead.creator.lastname}</span>
+                    </div>
+                    {lead.assigned && (
+                      <div className="flex items-center gap-1">
+                        <FaUserTie className="w-3 h-3" />
+                        <span>Assigned to: {lead.assigned.firstname} {lead.assigned.lastname}</span>
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleViewLead(lead.leadid)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                    title="View lead details"
+                  >
+                    <FaEye className="w-4 h-4" />
+                    View Details
+                  </button>
                 </div>
               </div>
 
               {/* Description */}
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Lead Description</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Lead Description</h3>
                 <p className="text-gray-700 whitespace-pre-wrap">{lead.description}</p>
               </div>
 
               {/* Contact Information */}
-              <div className="space-y-3 mb-4">
+              <div className="space-y-3">
                 {lead.contactname && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <FaUserTie className="w-4 h-4 text-blue-500" />
@@ -308,72 +240,9 @@ export default function Leads() {
                   </div>
                 )}
               </div>
-
-              {/* Activities */}
-              {(() => {
-                const leadActivities = getActivitiesForLead(lead.leadid);
-                return (
-                  <div className="border-t border-gray-100 pt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <FaListAlt className="w-4 h-4 text-purple-500" />
-                        <h4 className="text-sm font-semibold text-gray-900">Activities ({leadActivities.length})</h4>
-                      </div>
-                      <button
-                        onClick={() => handleAddActivity(lead)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                        title="Add activity"
-                      >
-                        <FaPlus className="w-3 h-3" />
-                        Add Activity
-                      </button>
-                    </div>
-                    {leadActivities.length > 0 && (
-                      <div className="space-y-3">
-                        {leadActivities.map((activity) => (
-                          <div key={activity.activityid} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow">
-                            {/* Activity Header */}
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                {getActivityIcon(activity.activitytypecode)}
-                                <span className="text-sm font-medium text-gray-700">
-                                  {activity.activitytypecode}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <div className="flex items-center gap-1">
-                                  <FaUser className="w-3 h-3" />
-                                  <span>{activity.creator.firstname} {activity.creator.lastname}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <FaClock className="w-3 h-3" />
-                                  <span>{formatTimestamp(activity.createdon)}</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Activity Details */}
-                            {activity.details && (
-                              <div>
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                              </div>
-      )}
-
-      {/* Create Activity Modal */}
-      {showCreateModal && selectedLead && (
-        <CreateActivity
-          leadId={selectedLead.leadid}
-          leadDescription={selectedLead.description}
-          onActivityCreated={handleActivityCreated}
-          onCancel={() => {
-            setShowCreateModal(false);
-            setSelectedLead(null);
-          }}
-        />
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Create Lead Modal */}
@@ -382,15 +251,6 @@ export default function Leads() {
           onLeadCreated={handleLeadCreated}
           onCancel={() => setShowCreateLeadModal(false)}
         />
-      )}
-    </div>
-  );
-})()}
-
-
-            </div>
-          ))}
-        </div>
       )}
     </div>
   );

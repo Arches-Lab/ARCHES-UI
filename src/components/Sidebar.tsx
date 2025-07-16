@@ -15,7 +15,10 @@ export default function Sidebar() {
 
   return (
     <aside className="w-60 bg-gray-800 text-white min-h-screen">
-      <div className="p-4 text-xl font-bold">ARCHES UI</div>
+      <div className="p-4 text-left">
+        <div className="text-xl font-bold">ARCHES</div>
+        <div className="text-sm text-gray-300">Bridging Processes</div>
+      </div>
       <nav className="flex flex-col">
         {links.map((link) => (
           <Link
