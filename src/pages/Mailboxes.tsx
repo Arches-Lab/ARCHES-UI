@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getMailboxes, createActivity } from '../api';
-import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaPlus, FaTimes, FaFilter, FaChevronLeft } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 
 interface Mailbox {
@@ -10,8 +10,15 @@ interface Mailbox {
   mailboxguid: string;
 }
 
+interface RangeFilter {
+  label: string;
+  min: number;
+  max: number;
+}
+
 export default function Mailboxes() {
   const [mailboxes, setMailboxes] = useState<Mailbox[]>([]);
+  const [filteredMailboxes, setFilteredMailboxes] = useState<Mailbox[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMailbox, setSelectedMailbox] = useState<Mailbox | null>(null);
@@ -19,7 +26,46 @@ export default function Mailboxes() {
   const [activityType, setActivityType] = useState('');
   const [activityDetails, setActivityDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState<RangeFilter | null>(null);
+  const [filterHistory, setFilterHistory] = useState<RangeFilter[]>([]);
   const { selectedStore } = useStore();
+
+  // Define the initial range filters
+  const getInitialRanges = (): RangeFilter[] => {
+    return [
+      { label: '100-199', min: 100, max: 199 },
+      { label: '200-299', min: 200, max: 299 },
+      { label: '300-399', min: 300, max: 399 },
+      { label: '400-499', min: 400, max: 499 },
+    ];
+  };
+
+  // Generate sub-ranges for a given range
+  const getSubRanges = (parentRange: RangeFilter): RangeFilter[] => {
+    const subRanges: RangeFilter[] = [];
+    const rangeSize = 50; // 50 boxes per sub-range
+    
+    for (let i = parentRange.min; i <= parentRange.max; i += rangeSize) {
+      const end = Math.min(i + rangeSize - 1, parentRange.max);
+      subRanges.push({
+        label: `${i}-${end}`,
+        min: i,
+        max: end
+      });
+    }
+    
+    return subRanges;
+  };
+
+  // Filter mailboxes based on current filter
+  const filterMailboxes = (mailboxes: Mailbox[], filter: RangeFilter | null): Mailbox[] => {
+    if (!filter) return mailboxes;
+    
+    return mailboxes.filter(mailbox => {
+      const mailboxNum = parseInt(mailbox.mailboxnumber);
+      return mailboxNum >= filter.min && mailboxNum <= filter.max;
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,7 +79,9 @@ export default function Mailboxes() {
         
         console.log('Mailboxes data:', mailboxesData);
         
-        setMailboxes(Array.isArray(mailboxesData) ? mailboxesData : []);
+        const mailboxesArray = Array.isArray(mailboxesData) ? mailboxesData : [];
+        setMailboxes(mailboxesArray);
+        setFilteredMailboxes(filterMailboxes(mailboxesArray, currentFilter));
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load data. Please try again later.');
@@ -49,10 +97,35 @@ export default function Mailboxes() {
     } else {
       // Clear data only when no store is selected
       setMailboxes([]);
+      setFilteredMailboxes([]);
       setLoading(false);
       setError(null);
     }
   }, [selectedStore]);
+
+  // Update filtered mailboxes when filter changes
+  useEffect(() => {
+    setFilteredMailboxes(filterMailboxes(mailboxes, currentFilter));
+  }, [mailboxes, currentFilter]);
+
+  const handleRangeSelect = (range: RangeFilter) => {
+    setCurrentFilter(range);
+    setFilterHistory(prev => [...prev, range]);
+  };
+
+  const handleBackToParent = () => {
+    const newHistory = [...filterHistory];
+    newHistory.pop(); // Remove current filter
+    const parentFilter = newHistory.length > 0 ? newHistory[newHistory.length - 1] : null;
+    
+    setFilterHistory(newHistory);
+    setCurrentFilter(parentFilter);
+  };
+
+  const handleClearFilters = () => {
+    setCurrentFilter(null);
+    setFilterHistory([]);
+  };
 
   const handleMailboxClick = (mailbox: Mailbox) => {
     setSelectedMailbox(mailbox);
@@ -125,6 +198,20 @@ export default function Mailboxes() {
     return 'text-gray-600 bg-gray-100';
   };
 
+  const getCurrentRanges = (): RangeFilter[] => {
+    if (!currentFilter) {
+      return getInitialRanges();
+    }
+    
+    // If we're at a 100-range, show 50-range sub-ranges
+    if (currentFilter.max - currentFilter.min >= 99) {
+      return getSubRanges(currentFilter);
+    }
+    
+    // If we're at a 50-range, show individual mailboxes (no more filtering)
+    return [];
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -148,6 +235,9 @@ export default function Mailboxes() {
     );
   }
 
+  const currentRanges = getCurrentRanges();
+  const showMailboxes = currentRanges.length === 0 && currentFilter;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -157,33 +247,99 @@ export default function Mailboxes() {
         </div>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
-            {mailboxes.length} mailbox{mailboxes.length !== 1 ? 'es' : ''}
+            {showMailboxes ? filteredMailboxes.length : mailboxes.length} mailbox{showMailboxes ? (filteredMailboxes.length !== 1 ? 'es' : '') : (mailboxes.length !== 1 ? 'es' : '')}
           </div>
+          {(currentFilter || filterHistory.length > 0) && (
+            <button
+              onClick={handleClearFilters}
+              className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <FaFilter className="w-4 h-4" />
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
-      {mailboxes.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
-          <FaInbox className="text-4xl text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Mailboxes</h3>
-          <p className="text-gray-600">You don't have any mailboxes configured at the moment.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-          {mailboxes.map((mailbox) => (
-            <div
-              key={mailbox.mailboxid}
-              className="aspect-square bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all hover:bg-gray-50 flex items-center justify-center cursor-pointer"
-              onClick={() => handleMailboxClick(mailbox)}
-            >
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-700">
-                  {mailbox.mailboxnumber}
-                </div>
-              </div>
-            </div>
+      {/* Filter Breadcrumb */}
+      {filterHistory.length > 0 && (
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <button
+            onClick={handleBackToParent}
+            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <FaChevronLeft className="w-3 h-3" />
+            Back
+          </button>
+          <span>/</span>
+          {filterHistory.map((filter, index) => (
+            <span key={index} className="text-gray-900 font-medium">
+              {filter.label}
+            </span>
           ))}
         </div>
+      )}
+
+      {/* Range Filters */}
+      {currentRanges.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+          {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {currentFilter ? `Select Range in ${currentFilter.label}` : 'Select Mailbox Range'}
+          </h3> */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {currentRanges.map((range) => {
+              const rangeMailboxes = filterMailboxes(mailboxes, range);
+              return (
+                <button
+                  key={range.label}
+                  onClick={() => handleRangeSelect(range)}
+                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-center"
+                >
+                  <div className="text-lg font-semibold text-gray-900">{range.label}</div>
+                  <div className="text-sm text-gray-600">{rangeMailboxes.length} mailboxes</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Mailboxes Grid */}
+      {showMailboxes && (
+        <>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Mailboxes {currentFilter?.label}
+            </h3>
+            <div className="text-sm text-gray-600">
+              {filteredMailboxes.length} mailbox{filteredMailboxes.length !== 1 ? 'es' : ''}
+            </div>
+          </div>
+
+          {filteredMailboxes.length === 0 ? (
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
+              <FaInbox className="text-4xl text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Mailboxes</h3>
+              <p className="text-gray-600">No mailboxes found in the selected range.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 xl:grid-cols-16 gap-3">
+              {filteredMailboxes.map((mailbox) => (
+                <div
+                  key={mailbox.mailboxid}
+                  className="aspect-square bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all hover:bg-gray-50 flex items-center justify-center cursor-pointer"
+                  onClick={() => handleMailboxClick(mailbox)}
+                >
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-gray-700">
+                      {mailbox.mailboxnumber}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Activity Modal */}
