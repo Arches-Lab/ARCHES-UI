@@ -151,34 +151,85 @@ export default function Leads() {
           <p className="text-gray-600">You don't have any leads at the moment.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {leads.map((lead) => (
-            <div
-              key={lead.leadid}
-              className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <FaStore className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">
-                      Store {lead.storenumber}
-                    </span>
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="divide-y divide-gray-200">
+            {leads.map((lead) => (
+              <div
+                key={lead.leadid}
+                className="p-6 transition-all hover:bg-gray-50"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <FaStore className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm font-medium text-gray-700">
+                        Store {lead.storenumber}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FaFlag className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {lead.status}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <FaFlag className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm font-medium text-gray-700">
-                      {lead.status}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
                       <FaClock className="w-3 h-3" />
                       <span>{formatTimestamp(lead.createdon)}</span>
                     </div>
+                    <button
+                      onClick={() => handleViewLead(lead.leadid)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                      title="View lead details"
+                    >
+                      <FaEye className="w-4 h-4" />
+                      View Details
+                    </button>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="mb-4">
+                  <p className="text-gray-700 whitespace-pre-wrap">{lead.description}</p>
+                </div>
+
+                {/* Contact Information */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    {lead.contactname && (
+                      <div className="flex items-center gap-2">
+                        <FaUserTie className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium">{lead.contactname}</span>
+                      </div>
+                    )}
+                    
+                    {lead.phone && (
+                      <div className="flex items-center gap-2">
+                        <FaPhone className="w-4 h-4 text-green-500" />
+                        <a 
+                          href={`tel:${lead.phone}`}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {formatPhone(lead.phone)}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {lead.email && (
+                      <div className="flex items-center gap-2">
+                        <FaEnvelope className="w-4 h-4 text-red-500" />
+                        <a 
+                          href={`mailto:${lead.email}`}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {lead.email}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <FaUser className="w-3 h-3" />
                       <span>Created by: {lead.creator.firstname} {lead.creator.lastname}</span>
@@ -190,58 +241,10 @@ export default function Leads() {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleViewLead(lead.leadid)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                    title="View lead details"
-                  >
-                    <FaEye className="w-4 h-4" />
-                    View Details
-                  </button>
                 </div>
               </div>
-
-              {/* Description */}
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Lead Description</h3>
-                <p className="text-gray-700 whitespace-pre-wrap">{lead.description}</p>
-              </div>
-
-              {/* Contact Information */}
-              <div className="space-y-3">
-                {lead.contactname && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <FaUserTie className="w-4 h-4 text-blue-500" />
-                    <span className="font-medium">{lead.contactname}</span>
-                  </div>
-                )}
-                
-                {lead.phone && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <FaPhone className="w-4 h-4 text-green-500" />
-                    <a 
-                      href={`tel:${lead.phone}`}
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      {formatPhone(lead.phone)}
-                    </a>
-                  </div>
-                )}
-                
-                {lead.email && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <FaEnvelope className="w-4 h-4 text-red-500" />
-                    <a 
-                      href={`mailto:${lead.email}`}
-                      className="text-blue-600 hover:text-blue-800 transition-colors"
-                    >
-                      {lead.email}
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 

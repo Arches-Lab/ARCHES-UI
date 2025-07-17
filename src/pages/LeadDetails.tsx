@@ -340,37 +340,39 @@ export default function LeadDetails() {
             <p className="text-gray-600">No activities have been added to this lead yet.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {leadActivities.map((activity) => (
-              <div key={activity.activityid} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                {/* Activity Header */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {getActivityIcon(activity.activitytypecode)}
-                    <span className="text-sm font-medium text-gray-700">
-                      {activity.activitytypecode}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-3 h-3" />
-                      <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-200">
+              {leadActivities.map((activity) => (
+                <div key={activity.activityid} className="p-4 transition-all hover:bg-gray-50">
+                  {/* Activity Header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {getActivityIcon(activity.activitytypecode)}
+                      <span className="text-sm font-medium text-gray-700">
+                        {activity.activitytypecode}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <FaClock className="w-3 h-3" />
-                      <span>{formatTimestamp(activity.createdon)}</span>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <FaUser className="w-3 h-3" />
+                        <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <FaClock className="w-3 h-3" />
+                        <span>{formatTimestamp(activity.createdon)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Activity Details */}
-                {activity.details && (
-                  <div>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+                  {/* Activity Details */}
+                  {activity.details && (
+                    <div>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
