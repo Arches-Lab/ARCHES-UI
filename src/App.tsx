@@ -7,6 +7,7 @@ import Employees from './pages/Employees';
 import Messages from './pages/Messages';
 import Leads from './pages/Leads';
 import LeadDetails from './pages/LeadDetails';
+import Mailboxes from './pages/Mailboxes';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -56,6 +57,7 @@ function App() {
               <Route path="messages" element={<Messages />} />
               <Route path="leads" element={<Leads />} />
               <Route path="leads/:leadId" element={<LeadDetails />} />
+              <Route path="mailboxes" element={<Mailboxes />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

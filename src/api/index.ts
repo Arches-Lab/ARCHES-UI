@@ -143,4 +143,9 @@ export const createActivity = async (activityData: {
   return data;
 };
 
+export const getMailboxes = async () => {
+  const { data } = await api.get('/mailboxes');
+  return data;
+};
+
 export default api;
