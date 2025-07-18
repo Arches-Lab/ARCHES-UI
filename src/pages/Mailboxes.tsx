@@ -54,7 +54,6 @@ export default function Mailboxes() {
   const [error, setError] = useState<string | null>(null);
   const [selectedMailbox, setSelectedMailbox] = useState<Mailbox | null>(null);
   const [showActivityModal, setShowActivityModal] = useState(false);
-  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
   const [selectedCannedActivity, setSelectedCannedActivity] = useState<string>('');
   const [customActivityType, setCustomActivityType] = useState('');
   const [activityDetails, setActivityDetails] = useState('');
@@ -178,12 +177,11 @@ export default function Mailboxes() {
 
   const handleMailboxClick = (mailbox: Mailbox) => {
     setSelectedMailbox(mailbox);
-    setShowActivityModal(true);
   };
 
-  const handleViewActivities = (mailbox: Mailbox) => {
+  const handleAddActivity = (mailbox: Mailbox) => {
     setSelectedMailbox(mailbox);
-    setShowActivitiesModal(true);
+    setShowActivityModal(true);
   };
 
   const handleCannedActivitySelect = (activityType: string) => {
@@ -224,7 +222,6 @@ export default function Mailboxes() {
       setCustomActivityType('');
       setActivityDetails('');
       setShowActivityModal(false);
-      setSelectedMailbox(null);
       
       console.log('Activity created successfully');
       
@@ -238,8 +235,6 @@ export default function Mailboxes() {
 
   const closeModal = () => {
     setShowActivityModal(false);
-    setShowActivitiesModal(false);
-    setSelectedMailbox(null);
     setSelectedCannedActivity('');
     setCustomActivityType('');
     setActivityDetails('');
@@ -310,11 +305,33 @@ export default function Mailboxes() {
   const showMailboxes = currentRanges.length === 0 && currentFilter;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="h-screen flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">
           <FaInbox className="text-3xl text-blue-600" />
-          <h2 className="text-2xl font-semibold">Mailboxes</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-semibold">Mailboxes</h2>
+            {/* Filter Breadcrumb */}
+            {filterHistory.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="text-gray-400">/</span>
+                <button
+                  onClick={handleBackToParent}
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  <FaChevronLeft className="w-3 h-3" />
+                  Back
+                </button>
+                <span>/</span>
+                {filterHistory.map((filter, index) => (
+                  <span key={index} className="text-gray-900 font-medium">
+                    {filter.label}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
@@ -332,110 +349,181 @@ export default function Mailboxes() {
         </div>
       </div>
 
-      {/* Filter Breadcrumb */}
-      {filterHistory.length > 0 && (
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <button
-            onClick={handleBackToParent}
-            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            <FaChevronLeft className="w-3 h-3" />
-            Back
-          </button>
-          <span>/</span>
-          {filterHistory.map((filter, index) => (
-            <span key={index} className="text-gray-900 font-medium">
-              {filter.label}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Range Filters */}
-      {currentRanges.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          {/* <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {currentFilter ? `Select Range in ${currentFilter.label}` : 'Select Mailbox Range'}
-          </h3> */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {currentRanges.map((range) => {
-              const rangeMailboxes = filterMailboxes(mailboxes, range);
-              return (
-                <button
-                  key={range.label}
-                  onClick={() => handleRangeSelect(range)}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-center"
-                >
-                  <div className="text-lg font-semibold text-gray-900">{range.label}</div>
-                  <div className="text-sm text-gray-600">{rangeMailboxes.length} mailboxes</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Mailboxes Grid */}
-      {showMailboxes && (
-        <>
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Mailboxes {currentFilter?.label}
-            </h3>
-            <div className="text-sm text-gray-600">
-              {filteredMailboxes.length} mailbox{filteredMailboxes.length !== 1 ? 'es' : ''}
-            </div>
-          </div>
-
-          {filteredMailboxes.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
-              <FaInbox className="text-4xl text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Mailboxes</h3>
-              <p className="text-gray-600">No mailboxes found in the selected range.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 xl:grid-cols-16 gap-3">
-              {filteredMailboxes.map((mailbox) => {
-                const mailboxActivities = getActivitiesForMailbox(mailbox.mailboxguid);
-                return (
-                  <div
-                    key={mailbox.mailboxid}
-                    className="aspect-square bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all hover:bg-gray-50 flex flex-col items-center justify-center cursor-pointer relative"
-                  >
-                    <div 
-                      className="text-center flex-1 flex items-center justify-center"
-                      onClick={() => handleMailboxClick(mailbox)}
+      {/* Main Content - Split Screen */}
+      <div className="flex-1 flex">
+        {/* Left Panel - Mailboxes */}
+        <div className="w-1/2 border-r border-gray-200 flex flex-col">
+          {/* Range Filters */}
+          {currentRanges.length > 0 && (
+            <div className="p-6 bg-white border-b border-gray-200">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {currentRanges.map((range) => {
+                  const rangeMailboxes = filterMailboxes(mailboxes, range);
+                  return (
+                    <button
+                      key={range.label}
+                      onClick={() => handleRangeSelect(range)}
+                      className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-center"
                     >
-                      <div className="text-lg font-bold text-gray-700">
-                        {mailbox.mailboxnumber}
-                      </div>
-                    </div>
-                    {mailboxActivities.length > 0 && (
-                      <div className="absolute top-1 right-1">
-                        <div className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {mailboxActivities.length}
-                        </div>
-                      </div>
-                    )}
-                    <div className="absolute bottom-1 right-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewActivities(mailbox);
-                        }}
-                        className="text-blue-600 hover:text-blue-800 p-1"
-                        title="View activities"
-                      >
-                        <FaEye className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                      <div className="text-lg font-semibold text-gray-900">{range.label}</div>
+                      <div className="text-sm text-gray-600">{rangeMailboxes.length} mailboxes</div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
-        </>
-      )}
+
+          {/* Mailboxes Grid */}
+          {showMailboxes && (
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Mailboxes {currentFilter?.label}
+                </h3>
+                <div className="text-sm text-gray-600">
+                  {filteredMailboxes.length} mailbox{filteredMailboxes.length !== 1 ? 'es' : ''}
+                </div>
+              </div>
+
+              {filteredMailboxes.length === 0 ? (
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
+                  <FaInbox className="text-4xl text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Mailboxes</h3>
+                  <p className="text-gray-600">No mailboxes found in the selected range.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                  {filteredMailboxes.map((mailbox) => {
+                    const mailboxActivities = getActivitiesForMailbox(mailbox.mailboxguid);
+                    const isSelected = selectedMailbox?.mailboxid === mailbox.mailboxid;
+                    return (
+                      <div
+                        key={mailbox.mailboxid}
+                        className={`aspect-square bg-white border rounded-lg shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center cursor-pointer relative ${
+                          isSelected 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:bg-gray-50'
+                        }`}
+                        onClick={() => handleMailboxClick(mailbox)}
+                      >
+                        <div className="text-center flex-1 flex items-center justify-center">
+                          <div className="text-lg font-bold text-gray-700">
+                            {mailbox.mailboxnumber}
+                          </div>
+                        </div>
+                        {mailboxActivities.length > 0 && (
+                          <div className="absolute top-1 right-1">
+                            <div className="bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                              {mailboxActivities.length}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - Activities */}
+        <div className="w-1/2 flex flex-col">
+          {selectedMailbox ? (
+            <>
+              {/* Activities Header */}
+              <div className="p-6 border-b border-gray-200 bg-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <FaListAlt className="text-2xl text-blue-600" />
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Mailbox {selectedMailbox.mailboxnumber}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {getActivitiesForMailbox(selectedMailbox.mailboxguid).length} activities
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleAddActivity(selectedMailbox)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    Add Activity
+                  </button>
+                </div>
+              </div>
+
+              {/* Activities List */}
+              <div className="flex-1 p-6 overflow-y-auto">
+                {(() => {
+                  const mailboxActivities = getActivitiesForMailbox(selectedMailbox.mailboxguid);
+                  return (
+                    <div>
+                      {mailboxActivities.length === 0 ? (
+                        <div className="text-center py-8">
+                          <FaListAlt className="text-4xl text-gray-400 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-900 mb-2">No Activities</h4>
+                          <p className="text-gray-600">No activities have been recorded for this mailbox yet.</p>
+                          <button
+                            onClick={() => handleAddActivity(selectedMailbox)}
+                            className="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+                          >
+                            <FaPlus className="w-4 h-4" />
+                            Add First Activity
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                          <div className="divide-y divide-gray-200">
+                            {mailboxActivities.map((activity) => (
+                              <div key={activity.activityid} className="p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <FaListAlt className="w-4 h-4 text-blue-500" />
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {activity.activitytypecode}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      <FaUser className="w-3 h-3" />
+                                      <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <FaClock className="w-3 h-3" />
+                                      <span>{formatTimestamp(activity.createdon)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                {activity.details && (
+                                  <div>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <FaInbox className="text-4xl text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Mailbox</h3>
+                <p className="text-gray-600">Click on a mailbox to view its activities</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Activity Modal */}
       {showActivityModal && selectedMailbox && (
@@ -539,70 +627,6 @@ export default function Mailboxes() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Activities View Modal */}
-      {showActivitiesModal && selectedMailbox && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Activities for Mailbox {selectedMailbox.mailboxnumber}
-              </h3>
-              <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-
-            {(() => {
-              const mailboxActivities = getActivitiesForMailbox(selectedMailbox.mailboxguid);
-              return (
-                <div>
-                  {mailboxActivities.length === 0 ? (
-                    <div className="text-center py-8">
-                      <FaListAlt className="text-4xl text-gray-400 mx-auto mb-4" />
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">No Activities</h4>
-                      <p className="text-gray-600">No activities have been recorded for this mailbox yet.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {mailboxActivities.map((activity) => (
-                        <div key={activity.activityid} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <FaListAlt className="w-4 h-4 text-blue-500" />
-                              <span className="text-sm font-medium text-gray-700">
-                                {activity.activitytypecode}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <FaUser className="w-3 h-3" />
-                                <span>{activity.creator.firstname} {activity.creator.lastname}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <FaClock className="w-3 h-3" />
-                                <span>{formatTimestamp(activity.createdon)}</span>
-                              </div>
-                            </div>
-                          </div>
-                          {activity.details && (
-                            <div>
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
           </div>
         </div>
       )}
