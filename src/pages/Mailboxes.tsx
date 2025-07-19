@@ -34,16 +34,10 @@ interface RangeFilter {
 
 // Canned activities for quick selection
 const CANNED_ACTIVITIES = [
-  { type: 'OTHER', details: 'Checked mailbox for mail', icon: <FaInbox /> },
-  { type: 'OTHER', details: 'Picked up mail from mailbox', icon: <FaEnvelope /> },
-  { type: 'OTHER', details: 'Performed maintenance on mailbox', icon: <FaWrench /> },
-  { type: 'OTHER', details: 'Reported issue with mailbox', icon: <FaExclamationTriangle /> },
-  { type: 'OTHER', details: 'Checked mailbox lock functionality', icon: <FaLock /> },
-  { type: 'OTHER', details: 'Issued new key for mailbox', icon: <FaKey /> },
-  { type: 'OTHER', details: 'Returned key for mailbox', icon: <FaKey /> },
-  { type: 'VOICEMAIL', details: 'Left voicemail', icon: <FaPhone /> },
-  { type: 'EMAIL', details: 'Emailed customer', icon: <FaEnvelope /> },
-  { type: 'PHONE', details: 'Called customer', icon: <FaPhone /> },
+  { type: 'OTHER', details: 'Checked mailbox for customer' },
+  { type: 'VOICEMAIL', details: 'Left voicemail' },
+  { type: 'EMAIL', details: 'Emailed customer' },
+  { type: 'PHONE', details: 'Called customer'},
 ];
 
 // Activity types for custom activities
@@ -496,20 +490,25 @@ export default function Mailboxes() {
                       
                       {showCannedDropdown && (
                         <div className="absolute right-0 top-full mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto min-w-[250px]">
-                          {CANNED_ACTIVITIES.map((activity) => (
-                            <button
-                              key={activity.type + activity.details}
-                              type="button"
-                              onClick={() => handleCannedActivitySelect(activity.type, activity.details)}
-                              disabled={submitting}
-                              className="w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">{activity.icon}</span>
-                                <span className="text-sm">{activity.details}</span>
-                              </div>
-                            </button>
-                          ))}
+                          {CANNED_ACTIVITIES.map((activity) => {
+                            const activityType = ACTIVITY_TYPES.find(type => type.type === activity.type);
+                            const activityIcon = activityType ? activityType.icon : <FaListAlt />;
+                            
+                            return (
+                              <button
+                                key={activity.type + activity.details}
+                                type="button"
+                                onClick={() => handleCannedActivitySelect(activity.type, activity.details)}
+                                disabled={submitting}
+                                className="w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{activityIcon}</span>
+                                  <span className="text-sm">{activity.details}</span>
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -546,33 +545,38 @@ export default function Mailboxes() {
                       ) : (
                         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                           <div className="divide-y divide-gray-200">
-                            {mailboxActivities.map((activity) => (
-                              <div key={activity.activityid} className="p-4">
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <FaListAlt className="w-4 h-4 text-blue-500" />
-                                    <span className="text-sm font-medium text-gray-700">
-                                      {activity.activitytypecode}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <div className="flex items-center gap-1">
-                                      <FaUser className="w-3 h-3" />
-                                      <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                            {mailboxActivities.map((activity) => {
+                              const activityType = ACTIVITY_TYPES.find(type => type.type === activity.activitytypecode);
+                              const activityIcon = activityType ? activityType.icon : <FaListAlt />;
+                              
+                              return (
+                                <div key={activity.activityid} className="p-4">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-4 h-4 text-blue-500">{activityIcon}</span>
+                                      <span className="text-sm font-medium text-gray-700">
+                                        {activity.activitytypecode}
+                                      </span>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                      <FaClock className="w-3 h-3" />
-                                      <span>{formatTimestamp(activity.createdon)}</span>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                      <div className="flex items-center gap-1">
+                                        <FaUser className="w-3 h-3" />
+                                        <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <FaClock className="w-3 h-3" />
+                                        <span>{formatTimestamp(activity.createdon)}</span>
+                                      </div>
                                     </div>
                                   </div>
+                                  {activity.details && (
+                                    <div>
+                                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
+                                    </div>
+                                  )}
                                 </div>
-                                {activity.details && (
-                                  <div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
                       )}
