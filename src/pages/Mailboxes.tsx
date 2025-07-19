@@ -534,13 +534,13 @@ export default function Mailboxes() {
                           <FaListAlt className="text-4xl text-gray-400 mx-auto mb-4" />
                           <h4 className="text-lg font-medium text-gray-900 mb-2">No Activities</h4>
                           <p className="text-gray-600">No activities have been recorded for this mailbox yet.</p>
-                          <button
+                          {/* <button
                             onClick={() => handleAddActivity(selectedMailbox)}
                             className="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
                           >
                             <FaPlus className="w-4 h-4" />
                             Add First Activity
-                          </button>
+                          </button> */}
                         </div>
                       ) : (
                         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
