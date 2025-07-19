@@ -161,12 +161,12 @@ export default function Leads() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <FaStore className="w-4 h-4 text-gray-500" />
                       <span className="text-sm font-medium text-gray-700">
                         Store {lead.storenumber}
                       </span>
-                    </div>
+                    </div> */}
                     <div className="flex items-center gap-2">
                       <FaFlag className="w-4 h-4 text-blue-500" />
                       <span className="text-sm font-medium text-gray-700">
