@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getMailboxes, createActivity, getActivities } from '../api';
-import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaPlus, FaTimes, FaFilter, FaChevronLeft, FaListAlt, FaEye } from 'react-icons/fa';
+import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaPlus, FaTimes, FaFilter, FaChevronLeft, FaListAlt, FaEye, FaWrench, FaLock, FaKey, FaPhone, FaChevronDown } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 
 interface Mailbox {
@@ -34,16 +34,16 @@ interface RangeFilter {
 
 // Canned activities for quick selection
 const CANNED_ACTIVITIES = [
-  { type: 'OTHER', details: 'Checked mailbox for mail' },
-  { type: 'OTHER', details: 'Picked up mail from mailbox' },
-  { type: 'OTHER', details: 'Performed maintenance on mailbox' },
-  { type: 'OTHER', details: 'Reported issue with mailbox' },
-  { type: 'OTHER', details: 'Checked mailbox lock functionality' },
-  { type: 'OTHER', details: 'Issued new key for mailbox' },
-  { type: 'OTHER', details: 'Returned key for mailbox' },
-  { type: 'VOICEMAIL', details: 'Left voicemail' },
-  { type: 'EMAIL', details: 'Emailed customer' },
-  { type: 'PHONE', details: 'Called customer' },
+  { type: 'OTHER', details: 'Checked mailbox for mail', icon: <FaInbox /> },
+  { type: 'OTHER', details: 'Picked up mail from mailbox', icon: <FaEnvelope /> },
+  { type: 'OTHER', details: 'Performed maintenance on mailbox', icon: <FaWrench /> },
+  { type: 'OTHER', details: 'Reported issue with mailbox', icon: <FaExclamationTriangle /> },
+  { type: 'OTHER', details: 'Checked mailbox lock functionality', icon: <FaLock /> },
+  { type: 'OTHER', details: 'Issued new key for mailbox', icon: <FaKey /> },
+  { type: 'OTHER', details: 'Returned key for mailbox', icon: <FaKey /> },
+  { type: 'VOICEMAIL', details: 'Left voicemail', icon: <FaPhone /> },
+  { type: 'EMAIL', details: 'Emailed customer', icon: <FaEnvelope /> },
+  { type: 'PHONE', details: 'Called customer', icon: <FaPhone /> },
 ];
 
 export default function Mailboxes() {
@@ -58,6 +58,7 @@ export default function Mailboxes() {
   const [customActivityType, setCustomActivityType] = useState('');
   const [activityDetails, setActivityDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showCannedDropdown, setShowCannedDropdown] = useState(false);
   const [currentFilter, setCurrentFilter] = useState<RangeFilter | null>(null);
   const [filterHistory, setFilterHistory] = useState<RangeFilter[]>([]);
   const { selectedStore } = useStore();
@@ -184,11 +185,35 @@ export default function Mailboxes() {
     setShowActivityModal(true);
   };
 
-  const handleCannedActivitySelect = (activityType: string) => {
-    setSelectedCannedActivity(activityType);
-    const cannedActivity = CANNED_ACTIVITIES.find(activity => activity.type === activityType);
-    if (cannedActivity) {
-      setActivityDetails(cannedActivity.details);
+  const handleCannedActivitySelect = async (activityType: string, activityDetails: string) => {
+    if (!selectedMailbox) return;
+
+    try {
+      setSubmitting(true);
+      
+      await createActivity({
+        storenumber: selectedMailbox.storenumber,
+        parentid: selectedMailbox.mailboxguid,
+        parenttypecode: 'MAILBOX',
+        activitytypecode: activityType.trim(),
+        details: activityDetails.trim()
+      });
+
+      // Refresh activities
+      const activitiesData = await getActivities();
+      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+
+      // Close dropdown and modal
+      setShowCannedDropdown(false);
+      setShowActivityModal(false);
+      
+      console.log('Canned activity created successfully');
+      
+    } catch (error) {
+      console.error('Error creating canned activity:', error);
+      setError('Failed to create activity. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -197,8 +222,7 @@ export default function Mailboxes() {
     
     if (!selectedMailbox) return;
     
-    const finalActivityType = selectedCannedActivity || customActivityType;
-    if (!finalActivityType.trim() || !activityDetails.trim()) {
+    if (!activityDetails.trim()) {
       return;
     }
 
@@ -209,7 +233,7 @@ export default function Mailboxes() {
         storenumber: selectedMailbox.storenumber,
         parentid: selectedMailbox.mailboxguid,
         parenttypecode: 'MAILBOX',
-        activitytypecode: finalActivityType.trim(),
+        activitytypecode: 'CUSTOM',
         details: activityDetails.trim()
       });
 
@@ -218,12 +242,11 @@ export default function Mailboxes() {
       setActivities(Array.isArray(activitiesData) ? activitiesData : []);
 
       // Reset form and close modal
-      setSelectedCannedActivity('');
-      setCustomActivityType('');
       setActivityDetails('');
       setShowActivityModal(false);
+      setShowCannedDropdown(false);
       
-      console.log('Activity created successfully');
+      console.log('Custom activity created successfully');
       
     } catch (error) {
       console.error('Error creating activity:', error);
@@ -235,9 +258,8 @@ export default function Mailboxes() {
 
   const closeModal = () => {
     setShowActivityModal(false);
-    setSelectedCannedActivity('');
-    setCustomActivityType('');
     setActivityDetails('');
+    setShowCannedDropdown(false);
   };
 
   const formatTimestamp = (timestamp: string | null) => {
@@ -546,46 +568,43 @@ export default function Mailboxes() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Select Activity Type
                 </label>
-                <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
-                  {CANNED_ACTIVITIES.map((activity) => (
-                    <button
-                      key={activity.type}
-                      type="button"
-                      onClick={() => handleCannedActivitySelect(activity.type)}
-                      className={`p-3 text-left border rounded-md transition-colors ${
-                        selectedCannedActivity === activity.type
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="font-medium">{activity.type}</div>
-                      <div className="text-sm text-gray-600">{activity.details}</div>
-                    </button>
-                  ))}
+                <div className="w-full">
+                  <button
+                    type="button"
+                    onClick={() => setShowCannedDropdown(!showCannedDropdown)}
+                    disabled={submitting}
+                    className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span>Add Canned Message</span>
+                    <FaChevronDown className={`w-4 h-4 transition-transform ${showCannedDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {showCannedDropdown && (
+                    <div className="relative">
+                      <div className="absolute left-0 top-full mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto w-full">
+                        {CANNED_ACTIVITIES.map((activity) => (
+                          <button
+                            key={activity.type + activity.details}
+                            type="button"
+                            onClick={() => handleCannedActivitySelect(activity.type, activity.details)}
+                            disabled={submitting}
+                            className="w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{activity.icon}</span>
+                              <span className="text-sm">{activity.details}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div>
-                <label htmlFor="customActivityType" className="block text-sm font-medium text-gray-700 mb-2">
-                  Or Enter Custom Activity Type
-                </label>
-                <input
-                  id="customActivityType"
-                  type="text"
-                  value={customActivityType}
-                  onChange={(e) => {
-                    setCustomActivityType(e.target.value);
-                    setSelectedCannedActivity('');
-                  }}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter custom activity type"
-                  disabled={submitting}
-                />
-              </div>
-
-              <div>
                 <label htmlFor="activityDetails" className="block text-sm font-medium text-gray-700 mb-2">
-                  Details
+                  Details (Optional)
                 </label>
                 <textarea
                   id="activityDetails"
@@ -593,8 +612,7 @@ export default function Mailboxes() {
                   onChange={(e) => setActivityDetails(e.target.value)}
                   rows={3}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Describe the activity..."
-                  required
+                  placeholder="Add additional details to the canned message..."
                   disabled={submitting}
                 />
               </div>
@@ -602,7 +620,7 @@ export default function Mailboxes() {
               <div className="flex items-center gap-3 pt-4">
                 <button
                   type="submit"
-                  disabled={submitting || (!selectedCannedActivity && !customActivityType.trim()) || !activityDetails.trim()}
+                  disabled={submitting || !activityDetails.trim()}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {submitting ? (
