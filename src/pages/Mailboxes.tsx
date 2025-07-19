@@ -483,13 +483,44 @@ export default function Mailboxes() {
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleAddActivity(selectedMailbox)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                  >
-                    <FaPlus className="w-4 h-4" />
-                    Add Activity
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowCannedDropdown(!showCannedDropdown)}
+                        disabled={submitting}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      > 
+                        <span>Add Canned Activity</span>
+                        <FaChevronDown className={`w-4 h-4 transition-transform ${showCannedDropdown ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {showCannedDropdown && (
+                        <div className="absolute right-0 top-full mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto min-w-[250px]">
+                          {CANNED_ACTIVITIES.map((activity) => (
+                            <button
+                              key={activity.type + activity.details}
+                              type="button"
+                              onClick={() => handleCannedActivitySelect(activity.type, activity.details)}
+                              disabled={submitting}
+                              className="w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{activity.icon}</span>
+                                <span className="text-sm">{activity.details}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleAddActivity(selectedMailbox)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <FaPlus className="w-4 h-4" />
+                        New Activity
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -580,53 +611,12 @@ export default function Mailboxes() {
             </div>
 
             <form onSubmit={handleCreateActivity} className="space-y-4">
-              <div>
-                {/* <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Activity Type
-                </label> */}
-                <div className="w-full">
-                  <button
-                    type="button"
-                    onClick={() => setShowCannedDropdown(!showCannedDropdown)}
-                    disabled={submitting}
-                    className="w-full flex items-center justify-between px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span>Add Canned Message</span>
-                    <FaChevronDown className={`w-4 h-4 transition-transform ${showCannedDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {showCannedDropdown && (
-                    <div className="relative">
-                      <div className="absolute left-0 top-full mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto w-full">
-                        {CANNED_ACTIVITIES.map((activity) => (
-                          <button
-                            key={activity.type + activity.details}
-                            type="button"
-                            onClick={() => handleCannedActivitySelect(activity.type, activity.details)}
-                            disabled={submitting}
-                            className="w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-lg">{activity.icon}</span>
-                              <span className="text-sm">{activity.details}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-gray-200 my-6"></div>
-
               {/* Custom Activity Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                {/* <label className="block text-sm font-medium text-gray-700 mb-3">
                   Create New Activity
-                </label>
-
+                </label> */}
+                
                 {/* Activity Type Icons */}
                 <div className="mb-4">
                   <label className="block text-xs font-medium text-gray-600 mb-2">
@@ -657,7 +647,7 @@ export default function Mailboxes() {
                 {/* Activity Details */}
                 <div>
                   <label htmlFor="activityDetails" className="block text-xs font-medium text-gray-600 mb-2">
-                    Activity Details
+                    Description
                   </label>
                   <textarea
                     id="activityDetails"
