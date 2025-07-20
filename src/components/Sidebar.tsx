@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus } from 'react-icons/fa';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
   { to: '/employees', label: 'Employees', icon: <FaUsers /> },
+  { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
   { to: '/messages', label: 'Messages', icon: <FaEnvelope /> },
   { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },
@@ -16,9 +17,12 @@ export default function Sidebar() {
 
   return (
     <aside className="w-60 bg-gray-800 text-white min-h-screen">
-      <div className="p-4 text-left">
-        <div className="text-xl font-bold">ARCHES</div>
-        <div className="text-sm text-gray-300">Bridging Processes</div>
+      <div className="w-full">
+        <img 
+          src="/images/logos/Logo5.jpg" 
+          alt="Arches Logo" 
+          className="w-full h-auto"
+        />
       </div>
       <nav className="flex flex-col">
         {links.map((link) => (

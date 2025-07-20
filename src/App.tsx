@@ -4,6 +4,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Login from './components/Login';
 import Employees from './pages/Employees';
+import NewUser from './pages/NewUser';
 import Messages from './pages/Messages';
 import Leads from './pages/Leads';
 import LeadDetails from './pages/LeadDetails';
@@ -54,6 +55,7 @@ function App() {
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
               <Route path="employees" element={<Employees />} />
+              <Route path="newuser" element={<NewUser />} />
               <Route path="messages" element={<Messages />} />
               <Route path="leads" element={<Leads />} />
               <Route path="leads/:leadId" element={<LeadDetails />} />
