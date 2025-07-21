@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getLeads, getActivities } from '../api';
-import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
-import CreateActivity from '../components/CreateActivity';
+import ActivityCreation from '../components/ActivityCreation';
 
 interface Lead {
   leadid: string;
@@ -51,7 +51,6 @@ export default function LeadDetails() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -121,13 +120,7 @@ export default function LeadDetails() {
     return activities.filter(activity => activity.parenttypecode === 'LEAD' && activity.parentid === leadId);
   };
 
-  const handleAddActivity = () => {
-    setShowCreateModal(true);
-  };
-
   const handleActivityCreated = async () => {
-    setShowCreateModal(false);
-    
     // Refresh activities data
     try {
       const activitiesData = await getActivities();
@@ -171,6 +164,8 @@ export default function LeadDetails() {
     // Default icon
     return <FaListAlt className="w-4 h-4 text-gray-400" />;
   };
+
+
 
   if (loading) {
     return (
@@ -324,15 +319,17 @@ export default function LeadDetails() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <FaListAlt className="w-4 h-4 text-purple-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Activities ({leadActivities.length})</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Activities ({leadActivities.length})
+            </h3>
           </div>
-          <button
-            onClick={handleAddActivity}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          >
-            <FaPlus className="w-4 h-4" />
-            Add Activity
-          </button>
+          <ActivityCreation
+            parentId={lead.leadid}
+            parentType="LEAD"
+            parentName={`Lead ${lead.leadid}`}
+            storeNumber={selectedStore || 1}
+            onActivityCreated={handleActivityCreated}
+          />
         </div>
         
         {leadActivities.length === 0 ? (
@@ -378,16 +375,6 @@ export default function LeadDetails() {
           </div>
         )}
       </div>
-
-      {/* Create Activity Modal */}
-      {showCreateModal && (
-        <CreateActivity
-          leadId={lead.leadid}
-          leadDescription={lead.description}
-          onActivityCreated={handleActivityCreated}
-          onCancel={() => setShowCreateModal(false)}
-        />
-      )}
     </div>
   );
 } 

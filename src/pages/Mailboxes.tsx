@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getMailboxes, createActivity, getActivities } from '../api';
-import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaPlus, FaTimes, FaFilter, FaChevronLeft, FaListAlt, FaEye, FaWrench, FaLock, FaKey, FaPhone, FaChevronDown, FaDollarSign } from 'react-icons/fa';
+import { getMailboxes, getActivities } from '../api';
+import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaFilter, FaChevronLeft, FaListAlt, FaEye, FaWrench, FaLock, FaKey, FaPhone, FaDollarSign, FaVoicemail, FaCalendar, FaComment, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
+import ActivityCreation from '../components/ActivityCreation';
 
 interface Mailbox {
   mailboxid: string;
@@ -32,26 +33,7 @@ interface RangeFilter {
   max: number;
 }
 
-// Canned activities for quick selection
-const CANNED_ACTIVITIES = [
-  { type: 'OTHER', details: 'Checked mailbox for customer' },
-  { type: 'VOICEMAIL', details: 'Left voicemail' },
-  { type: 'EMAIL', details: 'Emailed customer' },
-  { type: 'PHONE', details: 'Called customer'},
-];
 
-// Activity types for custom activities
-const ACTIVITY_TYPES = [
-  { type: 'PHONE', label: 'Phone', icon: <FaPhone /> },
-  { type: 'VOICEMAIL', label: 'Voicemail', icon: <FaPhone /> },
-  { type: 'EMAIL', label: 'Email', icon: <FaEnvelope /> },
-  { type: 'FAX', label: 'Fax', icon: <FaEnvelope /> },
-  { type: 'FOLLOWUP', label: 'Follow Up', icon: <FaClock /> },
-  { type: 'MEETING', label: 'Meeting', icon: <FaUser /> },
-  { type: 'NOTE', label: 'Note', icon: <FaListAlt /> },
-  { type: 'QUOTE', label: 'Quote', icon: <FaDollarSign /> },
-  { type: 'OTHER', label: 'Other', icon: <FaInbox /> },
-];
 
 export default function Mailboxes() {
   const [mailboxes, setMailboxes] = useState<Mailbox[]>([]);
@@ -60,12 +42,7 @@ export default function Mailboxes() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMailbox, setSelectedMailbox] = useState<Mailbox | null>(null);
-  const [showActivityModal, setShowActivityModal] = useState(false);
-  const [selectedCannedActivity, setSelectedCannedActivity] = useState<string>('');
-  const [customActivityType, setCustomActivityType] = useState('');
-  const [activityDetails, setActivityDetails] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [showCannedDropdown, setShowCannedDropdown] = useState(false);
+
   const [currentFilter, setCurrentFilter] = useState<RangeFilter | null>(null);
   const [filterHistory, setFilterHistory] = useState<RangeFilter[]>([]);
   const { selectedStore } = useStore();
@@ -187,88 +164,39 @@ export default function Mailboxes() {
     setSelectedMailbox(mailbox);
   };
 
-  const handleAddActivity = (mailbox: Mailbox) => {
-    setSelectedMailbox(mailbox);
-    setShowActivityModal(true);
-  };
-
-  const handleCannedActivitySelect = async (activityType: string, activityDetails: string) => {
-    if (!selectedMailbox) return;
-
-    try {
-      setSubmitting(true);
-      
-      await createActivity({
-        storenumber: selectedMailbox.storenumber,
-        parentid: selectedMailbox.mailboxguid,
-        parenttypecode: 'MAILBOX',
-        activitytypecode: activityType.trim(),
-        details: activityDetails.trim()
-      });
-
-      // Refresh activities
-      const activitiesData = await getActivities();
-      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
-
-      // Close dropdown and modal
-      setShowCannedDropdown(false);
-      setShowActivityModal(false);
-      
-      console.log('Canned activity created successfully');
-      
-    } catch (error) {
-      console.error('Error creating canned activity:', error);
-      setError('Failed to create activity. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleCreateActivity = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const getActivityIcon = (activityType: string) => {
+    const type = activityType.toLowerCase();
     
-    if (!selectedMailbox || !selectedCannedActivity) return;
+    if (type.includes('phone') || type.includes('call')) {
+      return <FaPhone className="w-4 h-4 text-green-500" />;
+    }
+    if (type.includes('voice') || type.includes('voicemail')) {
+      return <FaVoicemail className="w-4 h-4 text-blue-500" />;
+    }
+    if (type.includes('email') || type.includes('mail')) {
+      return <FaEnvelope className="w-4 h-4 text-red-500" />;
+    }
+    if (type.includes('meeting') || type.includes('appointment')) {
+      return <FaCalendar className="w-4 h-4 text-purple-500" />;
+    }
+    if (type.includes('note') || type.includes('comment')) {
+      return <FaComment className="w-4 h-4 text-gray-500" />;
+    }
+    if (type.includes('document') || type.includes('file')) {
+      return <FaFileAlt className="w-4 h-4 text-orange-500" />;
+    }
+    if (type.includes('follow') || type.includes('follow-up')) {
+      return <FaHandshake className="w-4 h-4 text-teal-500" />;
+    }
+    if (type.includes('quote') || type.includes('proposal')) {
+      return <FaChartLine className="w-4 h-4 text-indigo-500" />;
+    }
+    if (type.includes('issue') || type.includes('problem')) {
+      return <FaExclamationCircle className="w-4 h-4 text-red-500" />;
+    }
     
-    if (!activityDetails.trim()) {
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      
-      await createActivity({
-        storenumber: selectedMailbox.storenumber,
-        parentid: selectedMailbox.mailboxguid,
-        parenttypecode: 'MAILBOX',
-        activitytypecode: selectedCannedActivity.trim(),
-        details: activityDetails.trim()
-      });
-
-      // Refresh activities
-      const activitiesData = await getActivities();
-      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
-
-      // Reset form and close modal
-      setSelectedCannedActivity('');
-      setActivityDetails('');
-      setShowActivityModal(false);
-      setShowCannedDropdown(false);
-      
-      console.log('Custom activity created successfully');
-      
-    } catch (error) {
-      console.error('Error creating activity:', error);
-      setError('Failed to create activity. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const closeModal = () => {
-    setShowActivityModal(false);
-    setSelectedCannedActivity('');
-    setActivityDetails('');
-    setShowCannedDropdown(false);
+    // Default icon
+    return <FaListAlt className="w-4 h-4 text-gray-400" />;
   };
 
   const formatTimestamp = (timestamp: string | null) => {
@@ -463,97 +391,49 @@ export default function Mailboxes() {
         <div className="w-1/2 flex flex-col">
           {selectedMailbox ? (
             <>
-              {/* Activities Header */}
-              <div className="p-6 border-b border-gray-200 bg-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FaListAlt className="text-2xl text-blue-600" />
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        Mailbox {selectedMailbox.mailboxnumber}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {getActivitiesForMailbox(selectedMailbox.mailboxguid).length} activities
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowCannedDropdown(!showCannedDropdown)}
-                        disabled={submitting}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      > 
-                        <span>Add Canned Activity</span>
-                        <FaChevronDown className={`w-4 h-4 transition-transform ${showCannedDropdown ? 'rotate-180' : ''}`} />
-                      </button>
-                      
-                      {showCannedDropdown && (
-                        <div className="absolute right-0 top-full mt-1 z-10 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto min-w-[250px]">
-                          {CANNED_ACTIVITIES.map((activity) => {
-                            const activityType = ACTIVITY_TYPES.find(type => type.type === activity.type);
-                            const activityIcon = activityType ? activityType.icon : <FaListAlt />;
-                            
-                            return (
-                              <button
-                                key={activity.type + activity.details}
-                                type="button"
-                                onClick={() => handleCannedActivitySelect(activity.type, activity.details)}
-                                disabled={submitting}
-                                className="w-full p-3 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors last:border-b-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg">{activityIcon}</span>
-                                  <span className="text-sm">{activity.details}</span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleAddActivity(selectedMailbox)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                    >
-                      <FaPlus className="w-4 h-4" />
-                        New Activity
-                    </button>
-                  </div>
-                </div>
-              </div>
+
 
               {/* Activities List */}
               <div className="flex-1 p-6 overflow-y-auto">
-                {(() => {
-                  const mailboxActivities = getActivitiesForMailbox(selectedMailbox.mailboxguid);
-                  return (
-                    <div>
-                      {mailboxActivities.length === 0 ? (
-                        <div className="text-center py-8">
-                          <FaListAlt className="text-4xl text-gray-400 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-900 mb-2">No Activities</h4>
-                          <p className="text-gray-600">No activities have been recorded for this mailbox yet.</p>
-                          {/* <button
-                            onClick={() => handleAddActivity(selectedMailbox)}
-                            className="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
-                          >
-                            <FaPlus className="w-4 h-4" />
-                            Add First Activity
-                          </button> */}
-                        </div>
-                      ) : (
-                        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                          <div className="divide-y divide-gray-200">
-                            {mailboxActivities.map((activity) => {
-                              const activityType = ACTIVITY_TYPES.find(type => type.type === activity.activitytypecode);
-                              const activityIcon = activityType ? activityType.icon : <FaListAlt />;
-                              
-                              return (
-                                <div key={activity.activityid} className="p-4">
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <FaListAlt className="w-4 h-4 text-purple-500" />
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Activities ({getActivitiesForMailbox(selectedMailbox.mailboxguid).length})
+                      </h3>
+                    </div>
+                    <ActivityCreation
+                      parentId={selectedMailbox.mailboxguid}
+                      parentType="MAILBOX"
+                      parentName={`Mailbox ${selectedMailbox.mailboxnumber}`}
+                      storeNumber={selectedStore || 1}
+                      onActivityCreated={async () => {
+                        const activitiesData = await getActivities();
+                        setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+                      }}
+                    />
+                  </div>
+                  
+                  {(() => {
+                    const mailboxActivities = getActivitiesForMailbox(selectedMailbox.mailboxguid);
+                    return (
+                      <div>
+                        {mailboxActivities.length === 0 ? (
+                          <div className="text-center py-8">
+                            <FaListAlt className="text-4xl text-gray-400 mx-auto mb-4" />
+                            <h4 className="text-lg font-medium text-gray-900 mb-2">No Activities</h4>
+                            <p className="text-gray-600">No activities have been recorded for this mailbox yet.</p>
+                          </div>
+                        ) : (
+                          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                            <div className="divide-y divide-gray-200">
+                              {mailboxActivities.map((activity) => (
+                                <div key={activity.activityid} className="p-4 transition-all hover:bg-gray-50">
+                                  {/* Activity Header */}
                                   <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
-                                      <span className="w-4 h-4 text-blue-500">{activityIcon}</span>
+                                      {getActivityIcon(activity.activitytypecode)}
                                       <span className="text-sm font-medium text-gray-700">
                                         {activity.activitytypecode}
                                       </span>
@@ -569,20 +449,22 @@ export default function Mailboxes() {
                                       </div>
                                     </div>
                                   </div>
+
+                                  {/* Activity Details */}
                                   {activity.details && (
                                     <div>
                                       <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
                                     </div>
                                   )}
                                 </div>
-                              );
-                            })}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             </>
           ) : (
@@ -597,106 +479,7 @@ export default function Mailboxes() {
         </div>
       </div>
 
-      {/* Activity Modal */}
-      {showActivityModal && selectedMailbox && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                New Activity for Mailbox {selectedMailbox.mailboxnumber}
-              </h3>
 
-              <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateActivity} className="space-y-4">
-              {/* Custom Activity Section */}
-              <div>
-                {/* <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Create New Activity
-                </label> */}
-                
-                {/* Activity Type Icons */}
-                <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-600 mb-2">
-                    Select Activity Type
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {ACTIVITY_TYPES.map((type) => (
-                      <button
-                        key={type.type}
-                        type="button"
-                        onClick={() => setSelectedCannedActivity(type.type)}
-                        className={`p-3 border rounded-md transition-colors text-left ${
-                          selectedCannedActivity === type.type
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                        disabled={submitting}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{type.icon}</span>
-                          <span className="text-xs">{type.label}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Activity Details */}
-                <div>
-                  <label htmlFor="activityDetails" className="block text-xs font-medium text-gray-600 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    id="activityDetails"
-                    value={activityDetails}
-                    onChange={(e) => setActivityDetails(e.target.value)}
-                    rows={3}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Describe the activity..."
-                    required
-                    disabled={submitting}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={submitting || !selectedCannedActivity || !activityDetails.trim()}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {submitting ? (
-                    <>
-                      <FaSpinner className="animate-spin w-4 h-4" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <FaPlus className="w-4 h-4" />
-                      Create Activity
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={submitting}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 } 
