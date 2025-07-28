@@ -12,7 +12,7 @@ export default function Header() {
       <div className="flex items-center gap-4">
         {/* Environment Banner */}
         <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-          config.environment === 'production' 
+          config.environment === 'PRODUCTION' 
             ? 'bg-red-100 text-red-800' 
             : 'bg-yellow-300 text-yellow-900'
         }`}>
