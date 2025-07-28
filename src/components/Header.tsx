@@ -17,12 +17,12 @@ export default function Header() {
             {user.picture && (
               <img 
                 src={user.picture} 
-                alt={user.name || 'User'} 
+                alt={user.user_metadata?.firstname + ' ' + user.user_metadata?.lastname || 'User'} 
                 className="w-8 h-8 rounded-full"
               />
             )}
             <span className="text-sm text-gray-700">
-              {user.name || user.email}
+              {user.user_metadata?.firstname + ' ' + user.user_metadata?.lastname || user.email}
             </span>
           </div>
         )}
