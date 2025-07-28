@@ -1,5 +1,6 @@
 import { useAuth } from '../auth/AuthContext';
 import StoreSelector from './StoreSelector';
+import config from '../config/env';
 
 export default function Header() {
   const { logout, user } = useAuth();
@@ -9,6 +10,15 @@ export default function Header() {
       <h1 className="text-xl font-semibold"></h1>
       
       <div className="flex items-center gap-4">
+        {/* Environment Banner */}
+        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+          config.environment === 'production' 
+            ? 'bg-red-100 text-red-800' 
+            : 'bg-yellow-300 text-yellow-900'
+        }`}>
+          {config.environment}
+        </div>
+        
         {/* Store Selector */}
         <StoreSelector />
         
