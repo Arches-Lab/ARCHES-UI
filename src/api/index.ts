@@ -1,7 +1,8 @@
 import axios from 'axios';
+import config from '../config/env';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: config.api.baseURL,
 });
 
 // Create functions to get the token and selected store dynamically
