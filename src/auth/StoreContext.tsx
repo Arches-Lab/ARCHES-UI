@@ -9,6 +9,8 @@ type StoreContextType = {
   availableStores: number[];
   isLoading: boolean;
   isAuthenticated: boolean;
+  refreshData: () => void;
+  refreshTrigger: number;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -18,9 +20,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const { user: auth0User } = useAuth();
   const [selectedStore, setSelectedStore] = useState<number | null>(null);
   const [defaultStoreLoading, setDefaultStoreLoading] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Set up the selected store getter for API requests
   useEffect(() => {
+    console.log('🔄 Updating store getter to:', selectedStore);
     setSelectedStoreGetter(() => selectedStore);
   }, [selectedStore]);
 
@@ -82,7 +86,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const handleSetSelectedStore = async (storeNumber: number | null) => {
     console.log('🔄 Switching to store:', storeNumber);
+    
+    // Update the store getter immediately to ensure API calls use the new store
+    setSelectedStoreGetter(() => storeNumber);
+    
+    // Set the store state and trigger refresh immediately
     setSelectedStore(storeNumber);
+    setRefreshTrigger(prev => prev + 1);
     
     // Update the default store via API
     if (storeNumber) {
@@ -100,6 +110,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshData = () => {
+    console.log('🔄 Manual data refresh triggered');
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -107,7 +122,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setSelectedStore: handleSetSelectedStore,
         availableStores: storeNumber || [],
         isLoading: isLoading || defaultStoreLoading,
-        isAuthenticated
+        isAuthenticated,
+        refreshData,
+        refreshTrigger
       }}
     >
       {children}

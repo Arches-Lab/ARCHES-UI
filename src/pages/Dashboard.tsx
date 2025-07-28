@@ -3,7 +3,6 @@ import { getDashboardData } from '../api';
 import StoreInfo from '../components/StoreInfo';
 import DebugInfo from '../components/DebugInfo';
 import AppMetadataManager from '../components/AppMetadataManager';
-import TokenScopeTest from '../components/TokenScopeTest';
 import { useStore } from '../auth/StoreContext';
 
 export default function Dashboard() {
@@ -11,9 +10,13 @@ export default function Dashboard() {
   const { selectedStore, availableStores } = useStore();
 
   useEffect(() => {
-    if (selectedStore) {
-      console.log(`🔄 Loading data for store: ${selectedStore}`);
+    // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
+    if (selectedStore !== null && selectedStore !== undefined) {
+      console.log(`🔄 Loading dashboard data for store: ${selectedStore}`);
       getDashboardData().then(setData).catch(console.error);
+    } else {
+      // Clear data only when no store is selected
+      setData(null);
     }
   }, [selectedStore]);
 

@@ -28,23 +28,28 @@ api.interceptors.request.use(async (config) => {
     }
   }
 
-  // // Add selected store to request headers or query params
-  // if (getSelectedStore) {
-  //   const selectedStore = getSelectedStore();
-  //   if (selectedStore) {
-  //     // Add as header
-  //     config.headers['X-Selected-Store'] = selectedStore.toString();
+  // Add selected store to request headers or query params
+  if (getSelectedStore) {
+    const selectedStore = getSelectedStore();
+    console.log(`🔍 API Interceptor - Store: ${selectedStore}, URL: ${config.url}`);
+    if (selectedStore !== null && selectedStore !== undefined) {
+      // Add as header
+      config.headers['X-Selected-Store'] = selectedStore.toString();
       
-  //     // Also add as query parameter for GET requests
-  //     if (config.method === 'get' && config.params) {
-  //       config.params.storeId = selectedStore;
-  //     } else if (config.method === 'get') {
-  //       config.params = { storeId: selectedStore };
-  //     }
+      // Also add as query parameter for GET requests
+      if (config.method === 'get' && config.params) {
+        config.params.storeId = selectedStore;
+      } else if (config.method === 'get') {
+        config.params = { storeId: selectedStore };
+      }
       
-  //     console.log(`🔄 API Request for Store ${selectedStore}:`, config.url);
-  //   }
-  // }
+      console.log(`🔄 API Request for Store ${selectedStore}:`, config.url);
+    } else {
+      console.log(`⚠️ No store selected for URL: ${config.url}`);
+    }
+  } else {
+    console.log(`⚠️ Store getter not available for URL: ${config.url}`);
+  }
 
   return config;
 });
@@ -65,7 +70,7 @@ export const updateSettings = async (payload: any) => {
 };
 
 export const getEmployees = async () => {
-  const { data } = await api.get('/employees-auth0');
+  const { data } = await api.get('/employees');
   return data;
 };
 
@@ -106,6 +111,40 @@ export const archiveMessage = async (messageId: string) => {
 
 export const getLeads = async () => {
   const { data } = await api.get('/leads');
+  return data;
+};
+
+export const createLead = async (leadData: {
+  storenumber: number;
+  description: string;
+  contactname: string;
+  phone: string;
+  email: string;
+  assignedto: string;
+  status: string;
+}) => {
+  const { data } = await api.post('/leads', leadData);
+  return data;
+};
+
+export const getActivities = async () => {
+  const { data } = await api.get('/activities');
+  return data;
+};
+
+export const createActivity = async (activityData: {
+  storenumber: number;
+  parentid: string;
+  parenttypecode: string;
+  activitytypecode: string;
+  details: string;
+}) => {
+  const { data } = await api.post('/activities', activityData);
+  return data;
+};
+
+export const getMailboxes = async () => {
+  const { data } = await api.get('/mailboxes');
   return data;
 };
 

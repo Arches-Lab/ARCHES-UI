@@ -6,7 +6,7 @@ export default function Header() {
 
   return (
     <header className="flex justify-between items-center bg-white border-b px-6 h-14">
-      <h1 className="text-xl font-semibold">Arches UPS</h1>
+      <h1 className="text-xl font-semibold"></h1>
       
       <div className="flex items-center gap-4">
         {/* Store Selector */}
