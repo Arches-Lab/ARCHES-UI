@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 import { useNavigate } from 'react-router-dom';
 import { supabase, AuthUser, AuthSession } from '../lib/supabase';
 import { setTokenGetter } from '../api';
+import { emailStorage } from '../utils/emailStorage';
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -161,6 +162,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       console.log('✅ Login successful:', data.user?.email);
       
+      // Save user to local storage
+      const userName = data.user?.user_metadata?.first_name && data.user?.user_metadata?.last_name
+        ? `${data.user.user_metadata.first_name} ${data.user.user_metadata.last_name}`
+        : data.user?.email?.split('@')[0] || data.user?.email || '';
+      
+      emailStorage.saveUser(data.user?.email || '', userName);
+      
       // Redirect to dashboard after successful login
       navigate('/');
     } catch (error) {
@@ -245,6 +253,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isVerifyingOtp: false,
         otpSent: false
       }));
+      
+      // Save user to local storage
+      const userName = data.user?.user_metadata?.first_name && data.user?.user_metadata?.last_name
+        ? `${data.user.user_metadata.first_name} ${data.user.user_metadata.last_name}`
+        : data.user?.email?.split('@')[0] || data.user?.email || '';
+      
+      emailStorage.saveUser(data.user?.email || '', userName);
       
       // Redirect to dashboard after successful OTP verification
       navigate('/');

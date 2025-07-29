@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FaUserPlus, FaSpinner, FaExclamationTriangle, FaCheck, FaEnvelope, FaLock, FaUser, FaPhone, FaBuilding } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
+import PinAuth from '../components/PinAuth';
 
 interface NewUserForm {
   email: string;
@@ -21,6 +22,7 @@ export default function NewUser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isPinAuthenticated, setIsPinAuthenticated] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -73,6 +75,16 @@ export default function NewUser() {
       setLoading(false);
     }
   };
+
+  // Show PIN authentication if not authenticated
+  if (!isPinAuthenticated) {
+    return (
+      <PinAuth
+        onSuccess={() => setIsPinAuthenticated(true)}
+        onCancel={() => window.history.back()}
+      />
+    );
+  }
 
   if (success) {
     return (
