@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getDashboardData } from '../api';
-import StoreInfo from '../components/StoreInfo';
-import DebugInfo from '../components/DebugInfo';
-import AppMetadataManager from '../components/AppMetadataManager';
 import { useStore } from '../auth/StoreContext';
 
 export default function Dashboard() {
@@ -66,31 +63,8 @@ export default function Dashboard() {
           </p>
         </div>
       )}
-
-      {/* App Metadata Manager */}
-      <AppMetadataManager />
       
-      {/* Debug Information Section */}
-      <DebugInfo />
       
-      {/* Store Information Section */}
-      <StoreInfo />
-      
-      {/* API Data Section */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          API Data {selectedStore && `(Store ${selectedStore})`}
-        </h3>
-        {data ? (
-          <pre className="text-sm bg-gray-100 p-4 rounded border overflow-x-auto">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        ) : selectedStore ? (
-          <p className="text-gray-500">Loading API data for Store {selectedStore}...</p>
-        ) : (
-          <p className="text-gray-500">Select a store to load data</p>
-        )}
-      </div>
     </div>
   );
 }

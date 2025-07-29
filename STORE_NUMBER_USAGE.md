@@ -1,10 +1,10 @@
 # StoreNumber Usage Guide
 
-This guide explains how to use the StoreNumber functionality that has been implemented to read the StoreNumber from Auth0 tokens after login.
+This guide explains how to use the StoreNumber functionality that has been implemented to read the StoreNumber from Supabase user metadata after login.
 
 ## Overview
 
-The StoreNumber is extracted from the Auth0 token's `app_metadata` after successful authentication. The implementation includes:
+The StoreNumber is extracted from the Supabase user's metadata after successful authentication. The implementation includes:
 
 - **Token Utilities**: Functions to decode JWT tokens and extract metadata
 - **AuthContext Enhancement**: Updated context to include StoreNumber array and metadata
@@ -17,18 +17,19 @@ The StoreNumber is extracted from the Auth0 token's `app_metadata` after success
 
 Before using this functionality, ensure you have:
 
-1. **Auth0 Action Configured**: Follow the `AUTH0_SETUP_GUIDE.md` to set up the Auth0 Action that adds `app_metadata` to tokens
-2. **Environment Variables**: Set up your `.env.local` file with Auth0 configuration
-3. **User Metadata**: Ensure your Auth0 users have `StoreNumber` in their `app_metadata`
+1. **Supabase Project Configured**: Set up your Supabase project with authentication enabled
+2. **Environment Variables**: Set up your `.env.local` file with Supabase configuration
+3. **User Metadata**: Ensure your Supabase users have `StoreNumber` in their user metadata
 
 ## StoreNumber Format
 
-The StoreNumber is expected to be an array of numbers in the token:
+The StoreNumber is expected to be an array of numbers in the user metadata:
 
 ```json
 {
-  "https://yourapp.example.com/app_meta": {
-    "StoreNumber": [1126, 5284]
+  "user_metadata": {
+    "store_numbers": [1126, 5284],
+    "selected_store": 1126
   }
 }
 ```
@@ -219,8 +220,8 @@ The implementation includes comprehensive error handling:
 
 ### Common Issues
 
-1. **StoreNumber Not Found**: Ensure the Auth0 Action is properly configured
-2. **Wrong Domain**: Verify `VITE_AUTH0_DOMAIN` matches your Auth0 domain
+1. **StoreNumber Not Found**: Ensure the user metadata is properly configured in Supabase
+2. **Wrong Configuration**: Verify `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` match your Supabase project
 3. **Cached Tokens**: Log out and log back in to get fresh tokens
 4. **Missing Metadata**: Check that users have `StoreNumber` in their `app_metadata`
 5. **Wrong Format**: Ensure StoreNumber is an array of numbers
@@ -258,7 +259,7 @@ To test the StoreNumber functionality:
 
 - **Client-Side Only**: Token decoding is done client-side without verification
 - **No Sensitive Data**: Only extract necessary data from tokens
-- **Token Expiry**: Tokens are automatically refreshed by Auth0
+- **Token Expiry**: Tokens are automatically refreshed by Supabase
 - **Logout**: StoreNumber array and selection are cleared on logout
 - **Store Validation**: Only available stores can be selected
 

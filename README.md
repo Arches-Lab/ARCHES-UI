@@ -1,6 +1,6 @@
 # ARCHES UI
 
-This is a React + TypeScript web application scaffolded with Vite. It uses Tailwind CSS for styling, React Router for navigation, and Auth0 for authentication.
+This is a React + TypeScript web application scaffolded with Vite. It uses Tailwind CSS for styling, React Router for navigation, and Supabase for authentication.
 
 ## Setup
 
@@ -9,20 +9,18 @@ This is a React + TypeScript web application scaffolded with Vite. It uses Tailw
 npm install
 ```
 
-### 2. Auth0 Configuration
+### 2. Supabase Configuration
 
-1. Create an Auth0 account at [auth0.com](https://auth0.com)
-2. Create a new Single Page Application
-3. Configure the following settings in your Auth0 application:
-   - **Allowed Callback URLs**: `http://localhost:5173` (for development)
-   - **Allowed Logout URLs**: `http://localhost:5173`
-   - **Allowed Web Origins**: `http://localhost:5173`
+1. Create a Supabase account at [supabase.com](https://supabase.com)
+2. Create a new project
+3. Configure the following settings in your Supabase project:
+   - **Authentication**: Enable email/password and OTP authentication
+   - **Database**: Set up your database tables as needed
 
-4. Create a `.env` file in the root directory with your Auth0 credentials:
+4. Create a `.env` file in the root directory with your Supabase credentials:
 ```env
-VITE_AUTH0_DOMAIN=your-domain.auth0.com
-VITE_AUTH0_CLIENT_ID=your-client-id
-VITE_AUTH0_AUDIENCE=your-api-identifier
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ### 3. Start Development Server
@@ -46,9 +44,9 @@ npm run dev
 
 ## Authentication
 
-This application uses Auth0 for authentication. The authentication flow includes:
+This application uses Supabase for authentication. The authentication flow includes:
 
-- **Login**: Users are redirected to Auth0's universal login page
+- **Login**: Users can login with email/password or OTP
 - **Protected Routes**: Routes are protected using the `PrivateRoute` component
 - **User Profile**: User information is available through the `useAuth` hook
 - **Logout**: Users can logout and are redirected back to the application
