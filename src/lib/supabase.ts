@@ -14,8 +14,8 @@ export type AuthUser = {
   email: string;
   picture?: string;
   user_metadata?: {
-    firstname?: string;
-    lastname?: string;
+    first_name?: string;
+    last_name?: string;
     role?: string;
     store_numbers?: number[];
     selected_store?: number;

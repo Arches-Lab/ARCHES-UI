@@ -4,7 +4,7 @@ import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInb
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
   { to: '/employees', label: 'Employees', icon: <FaUsers /> },
-  { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
+  // { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
   { to: '/messages', label: 'Messages', icon: <FaEnvelope /> },
   { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },

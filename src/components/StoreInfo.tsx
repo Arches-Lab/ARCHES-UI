@@ -42,7 +42,7 @@ export default function StoreInfo() {
         </div>
         <div className="mt-2 p-2 bg-blue-100 rounded text-xs">
           <span className="font-medium">Note:</span> When you switch stores using the StoreSelector, 
-          the SelectedStoreNumber will be automatically updated in your Auth0 app_metadata.
+          the SelectedStoreNumber will be automatically updated in your user metadata.
         </div>
       </div>
     </div>

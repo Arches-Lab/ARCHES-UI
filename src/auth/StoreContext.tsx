@@ -17,7 +17,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const { storeNumber, isLoading, isAuthenticated } = useStoreNumber();
-  const { user: auth0User } = useAuth();
+  const { user } = useAuth();
   const [selectedStore, setSelectedStore] = useState<number | null>(null);
   const [defaultStoreLoading, setDefaultStoreLoading] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);

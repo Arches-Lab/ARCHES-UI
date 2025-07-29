@@ -23,7 +23,7 @@ Add the following variables to your `.env` file:
 VITE_API_BASE_URL=http://localhost:3000/api
 
 # Environment
-NODE_ENV=development
+VITE_ENV=development
 ```
 
 ## 3. Environment Variables Reference
@@ -31,7 +31,7 @@ NODE_ENV=development
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
 | `VITE_API_BASE_URL` | Base URL for API requests | `http://localhost:3000/api` |
-| `NODE_ENV` | Application environment | `development` |
+| `VITE_ENV` | Application environment | `development` |
 
 ## 4. Important Notes
 
@@ -45,7 +45,7 @@ For production deployment, set the environment variables in your hosting platfor
 
 ```env
 VITE_API_BASE_URL=https://your-api-domain.com/api
-NODE_ENV=production
+VITE_ENV=production
 ```
 
 ## 6. Local Development
@@ -54,7 +54,7 @@ For local development, you can use:
 
 ```env
 VITE_API_BASE_URL=http://localhost:3000/api
-NODE_ENV=development
+VITE_ENV=development
 ```
 
 ## 7. Verification
