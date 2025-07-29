@@ -14,7 +14,7 @@ export default function PinAuth({ onSuccess, onCancel }: PinAuthProps) {
   const [attempts, setAttempts] = useState(0);
 
   // You can change this PIN to whatever you want
-  const CORRECT_PIN = '79032033';
+  const CORRECT_PIN = '79022033';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
