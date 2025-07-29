@@ -86,7 +86,7 @@ export default function PinAuth({ onSuccess, onCancel }: PinAuthProps) {
                 required
                 className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Enter PIN"
-                maxLength={4}
+                maxLength={8}
                 pattern="[0-9]*"
                 inputMode="numeric"
               />
