@@ -32,7 +32,9 @@ export default function Header() {
               />
             )}
             <span className="text-sm text-gray-700">
-              {user.user_metadata?.first_name + ' ' + user.user_metadata?.last_name || user.email}
+              {(user.user_metadata?.first_name && user.user_metadata?.last_name) 
+                ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                : user.email}
             </span>
           </div>
         )}
