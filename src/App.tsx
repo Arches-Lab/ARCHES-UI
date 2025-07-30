@@ -9,6 +9,8 @@ import Messages from './pages/Messages';
 import Leads from './pages/Leads';
 import LeadDetails from './pages/LeadDetails';
 import Mailboxes from './pages/Mailboxes';
+import Tasks from './pages/Tasks';
+import TaskDetail from './pages/TaskDetail';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -60,6 +62,8 @@ function App() {
               <Route path="leads" element={<Leads />} />
               <Route path="leads/:leadId" element={<LeadDetails />} />
               <Route path="mailboxes" element={<Mailboxes />} />
+              <Route path="tasks" element={<Tasks />} />
+              <Route path="tasks/:taskId" element={<TaskDetail />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

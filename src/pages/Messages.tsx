@@ -152,58 +152,40 @@ export default function Messages() {
                     : 'bg-white'
                 }`}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <FaStore className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm font-medium text-gray-700">
-                        Store {message.storenumber}
-                      </span>
-                    </div>
-                    {message.notification && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                        <FaBell className="w-3 h-3" />
-                        Notification
-                      </span>
-                    )}
-                    {isArchived(message) && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                        Archived
-                      </span>
-                    )}
+                <div className="flex items-top justify-between mb-3">
+                  <div className="flex-1 pr-4">
+                    <p className="text-gray-700 whitespace-pre-wrap">{message.message}</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <FaClock className="w-3 h-3" />
-                      <span>{formatTimestamp(message.createdon)}</span>
-                    </div>
-                    {!isArchived(message) && (
-                      <button
-                        onClick={() => handleArchiveMessage(message.messageid)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
-                        title="Archive message"
-                      >
-                        <FaArchive className="w-3 h-3" />
-                        Archive
+                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[200px]">
+                    {message.notification && (
+                      <button className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                        <FaBell className="w-3 h-3" />
+                        <span>Notification</span>
                       </button>
                     )}
+                    <div className="flex items-center gap-1">
+                      <FaClock className="w-3 h-3" />
+                      <span>Created On: {formatTimestamp(message.createdon)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <FaUser className="w-3 h-3" />
+                      <span>Created By: {message.creator.firstname} {message.creator.lastname}</span>
+                    </div>
+                    {message.createdfor && (
+                      <div className="flex items-center gap-1">
+                        <FaUser className="w-3 h-3" />
+                        <span>Created For: {message.recipient.firstname} {message.recipient.lastname}</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-gray-700 whitespace-pre-wrap">{message.message}</p>
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-3 h-3" />
-                      <span>Created by: {message.creator.firstname} {message.creator.lastname}</span>
-                    </div>
-                    {message.createdfor && (
-                      <div className="flex items-center gap-1">
-                        <span>For: {message.recipient.firstname} {message.recipient.lastname}</span>
-                      </div>
+                    {isArchived(message) && (
+                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                        Archived
+                      </span>
                     )}
                   </div>
                   {message.archivedon && (

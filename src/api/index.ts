@@ -149,4 +149,32 @@ export const getMailboxes = async () => {
   return data;
 };
 
+// Task API functions
+export const getTasks = async () => {
+  const { data } = await api.get('/tasks');
+  return data;
+};
+
+export const createTask = async (taskData: {
+  storenumber: number;
+  taskname: string;
+  taskdescription?: string;
+  taskstatus?: string;
+  assignedto?: string;
+}) => {
+  const { data } = await api.post('/tasks', taskData);
+  return data;
+};
+
+export const updateTask = async (taskId: string, taskData: {
+  storenumber: number;
+  taskname: string;
+  taskdescription?: string;
+  taskstatus?: string;
+  assignedto?: string;
+}) => {
+  const { data } = await api.put(`/tasks/${taskId}`, taskData);
+  return data;
+};
+
 export default api;
