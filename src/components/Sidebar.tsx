@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks } from 'react-icons/fa';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
@@ -8,6 +8,7 @@ const links = [
   { to: '/messages', label: 'Message Board', icon: <FaEnvelope /> },
   { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },
+  { to: '/tasks', label: 'Tasks', icon: <FaTasks /> },
   { to: '/profile', label: 'Profile', icon: <FaUser /> },
   { to: '/settings', label: 'Settings', icon: <FaCog /> },
 ];
