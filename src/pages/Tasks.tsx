@@ -4,36 +4,7 @@ import { FaFilter, FaTasks, FaUser, FaCalendar, FaStore, FaEye } from 'react-ico
 import { useAuth } from '../auth/AuthContext';
 import { useStore } from '../auth/StoreContext';
 import { getTasks, getEmployees } from '../api';
-
-export interface Task {
-  taskid: string;
-  storenumber: number;
-  taskname: string;
-  taskdescription?: string;
-  taskstatus?: string;
-  assignedto?: string;
-  assignee: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-}
-
-interface Employee {
-  employeeid: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  role?: string;
-  active: boolean;
-}
+import { Task, Employee } from '../models';
 
 export default function Tasks() {
   const { user } = useAuth();

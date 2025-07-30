@@ -5,52 +5,7 @@ import { FaTasks, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, Fa
 import { useStore } from '../auth/StoreContext';
 import ActivityCreation from '../components/ActivityCreation';
 import TaskModal from '../components/TaskModal';
-
-interface Task {
-  taskid: string;
-  storenumber: number;
-  taskname: string;
-  taskdescription?: string;
-  taskstatus?: string;
-  assignedto?: string;
-  assignee: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-}
-
-interface Employee {
-  employeeid: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  role?: string;
-  active: boolean;
-}
-
-interface Activity {
-  activityid: string;
-  storenumber: number;
-  parentid: string;
-  parenttypecode: string;
-  activitytypecode: string;
-  details: string;
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-}
+import { Task, Employee, Activity } from '../models';
 
 export default function TaskDetail() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -186,7 +141,13 @@ export default function TaskDetail() {
     setShowEditModal(true);
   };
 
-  const handleSaveTask = async (taskData: Omit<Task, 'taskid' | 'createdby' | 'createdon'>) => {
+  const handleSaveTask = async (taskData: {
+    taskname: string;
+    taskdescription: string;
+    taskstatus: string;
+    assignedto: string;
+    storenumber: number;
+  }) => {
     try {
       if (task) {
         const updatedTask = await updateTask(task.taskid, taskData);
@@ -263,7 +224,6 @@ export default function TaskDetail() {
             <FaTasks className="text-3xl text-blue-600" />
             <div>
               <h2 className="text-2xl font-semibold">Task Details</h2>
-              <p className="text-gray-600">Store {task.storenumber}</p>
             </div>
           </div>
         </div>
@@ -315,10 +275,6 @@ export default function TaskDetail() {
                   <FaUser className="w-3 h-3" />
                   <span>Assigned To: {task.assignee.firstname + " " + task.assignee.lastname || 'Unassigned'}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <FaStore className="w-3 h-3" />
-                  <span>Store: {task.storenumber}</span>
-                </div>
               </div>
             </div>
           </div>
@@ -350,8 +306,9 @@ export default function TaskDetail() {
             <div className="space-y-4 mt-6">
               {taskActivities.map((activity) => (
                 <div key={activity.activityid} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 mb-2">
+                  {/* Activity Header */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
                       <div className="text-blue-600">
                         {getActivityIcon(activity.activitytypecode)}
                       </div>
@@ -359,25 +316,24 @@ export default function TaskDetail() {
                         {activity.activitytypecode.replace('_', ' ')}
                       </span>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {formatTimestamp(activity.createdon)}
-                    </span>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-3">{activity.details}</p>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-4 h-4" />
-                      <span>
-                        {activity.creator.firstname} {activity.creator.lastname}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaCalendar className="w-4 h-4" />
-                      <span>{formatTimestamp(activity.createdon)}</span>
+                    <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <FaUser className="w-3 h-3" />
+                        <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <FaClock className="w-3 h-3" />
+                        <span>{formatTimestamp(activity.createdon)}</span>
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* Activity Details */}
+                  {activity.details && (
+                    <div>
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{activity.details}</p>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

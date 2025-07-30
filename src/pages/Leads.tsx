@@ -4,29 +4,7 @@ import { getLeads } from '../api';
 import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaPlus, FaEye } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import CreateLead from '../components/CreateLead';
-
-interface Lead {
-  leadid: string;
-  storenumber: number;
-  description: string;
-  contactname: string | null;
-  phone: string | null;
-  email: string | null;
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-  assignedto: string | null;
-  assigned: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  status: string;
-}
+import { Lead } from '../models';
 
 export default function Leads() {
   const navigate = useNavigate();

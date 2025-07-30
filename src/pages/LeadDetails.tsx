@@ -4,45 +4,7 @@ import { getLeads, getActivities } from '../api';
 import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import ActivityCreation from '../components/ActivityCreation';
-
-interface Lead {
-  leadid: string;
-  storenumber: number;
-  description: string;
-  contactname: string | null;
-  phone: string | null;
-  email: string | null;
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-  assignedto: string | null;
-  assigned: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  status: string;
-}
-
-interface Activity {
-  activityid: string;
-  storenumber: number;
-  parentid: string;
-  parenttypecode: string;
-  activitytypecode: string;
-  details: string;
-  createdby: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  };
-  createdon: string;
-}
+import { Lead, Activity } from '../models';
 
 export default function LeadDetails() {
   const { leadId } = useParams<{ leadId: string }>();
@@ -351,7 +313,7 @@ export default function LeadDetails() {
                         {activity.activitytypecode}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
                       <div className="flex items-center gap-1">
                         <FaUser className="w-3 h-3" />
                         <span>{activity.creator.firstname} {activity.creator.lastname}</span>

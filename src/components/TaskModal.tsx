@@ -1,20 +1,17 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaUser, FaStore, FaTasks, FaAlignLeft } from 'react-icons/fa';
-import { Task } from '../pages/Tasks';
 import { getEmployees } from '../api';
-
-interface Employee {
-  employeeid: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  role?: string;
-  active: boolean;
-}
+import { Task, Employee } from '../models';
 
 interface TaskModalProps {
   task?: Task | null;
-  onSave: (taskData: Omit<Task, 'taskid' | 'createdby' | 'createdon'>) => void;
+  onSave: (taskData: {
+    taskname: string;
+    taskdescription: string;
+    taskstatus: string;
+    assignedto: string;
+    storenumber: number;
+  }) => void;
   onCancel: () => void;
   selectedStore: number;
 }
