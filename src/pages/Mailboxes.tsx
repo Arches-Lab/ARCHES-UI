@@ -361,7 +361,7 @@ export default function Mailboxes() {
                         key={mailbox.mailboxid}
                         className={`aspect-square bg-white border rounded-lg shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center cursor-pointer relative ${
                           isSelected 
-                            ? 'border-blue-500 bg-blue-50' 
+                            ? 'border-yellow-500 bg-yellow-50' 
                             : 'border-gray-200 hover:bg-gray-50'
                         }`}
                         onClick={() => handleMailboxClick(mailbox)}
@@ -438,7 +438,7 @@ export default function Mailboxes() {
                                         {activity.activitytypecode}
                                       </span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
                                       <div className="flex items-center gap-1">
                                         <FaUser className="w-3 h-3" />
                                         <span>{activity.creator.firstname} {activity.creator.lastname}</span>
