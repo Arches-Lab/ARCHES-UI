@@ -169,9 +169,6 @@ export default function Tasks() {
 
       {/* Tasks List */}
       <div className="bg-white border border-gray-200 rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium">Tasks ({filteredTasks.length})</h3>
-        </div>
         
         {filteredTasks.length === 0 ? (
           <div className="p-8 text-center">
