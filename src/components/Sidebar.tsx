@@ -4,13 +4,13 @@ import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInb
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
   { to: '/employees', label: 'Employees', icon: <FaUsers /> },
-  { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
   { to: '/messages', label: 'Message Board', icon: <FaEnvelope /> },
-  { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },
+  { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/tasks', label: 'Tasks', icon: <FaTasks /> },
-  { to: '/profile', label: 'Profile', icon: <FaUser /> },
-  { to: '/settings', label: 'Settings', icon: <FaCog /> },
+  // { to: '/profile', label: 'Profile', icon: <FaUser /> },
+  // { to: '/settings', label: 'Settings', icon: <FaCog /> },
+  { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
 ];
 
 export default function Sidebar() {
