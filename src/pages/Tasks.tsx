@@ -183,16 +183,20 @@ export default function Tasks() {
                 <div className="flex items-start justify-between">
                   {/* Left Side - Task Details */}
                   <div className="flex-1 pr-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-lg font-medium text-gray-900">{task.taskname}</h4>
+                    {/* Status */}
+                    <div className="flex items-center gap-2 mb-3">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(task.taskstatus || '')}`}>
                         {getStatusIcon(task.taskstatus || '')} {task.taskstatus || 'unknown'}
                       </span>
                     </div>
                     
-                    {task.taskdescription && (
-                      <p className="text-gray-600 mb-3">{task.taskdescription}</p>
-                    )}
+                    {/* Task Name and Description */}
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">{task.taskname}</h4>
+                      {task.taskdescription && (
+                        <p className="text-gray-600 mb-3">{task.taskdescription}</p>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Right Side - Information */}
