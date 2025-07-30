@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTasks, getActivities, getEmployees, updateTask } from '../api';
+import { getTask, getActivitiesForTask, getEmployees, updateTask } from '../api';
 import { FaTasks, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaEdit } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import ActivityCreation from '../components/ActivityCreation';
@@ -26,27 +26,23 @@ export default function TaskDetail() {
         
         console.log(`🔄 Fetching task details and activities for task: ${taskId}, store: ${selectedStore}`);
         
-        // Fetch tasks, activities, and employees in parallel
-        const [tasksData, activitiesData, employeesData] = await Promise.all([
-          getTasks(),
-          getActivities(),
-          getEmployees()
-        ]);
-        
-        console.log('Tasks data:', tasksData);
-        console.log('Activities data:', activitiesData);
-        console.log('Employees data:', employeesData);
-        
-        // Find the specific task
-        const tasks = Array.isArray(tasksData) ? tasksData : [];
-        const foundTask = tasks.find(t => t.taskid === taskId);
-        
-        if (!foundTask) {
-          setError('Task not found');
+        if (!taskId) {
+          setError('Task ID is required');
           return;
         }
         
-        setTask(foundTask);
+        // Fetch task, activities, and employees in parallel
+        const [taskData, activitiesData, employeesData] = await Promise.all([
+          getTask(taskId),
+          getActivitiesForTask(taskId),
+          getEmployees()
+        ]);
+        
+        console.log('Task data:', taskData);
+        console.log('Activities data:', activitiesData);
+        console.log('Employees data:', employeesData);
+        
+        setTask(taskData);
         setEmployees(Array.isArray(employeesData) ? employeesData : []);
         setActivities(Array.isArray(activitiesData) ? activitiesData : []);
       } catch (err) {
@@ -79,16 +75,12 @@ export default function TaskDetail() {
     }
   };
 
-  const getActivitiesForTask = (taskId: string) => {
-    return activities.filter(activity => 
-      activity.parentid === taskId && activity.parenttypecode === 'TASK'
-    );
-  };
-
   const handleActivityCreated = async () => {
     try {
-      const activitiesData = await getActivities();
-      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+      if (taskId) {
+        const activitiesData = await getActivitiesForTask(taskId);
+        setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+      }
     } catch (error) {
       console.error('Error refreshing activities:', error);
     }
@@ -206,7 +198,7 @@ export default function TaskDetail() {
     );
   }
 
-  const taskActivities = getActivitiesForTask(task.taskid);
+  const taskActivities = activities;
 
   return (
     <div className="space-y-6">
@@ -273,7 +265,7 @@ export default function TaskDetail() {
                 </div>
                 <div className="flex items-center gap-1">
                   <FaUser className="w-3 h-3" />
-                  <span>Assigned To: {task.assignee.firstname + " " + task.assignee.lastname || 'Unassigned'}</span>
+                  <span>Assigned To: {task.assignee ? task.assignee.firstname + " " + task.assignee.lastname : 'Unassigned'}</span>
                 </div>
               </div>
             </div>
@@ -318,12 +310,12 @@ export default function TaskDetail() {
                     </div>
                     <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
                       <div className="flex items-center gap-1">
-                        <FaUser className="w-3 h-3" />
-                        <span>{activity.creator.firstname} {activity.creator.lastname}</span>
+                        <FaCalendar className="w-3 h-3" />
+                        <span>Created On: {formatTimestamp(activity.createdon)}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <FaClock className="w-3 h-3" />
-                        <span>{formatTimestamp(activity.createdon)}</span>
+                        <FaUser className="w-3 h-3" />
+                        <span>Created By: {activity.creator.firstname} {activity.creator.lastname}</span>
                       </div>
                     </div>
                   </div>

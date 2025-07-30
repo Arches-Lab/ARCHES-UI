@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaFilter, FaTasks, FaUser, FaCalendar, FaStore, FaEye } from 'react-icons/fa';
+import { FaFilter, FaTasks, FaUser, FaCalendar, FaStore, FaEye, FaPlus } from 'react-icons/fa';
 import { useAuth } from '../auth/AuthContext';
 import { useStore } from '../auth/StoreContext';
-import { getTasks, getEmployees } from '../api';
+import { getTasks, getEmployees, createTask } from '../api';
 import { Task, Employee } from '../models';
+import TaskModal from '../components/TaskModal';
 
 export default function Tasks() {
   const { user } = useAuth();
@@ -14,6 +15,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterAssignedTo, setFilterAssignedTo] = useState<string>('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const navigate = useNavigate();
 
   // Fetch tasks from API
@@ -108,6 +110,37 @@ export default function Tasks() {
     navigate(`/tasks/${task.taskid}`);
   };
 
+  const handleCreateTask = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleTaskCreated = async () => {
+    setShowCreateModal(false);
+    // Refresh tasks data
+    try {
+      const tasksData = await getTasks();
+      setTasks(tasksData);
+    } catch (error) {
+      console.error('Error refreshing tasks:', error);
+    }
+  };
+
+  const handleSaveTask = async (taskData: {
+    taskname: string;
+    taskdescription: string;
+    taskstatus: string;
+    assignedto: string;
+    storenumber: number;
+  }) => {
+    try {
+      await createTask(taskData);
+      await handleTaskCreated();
+    } catch (error) {
+      console.error('Error creating task:', error);
+      alert('Failed to create task. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -125,6 +158,18 @@ export default function Tasks() {
           <div>
             <h2 className="text-2xl font-semibold">Tasks</h2>
           </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600">
+            {tasks.length} task{tasks.length !== 1 ? 's' : ''}
+          </div>
+          <button
+            onClick={handleCreateTask}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            New Task
+          </button>
         </div>
       </div>
 
@@ -230,7 +275,14 @@ export default function Tasks() {
       </div>
 
       {/* Create/Edit Modal */}
-      {/* This section is removed as per the edit hint */}
+      {showCreateModal && (
+        <TaskModal
+          task={null}
+          onSave={handleSaveTask}
+          onCancel={() => setShowCreateModal(false)}
+          selectedStore={selectedStore || 1}
+        />
+      )}
     </div>
   );
 } 

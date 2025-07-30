@@ -55,20 +55,11 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
 
   useEffect(() => {
     if (task) {
-      // If assignedto is an email, find the corresponding employee ID
-      let assignedToValue = task.assignedto || '';
-      if (assignedToValue && employees.length > 0) {
-        const employee = employees.find(emp => emp.email === assignedToValue);
-        if (employee) {
-          assignedToValue = employee.employeeid;
-        }
-      }
-
       setFormData({
         taskname: task.taskname,
         taskdescription: task.taskdescription || '',
         taskstatus: task.taskstatus || 'OPEN',
-        assignedto: assignedToValue,
+        assignedto: task.assignedto || '',
         storenumber: task.storenumber
       });
     }
