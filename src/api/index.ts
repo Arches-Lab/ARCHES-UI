@@ -78,5 +78,6 @@ export * from './activity';
 export * from './mailbox';
 export * from './employee';
 export * from './employeestore';
+export * from './incident';
 
 export default api;
