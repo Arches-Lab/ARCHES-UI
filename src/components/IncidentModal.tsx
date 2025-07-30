@@ -22,7 +22,7 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
     incidenttypecode: '',
     title: '',
     description: '',
-    status: 'OPEN',
+    status: 'NEW',
     assignedto: '',
     storenumber: selectedStore
   });
@@ -61,7 +61,7 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
         incidenttypecode: incident.incidenttypecode,
         title: incident.title,
         description: incident.description || '',
-        status: incident.status || 'OPEN',
+        status: incident.status || 'NEW',
         assignedto: incident.assignedto || '',
         storenumber: incident.storenumber
       });
@@ -83,7 +83,7 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
 
     console.log('Submitting incident data:', formData);
     console.log('Selected employee ID:', formData.assignedto);
-    
+
     onSave(formData);
   };
 
