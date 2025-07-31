@@ -70,111 +70,14 @@ export const updateSettings = async (payload: any) => {
   return data;
 };
 
-export const getEmployees = async () => {
-  const { data } = await api.get('/employees');
-  return data;
-};
-
-export const getEmployeeStores = async () => {
-  const { data } = await api.get('/employee-stores/me');
-  return data;
-};
-
-export const updateDefaultStore = async (storeNumber: number) => {
-  const { data } = await api.put('/employee-stores/default', { storenumber: storeNumber });
-  return data;
-};
-
-export const getDefaultStore = async () => {
-  const { data } = await api.get('/employee-stores/default');
-  return data;
-};
-
-export const getMessages = async () => {
-  const { data } = await api.get('/messages');
-  return data;
-};
-
-export const createMessage = async (messageData: {
-  storenumber: number;
-  message: string;
-  createdfor?: string;
-  notification: boolean;
-}) => {
-  const { data } = await api.post('/messages', messageData);
-  return data;
-};
-
-export const archiveMessage = async (messageId: string) => {
-  const { data } = await api.put(`/messages/${messageId}/archive`);
-  return data;
-};
-
-export const getLeads = async () => {
-  const { data } = await api.get('/leads');
-  return data;
-};
-
-export const createLead = async (leadData: {
-  storenumber: number;
-  description: string;
-  contactname: string;
-  phone: string;
-  email: string;
-  assignedto: string;
-  status: string;
-}) => {
-  const { data } = await api.post('/leads', leadData);
-  return data;
-};
-
-export const getActivities = async () => {
-  const { data } = await api.get('/activities');
-  return data;
-};
-
-export const createActivity = async (activityData: {
-  storenumber: number;
-  parentid: string;
-  parenttypecode: string;
-  activitytypecode: string;
-  details: string;
-}) => {
-  const { data } = await api.post('/activities', activityData);
-  return data;
-};
-
-export const getMailboxes = async () => {
-  const { data } = await api.get('/mailboxes');
-  return data;
-};
-
-// Task API functions
-export const getTasks = async () => {
-  const { data } = await api.get('/tasks');
-  return data;
-};
-
-export const createTask = async (taskData: {
-  storenumber: number;
-  taskname: string;
-  taskdescription?: string;
-  taskstatus?: string;
-  assignedto?: string;
-}) => {
-  const { data } = await api.post('/tasks', taskData);
-  return data;
-};
-
-export const updateTask = async (taskId: string, taskData: {
-  storenumber: number;
-  taskname: string;
-  taskdescription?: string;
-  taskstatus?: string;
-  assignedto?: string;
-}) => {
-  const { data } = await api.put(`/tasks/${taskId}`, taskData);
-  return data;
-};
+// Re-export task functions from tasks.ts
+export * from './task';
+export * from './message';
+export * from './lead';
+export * from './activity';
+export * from './mailbox';
+export * from './employee';
+export * from './employeestore';
+export * from './incident';
 
 export default api;

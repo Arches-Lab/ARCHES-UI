@@ -4,7 +4,7 @@ import { createActivity } from '../api';
 
 interface ActivityCreationProps {
   parentId: string;
-  parentType: 'LEAD' | 'MAILBOX' | 'TASK';
+  parentType: 'LEAD' | 'MAILBOX' | 'TASK' | 'INCIDENT';
   parentName?: string;
   storeNumber: number;
   onActivityCreated: () => void;

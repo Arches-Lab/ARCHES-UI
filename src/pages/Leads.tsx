@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { getLeads } from '../api';
 import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaPlus, FaEye } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
-import CreateLead from '../components/CreateLead';
-import { Lead } from '../models';
+import LeadModal from '../components/LeadModal';
+import { Lead, getLeadStatusDisplayName, getLeadStatusColor, getLeadStatusIcon, LEAD_STATUSES } from '../models';
 
 export default function Leads() {
   const navigate = useNavigate();
@@ -12,6 +12,8 @@ export default function Leads() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateLeadModal, setShowCreateLeadModal] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterAssignedTo, setFilterAssignedTo] = useState<string>('');
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -74,8 +76,57 @@ export default function Leads() {
     }
   };
 
+  const handleSaveLead = async (leadData: {
+    description: string;
+    contactname: string;
+    phone: string;
+    email: string;
+    status: string;
+    assignedto: string;
+    storenumber: number;
+  }) => {
+    try {
+      const { createLead } = await import('../api');
+      await createLead(leadData);
+      await handleLeadCreated();
+    } catch (error) {
+      console.error('Error creating lead:', error);
+      alert('Failed to create lead. Please try again.');
+    }
+  };
+
   const handleViewLead = (leadId: string) => {
     navigate(`/leads/${leadId}`);
+  };
+
+  const filteredLeads = leads.filter(lead => {
+    const matchesStatus = !filterStatus || lead.status?.toLowerCase() === filterStatus.toLowerCase();
+    const matchesAssignedTo = !filterAssignedTo || (lead.assignedto && lead.assignedto === filterAssignedTo);
+    
+    return matchesStatus && matchesAssignedTo;
+  });
+
+  // Get unique assigned employees from leads
+  const getUniqueAssignedEmployees = () => {
+    const uniqueEmployees = new Map();
+    
+    leads.forEach(lead => {
+      if (lead.assignedto && lead.assigned) {
+        const employeeId = lead.assignedto;
+        const employeeName = `${lead.assigned.firstname} ${lead.assigned.lastname}`;
+        
+        if (!uniqueEmployees.has(employeeId)) {
+          uniqueEmployees.set(employeeId, {
+            employeeid: employeeId,
+            firstname: lead.assigned.firstname,
+            lastname: lead.assigned.lastname,
+            email: lead.assigned.email
+          });
+        }
+      }
+    });
+    
+    return Array.from(uniqueEmployees.values());
   };
 
   if (loading) {
@@ -114,7 +165,7 @@ export default function Leads() {
           </div>
           <button
             onClick={() => setShowCreateLeadModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-yellow-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <FaPlus className="w-4 h-4" />
             New Lead
@@ -122,7 +173,46 @@ export default function Leads() {
         </div>
       </div>
 
-      {leads.length === 0 ? (
+      {/* Filters */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Status Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+            >
+              <option value="">All Statuses</option>
+              {LEAD_STATUSES.map(status => (
+                <option key={status.code} value={status.code.toLowerCase()}>
+                  {status.displayName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Assigned To Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+            <select
+              value={filterAssignedTo}
+              onChange={(e) => setFilterAssignedTo(e.target.value)}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+            >
+              <option value="">All Users</option>
+              {getUniqueAssignedEmployees().map(employee => (
+                <option key={employee.employeeid} value={employee.employeeid}>
+                  {employee.firstname} {employee.lastname}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {filteredLeads.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
           <FaLightbulb className="text-4xl text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Leads</h3>
@@ -131,7 +221,7 @@ export default function Leads() {
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-200">
-            {leads.map((lead) => (
+            {filteredLeads.map((lead) => (
               <div
                 key={lead.leadid}
                 className="p-6 transition-all hover:bg-gray-50"
@@ -142,9 +232,8 @@ export default function Leads() {
                   <div className="flex-1 pr-4">
                     {/* Status */}
                     <div className="flex items-center gap-2 mb-3">
-                      <FaFlag className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm font-medium text-gray-700">
-                        {lead.status}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
+                        {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
                       </span>
                     </div>
                     
@@ -225,9 +314,11 @@ export default function Leads() {
 
       {/* Create Lead Modal */}
       {showCreateLeadModal && (
-        <CreateLead
-          onLeadCreated={handleLeadCreated}
+        <LeadModal
+          lead={null}
+          onSave={handleSaveLead}
           onCancel={() => setShowCreateLeadModal(false)}
+          selectedStore={selectedStore || 1}
         />
       )}
     </div>

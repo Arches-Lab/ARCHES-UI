@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getTask, getActivitiesForTask, getEmployees, updateTask } from '../api';
-import { FaTasks, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaEdit } from 'react-icons/fa';
+import { getIncident, getActivitiesForIncident, getEmployees, updateIncident } from '../api';
+import { FaExclamationTriangle, FaSpinner, FaExclamationCircle, FaClock, FaUser, FaStore, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaEdit, FaPhone, FaEnvelope } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import ActivityCreation from '../components/ActivityCreation';
-import TaskModal from '../components/TaskModal';
-import { Task, Employee, Activity } from '../models';
+import IncidentModal from '../components/IncidentModal';
+import { Incident, Employee, Activity, getIncidentTypeDisplayName, getIncidentTypeStatusIcon, getIncidentStatusDisplayName, getIncidentStatusColor, getIncidentStatusIcon } from '../models';
 
-export default function TaskDetail() {
-  const { taskId } = useParams<{ taskId: string }>();
+export default function IncidentDetail() {
+  const { incidentId } = useParams<{ incidentId: string }>();
   const navigate = useNavigate();
-  const [task, setTask] = useState<Task | null>(null);
+  const [incident, setIncident] = useState<Incident | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,25 +24,25 @@ export default function TaskDetail() {
         setLoading(true);
         setError(null);
         
-        console.log(`🔄 Fetching task details and activities for task: ${taskId}, store: ${selectedStore}`);
+        console.log(`🔄 Fetching incident details and activities for incident: ${incidentId}, store: ${selectedStore}`);
         
-        if (!taskId) {
-          setError('Task ID is required');
+        if (!incidentId) {
+          setError('Incident ID is required');
           return;
         }
         
-        // Fetch task, activities, and employees in parallel
-        const [taskData, activitiesData, employeesData] = await Promise.all([
-          getTask(taskId),
-          getActivitiesForTask(taskId),
+        // Fetch incident, activities, and employees in parallel
+        const [incidentData, activitiesData, employeesData] = await Promise.all([
+          getIncident(incidentId),
+          getActivitiesForIncident(incidentId),
           getEmployees()
         ]);
         
-        console.log('Task data:', taskData);
+        console.log('Incident data:', incidentData);
         console.log('Activities data:', activitiesData);
         console.log('Employees data:', employeesData);
         
-        setTask(taskData);
+        setIncident(incidentData);
         setEmployees(Array.isArray(employeesData) ? employeesData : []);
         setActivities(Array.isArray(activitiesData) ? activitiesData : []);
       } catch (err) {
@@ -53,18 +53,18 @@ export default function TaskDetail() {
       }
     };
 
-    // Only fetch if selectedStore is a valid number and taskId exists
-    if (selectedStore !== null && selectedStore !== undefined && taskId) {
-      console.log(`🔄 Loading task details for task: ${taskId}, store: ${selectedStore}`);
+    // Only fetch if selectedStore is a valid number and incidentId exists
+    if (selectedStore !== null && selectedStore !== undefined && incidentId) {
+      console.log(`🔄 Loading incident details for incident: ${incidentId}, store: ${selectedStore}`);
       fetchData();
     } else {
-      setTask(null);
+      setIncident(null);
       setActivities([]);
       setEmployees([]);
       setLoading(false);
       setError(null);
     }
-  }, [selectedStore, taskId]);
+  }, [selectedStore, incidentId]);
 
   const formatTimestamp = (timestamp: string) => {
     try {
@@ -77,8 +77,8 @@ export default function TaskDetail() {
 
   const handleActivityCreated = async () => {
     try {
-      if (taskId) {
-        const activitiesData = await getActivitiesForTask(taskId);
+      if (incidentId) {
+        const activitiesData = await getActivitiesForIncident(incidentId);
         setActivities(Array.isArray(activitiesData) ? activitiesData : []);
       }
     } catch (error) {
@@ -88,67 +88,44 @@ export default function TaskDetail() {
 
   const getActivityIcon = (activityType: string) => {
     switch (activityType) {
-      case 'CALL': return <FaVoicemail className="w-4 h-4" />;
+      case 'PHONE': return <FaPhone className="w-4 h-4" />;
+      case 'VOICEMAIL': return <FaVoicemail className="w-4 h-4" />;
       case 'EMAIL': return <FaComment className="w-4 h-4" />;
+      case 'FAX': return <FaEnvelope className="w-4 h-4" />;
+      case 'FOLLOWUP': return <FaHandshake className="w-4 h-4" />;
       case 'MEETING': return <FaHandshake className="w-4 h-4" />;
-      case 'FOLLOW_UP': return <FaChartLine className="w-4 h-4" />;
       case 'NOTE': return <FaFileAlt className="w-4 h-4" />;
+      case 'QUOTE': return <FaChartLine className="w-4 h-4" />;
+      case 'OTHER': return <FaComment className="w-4 h-4" />;
       default: return <FaListAlt className="w-4 h-4" />;
     }
   };
 
-  const getStatusColor = (status: string) => {
-    const statusLower = status?.toLowerCase();
-    switch (statusLower) {
-      case 'open': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in-progress':
-      case 'inprogress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
-  const getStatusIcon = (status: string) => {
-    const statusLower = status?.toLowerCase();
-    switch (statusLower) {
-      case 'open': return '🔓';
-      case 'pending': return '⏳';
-      case 'in-progress':
-      case 'inprogress': return '🔄';
-      case 'completed': return '✅';
-      case 'cancelled': return '❌';
-      default: return '📋';
-    }
-  };
 
-//   // Get employee name by ID
-//   const getEmployeeNameById = (employeeId: string) => {
-//     const employee = employees.find(emp => emp.employeeid === employeeId);
-//     return employee ? `${employee.firstname} ${employee.lastname}` : employeeId;
-//   };
 
-  const handleEditTask = () => {
+
+  const handleEditIncident = () => {
     setShowEditModal(true);
   };
 
-  const handleSaveTask = async (taskData: {
-    taskname: string;
-    taskdescription: string;
-    taskstatus: string;
+  const handleSaveIncident = async (incidentData: {
+    incidenttypecode: string;
+    title: string;
+    description: string;
+    status: string;
     assignedto: string;
     storenumber: number;
   }) => {
     try {
-      if (task) {
-        const updatedTask = await updateTask(task.taskid, taskData);
-        setTask(updatedTask);
+      if (incident) {
+        const updatedIncident = await updateIncident(incident.incidentid, incidentData);
+        setIncident(updatedIncident);
         setShowEditModal(false);
       }
     } catch (error) {
-      console.error('Error updating task:', error);
-      alert('Failed to update task. Please try again.');
+      console.error('Error updating incident:', error);
+      alert('Failed to update incident. Please try again.');
     }
   };
 
@@ -156,8 +133,8 @@ export default function TaskDetail() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading task details...</p>
+          <FaSpinner className="animate-spin text-4xl text-red-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading incident details...</p>
         </div>
       </div>
     );
@@ -167,38 +144,38 @@ export default function TaskDetail() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <FaExclamationTriangle className="text-4xl text-red-500 mx-auto mb-4" />
+          <FaExclamationCircle className="text-4xl text-red-500 mx-auto mb-4" />
           <p className="text-red-600 mb-2">Error</p>
           <p className="text-gray-600">{error}</p>
           <button
-            onClick={() => navigate('/tasks')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            onClick={() => navigate('/incidents')}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
           >
-            Back to Tasks
+            Back to Incidents
           </button>
         </div>
       </div>
     );
   }
 
-  if (!task) {
+  if (!incident) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <FaTasks className="text-4xl text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">Task not found</p>
+          <FaExclamationTriangle className="text-4xl text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">Incident not found</p>
           <button
-            onClick={() => navigate('/tasks')}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            onClick={() => navigate('/incidents')}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
           >
-            Back to Tasks
+            Back to Incidents
           </button>
         </div>
       </div>
     );
   }
 
-  const taskActivities = activities;
+  const incidentActivities = activities;
 
   return (
     <div className="space-y-6">
@@ -206,29 +183,29 @@ export default function TaskDetail() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate('/tasks')}
+            onClick={() => navigate('/incidents')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <FaArrowLeft className="w-4 h-4" />
-            Back to Tasks
+            Back to Incidents
           </button>
           <div className="flex items-center gap-3">
-            <FaTasks className="text-3xl text-blue-600" />
+            <FaExclamationTriangle className="text-3xl text-red-600" />
             <div>
-              <h2 className="text-2xl font-semibold">Task Details</h2>
+              <h2 className="text-2xl font-semibold">Incident Details</h2>
             </div>
           </div>
         </div>
         <button
-          onClick={handleEditTask}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          onClick={handleEditIncident}
+          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
         >
           <FaEdit className="w-4 h-4" />
-          Edit Task
+          Edit Incident
         </button>
       </div>
 
-      {/* Task Information */}
+      {/* Incident Information */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div className="divide-y divide-gray-200">
           <div className="p-6 transition-all hover:bg-gray-50">
@@ -236,19 +213,21 @@ export default function TaskDetail() {
             <div className="flex items-start justify-between mb-4">
               {/* Left Side - Status and Description */}
               <div className="flex-1 pr-4">
-                {/* Status */}
+                {/* Status and Type */}
                 <div className="flex items-center gap-2 mb-3">
-                  <FaTasks className="w-4 h-4 text-blue-500" />
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(task.taskstatus || '')}`}>
-                    {getStatusIcon(task.taskstatus || '')} {task.taskstatus || 'unknown'}
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')}`}>
+                    {getIncidentStatusIcon(incident.status || '')} {getIncidentStatusDisplayName(incident.status || '')}
                   </span>
+                                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                      {getIncidentTypeStatusIcon(incident.incidenttypecode)} {getIncidentTypeDisplayName(incident.incidenttypecode)}
+                    </span>
                 </div>
                 
                 {/* Description */}
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{task.taskname}</h3>
-                  {task.taskdescription && (
-                    <p className="text-gray-700 whitespace-pre-wrap">{task.taskdescription}</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{incident.title}</h3>
+                  {incident.description && (
+                    <p className="text-gray-700 whitespace-pre-wrap">{incident.description}</p>
                   )}
                 </div>
               </div>
@@ -257,15 +236,15 @@ export default function TaskDetail() {
               <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[200px]">
                 <div className="flex items-center gap-1">
                   <FaCalendar className="w-3 h-3" />
-                  <span>Created On: {formatTimestamp(task.createdon)}</span>
+                  <span>Created On: {formatTimestamp(incident.createdon)}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <FaUser className="w-3 h-3" />
-                  <span>Created By: {task.creator.firstname + " " + task.creator.lastname}</span>
+                  <span>Created By: {incident.creator.firstname + " " + incident.creator.lastname}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <FaUser className="w-3 h-3" />
-                  <span>Assigned To: {task.assignee ? task.assignee.firstname + " " + task.assignee.lastname : 'Unassigned'}</span>
+                  <span>Assigned To: {incident.assignee ? incident.assignee.firstname + " " + incident.assignee.lastname : 'Unassigned'}</span>
                 </div>
               </div>
             </div>
@@ -277,31 +256,31 @@ export default function TaskDetail() {
       <div className="bg-white border border-gray-200 rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Activities ({taskActivities.length})</h3>
+            <h3 className="text-lg font-medium">Activities ({incidentActivities.length})</h3>
           </div>
         </div>
 
         <div className="p-6">
           <ActivityCreation
-            parentId={task.taskid}
-            parentType="TASK"
+            parentId={incident.incidentid}
+            parentType="INCIDENT"
             storeNumber={selectedStore || 1}
             onActivityCreated={handleActivityCreated}
           />
 
-          {taskActivities.length === 0 ? (
+          {incidentActivities.length === 0 ? (
             <div className="text-center py-8">
               <FaListAlt className="text-4xl text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No activities yet</p>
             </div>
           ) : (
-            <div className="space-y-4 mt-6">
-              {taskActivities.map((activity) => (
+            <div className="space-y-0 mt-6">
+              {incidentActivities.map((activity) => (
                 <div key={activity.activityid} className="border border-gray-200 rounded-lg p-4">
                   {/* Activity Header */}
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="text-blue-600">
+                      <div className="text-red-600">
                         {getActivityIcon(activity.activitytypecode)}
                       </div>
                       <span className="font-medium text-gray-900">
@@ -333,11 +312,11 @@ export default function TaskDetail() {
         </div>
       </div>
 
-      {/* Edit Task Modal */}
-      {showEditModal && task && (
-        <TaskModal
-          task={task}
-          onSave={handleSaveTask}
+      {/* Edit Incident Modal */}
+      {showEditModal && incident && (
+        <IncidentModal
+          incident={incident}
+          onSave={handleSaveIncident}
           onCancel={() => setShowEditModal(false)}
           selectedStore={selectedStore || 1}
         />

@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { FaTimes, FaSave, FaUser, FaStore, FaTasks, FaAlignLeft } from 'react-icons/fa';
+import { FaTimes, FaSave, FaUser, FaStore, FaExclamationTriangle, FaAlignLeft } from 'react-icons/fa';
 import { getEmployees } from '../api';
-import { Task, Employee } from '../models';
+import { Incident, Employee, INCIDENT_TYPES, INCIDENT_STATUSES } from '../models';
 
-interface TaskModalProps {
-  task?: Task | null;
-  onSave: (taskData: {
-    taskname: string;
-    taskdescription: string;
-    taskstatus: string;
+interface IncidentModalProps {
+  incident?: Incident | null;
+  onSave: (incidentData: {
+    incidenttypecode: string;
+    title: string;
+    description: string;
+    status: string;
     assignedto: string;
     storenumber: number;
   }) => void;
@@ -16,18 +17,19 @@ interface TaskModalProps {
   selectedStore: number;
 }
 
-export default function TaskModal({ task, onSave, onCancel, selectedStore }: TaskModalProps) {
+export default function IncidentModal({ incident, onSave, onCancel, selectedStore }: IncidentModalProps) {
   const [formData, setFormData] = useState({
-    taskname: '',
-    taskdescription: '',
-    taskstatus: 'OPEN',
+    incidenttypecode: '',
+    title: '',
+    description: '',
+    status: 'NEW',
     assignedto: '',
     storenumber: selectedStore
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
 
-  const isEditing = !!task;
+  const isEditing = !!incident;
 
   // Fetch employees for the dropdown
   useEffect(() => {
@@ -54,28 +56,34 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
   }, [formData.assignedto]);
 
   useEffect(() => {
-    if (task) {
+    if (incident) {
       setFormData({
-        taskname: task.taskname,
-        taskdescription: task.taskdescription || '',
-        taskstatus: task.taskstatus || 'OPEN',
-        assignedto: task.assignedto || '',
-        storenumber: task.storenumber
+        incidenttypecode: incident.incidenttypecode,
+        title: incident.title,
+        description: incident.description || '',
+        status: incident.status || 'NEW',
+        assignedto: incident.assignedto || '',
+        storenumber: incident.storenumber
       });
     }
-  }, [task, employees]);
+  }, [incident, employees]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.taskname.trim()) {
-      alert('Task name is required');
+    if (!formData.title.trim()) {
+      alert('Incident title is required');
       return;
     }
 
-    console.log('Submitting task data:', formData);
+    if (!formData.incidenttypecode.trim()) {
+      alert('Incident type is required');
+      return;
+    }
+
+    console.log('Submitting incident data:', formData);
     console.log('Selected employee ID:', formData.assignedto);
-    
+
     onSave(formData);
   };
 
@@ -94,9 +102,9 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <FaTasks className="text-2xl text-blue-600" />
+            <FaExclamationTriangle className="text-2xl text-red-600" />
             <h2 className="text-xl font-semibold">
-              {isEditing ? 'Edit Task' : 'Create New Task'}
+              {isEditing ? 'Edit Incident' : 'Create New Incident'}
             </h2>
           </div>
           <button
@@ -109,41 +117,63 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Task Name */}
+          {/* Incident Type */}
           <div>
-            <label htmlFor="taskname" className="block text-sm font-medium text-gray-700 mb-2">
-              Task Name *
+            <label htmlFor="incidenttypecode" className="block text-sm font-medium text-gray-700 mb-2">
+              Incident Type *
+            </label>
+            <select
+              id="incidenttypecode"
+              name="incidenttypecode"
+              value={formData.incidenttypecode}
+              onChange={handleInputChange}
+              required
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            >
+              <option value="">Select incident type</option>
+              {INCIDENT_TYPES.map(type => (
+                <option key={type.code} value={type.code}>
+                  {type.displayName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Incident Title */}
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Incident Title *
             </label>
             <div className="relative">
-              <FaTasks className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <FaExclamationTriangle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                id="taskname"
-                name="taskname"
-                value={formData.taskname}
+                id="title"
+                name="title"
+                value={formData.title}
                 onChange={handleInputChange}
                 required
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter task name"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                placeholder="Enter incident title"
               />
             </div>
           </div>
 
-          {/* Task Description */}
+          {/* Incident Description */}
           <div>
-            <label htmlFor="taskdescription" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
             <div className="relative">
               <FaAlignLeft className="absolute left-3 top-3 text-gray-400 w-4 h-4" />
               <textarea
-                id="taskdescription"
-                name="taskdescription"
-                value={formData.taskdescription}
+                id="description"
+                name="description"
+                value={formData.description}
                 onChange={handleInputChange}
                 rows={4}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter task description"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                placeholder="Enter incident description"
               />
             </div>
           </div>
@@ -152,21 +182,21 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Status */}
             <div>
-              <label htmlFor="taskstatus" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
                 Status
               </label>
               <select
-                id="taskstatus"
-                name="taskstatus"
-                value={formData.taskstatus}
+                id="status"
+                name="status"
+                value={formData.status}
                 onChange={handleInputChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
               >
-                <option value="OPEN">Open</option>
-                <option value="PENDING">Pending</option>
-                <option value="INPROGRESS">In Progress</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="CANCELLED">Cancelled</option>
+                {INCIDENT_STATUSES.map(status => (
+                  <option key={status.code} value={status.code}>
+                    {status.displayName}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -182,7 +212,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
                   name="assignedto"
                   value={formData.assignedto}
                   onChange={handleInputChange}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 >
                   <option value="">Select an employee</option>
                   {loadingEmployees ? (
@@ -221,7 +251,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
                 name="storenumber"
                 value={formData.storenumber}
                 onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Enter store number"
               />
             </div>
@@ -238,10 +268,10 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
             </button>
             <button
               type="submit"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
             >
               <FaSave className="w-4 h-4" />
-              {isEditing ? 'Update Task' : 'Create Task'}
+              {isEditing ? 'Update Incident' : 'Create Incident'}
             </button>
           </div>
         </form>

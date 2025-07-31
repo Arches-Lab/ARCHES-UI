@@ -439,13 +439,13 @@ export default function Mailboxes() {
                                       </span>
                                     </div>
                                     <div className="flex flex-col items-end gap-1 text-xs text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                        <FaClock className="w-3 h-3" />
+                                        <span>{formatTimestamp(activity.createdon)}</span>
+                                      </div>                                      
                                       <div className="flex items-center gap-1">
                                         <FaUser className="w-3 h-3" />
                                         <span>{activity.creator.firstname} {activity.creator.lastname}</span>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <FaClock className="w-3 h-3" />
-                                        <span>{formatTimestamp(activity.createdon)}</span>
                                       </div>
                                     </div>
                                   </div>
