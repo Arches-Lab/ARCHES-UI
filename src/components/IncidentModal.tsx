@@ -38,7 +38,6 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
       try {
         setLoadingEmployees(true);
         const employeesData = await getEmployees();
-        console.log('Employees loaded:', employeesData);
         setEmployees(Array.isArray(employeesData) ? employeesData : []);
       } catch (error) {
         console.error('Error fetching employees:', error);
@@ -51,10 +50,7 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
     fetchEmployees();
   }, []);
 
-  // Debug assignedto value changes
-  useEffect(() => {
-    console.log('assignedto value changed:', formData.assignedto);
-  }, [formData.assignedto]);
+
 
   useEffect(() => {
     if (incident) {
@@ -82,9 +78,6 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
       return;
     }
 
-    console.log('Submitting incident data:', formData);
-    console.log('Selected employee ID:', formData.assignedto);
-
     onSave({
       ...formData,
       storenumber: selectedStore
@@ -93,7 +86,6 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    console.log(`Field ${name} changed to:`, value);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -241,14 +233,10 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
                     <option value="">No employees found</option>
                   ) : (
                     employees.map(employee => {
-                      console.log(`Creating option for employee:`, employee);
-                      console.log(`Employee ID: ${employee.employeeid}, Name: ${employee.firstname} ${employee.lastname}`);
-                      console.log(`Employee object keys:`, Object.keys(employee));
                       const employeeValue = employee.employeeid || employee.email;
-                      console.log(`Using value: ${employeeValue}`);
                       return (
                         <option key={employee.employeeid || employee.email} value={employeeValue}>
-                          {employee.firstname} {employee.lastname} ({employee.email})
+                          {employee.firstname} {employee.lastname}
                         </option>
                       );
                     })
