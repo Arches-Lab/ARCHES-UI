@@ -2,12 +2,14 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 import { useNavigate } from 'react-router-dom';
 import { supabase, AuthUser, AuthSession } from '../lib/supabase';
 import { setTokenGetter } from '../api';
+import { getEmployeeByUserId } from '../api/employee';
 import { emailStorage } from '../utils/emailStorage';
 
 type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: AuthUser | null;
+  employeeId: string | null;
   login: (email: string, password?: string) => Promise<void>;
   loginWithOtp: (email: string) => Promise<void>;
   verifyOtp: (email: string, token: string) => Promise<void>;
@@ -34,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [storeNumber, setStoreNumber] = useState<number[] | null>(null);
   const [selectedStoreNumber, setSelectedStoreNumber] = useState<number | null>(null);
   const [metadata, setMetadata] = useState<{
@@ -101,6 +104,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await extractStoreNumberFromUser();
   };
 
+  // Extract employee ID from user
+  const extractEmployeeIdFromUser = async () => {
+    try {
+      if (!user) {
+        console.log('❌ Cannot extract EmployeeId: no user');
+        return;
+      }
+      
+      console.log('🔍 Extracting EmployeeId from user...');
+      
+      // Fetch employee details from API
+      const employeeData = await getEmployeeByUserId(user.id);
+      console.log('Employee data:', employeeData);
+      
+      if (employeeData && employeeData.employeeid) {
+        setEmployeeId(employeeData.employeeid);
+        console.log('✅ EmployeeId extraction completed:', employeeData.employeeid);
+      } else {
+        console.log('❌ No employee data found for user:', user.id);
+        setEmployeeId(null);
+      }
+    } catch (error) {
+      console.error('❌ Error extracting EmployeeId from user:', error);
+      setEmployeeId(null);
+    }
+  };
+
   // Initialize auth state
   useEffect(() => {
     // Get initial session
@@ -134,10 +164,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Extract store number when user changes
+  // Extract store number and employee ID when user changes
   useEffect(() => {
     if (user) {
       extractStoreNumberFromUser();
+      extractEmployeeIdFromUser();
     }
   }, [user]);
 
@@ -295,6 +326,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user, 
         isLoading, 
         user, 
+        employeeId,
         login, 
         loginWithOtp,
         verifyOtp,

@@ -112,14 +112,6 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Store Selection */}
-          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-            <FaStore className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-900">
-              Store {selectedStore}
-            </span>
-          </div>
-
           {/* Message Content */}
           <div>
             <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
