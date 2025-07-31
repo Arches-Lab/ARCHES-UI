@@ -9,7 +9,7 @@ const links = [
   { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/tasks', label: 'Tasks', icon: <FaTasks /> },
   { to: '/incidents', label: 'Incidents', icon: <FaExclamationTriangle /> },
-  // { to: '/profile', label: 'Profile', icon: <FaUser /> },
+  { to: '/profile', label: 'Profile', icon: <FaUser /> },
   // { to: '/settings', label: 'Settings', icon: <FaCog /> },
   { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
 ];
