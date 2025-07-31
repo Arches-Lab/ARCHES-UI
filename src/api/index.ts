@@ -70,6 +70,14 @@ export const updateSettings = async (payload: any) => {
   return data;
 };
 
+export const changePassword = async (passwordData: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const { data } = await api.post('/auth/change-password', passwordData);
+  return data;
+};
+
 // Re-export task functions from tasks.ts
 export * from './task';
 export * from './message';

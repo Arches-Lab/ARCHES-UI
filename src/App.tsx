@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import ChangePassword from './pages/ChangePassword';
 import Login from './components/Login';
 import Employees from './pages/Employees';
 import NewUser from './pages/NewUser';
@@ -58,6 +59,7 @@ function App() {
               <Route index element={<Dashboard />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="change-password" element={<ChangePassword />} />
               <Route path="employees" element={<Employees />} />
               <Route path="newuser" element={<NewUser />} />
               <Route path="messages" element={<Messages />} />
