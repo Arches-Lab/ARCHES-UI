@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getMessages, archiveMessage } from '../api';
-import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell, FaPlus, FaArchive } from 'react-icons/fa';
+import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell, FaPlus, FaArchive, FaFilter } from 'react-icons/fa';
 import CreateMessage from '../components/CreateMessage';
 import { useStore } from '../auth/StoreContext';
+import { useAuth } from '../auth/AuthContext';
 
 interface Message {
   messageid: string;
@@ -30,7 +31,9 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAssignedOnly, setShowAssignedOnly] = useState(false);
   const { selectedStore } = useStore();
+  const { user, employeeId } = useAuth();
 
   useEffect(() => {
     console.log(`🔄 Messages useEffect - selectedStore: ${selectedStore}`);
@@ -77,6 +80,11 @@ export default function Messages() {
     return message.archivedon !== null;
   };
 
+  // Filter messages based on the toggle state
+  const filteredMessages = showAssignedOnly 
+    ? messages.filter(message => message.createdfor === employeeId)
+    : messages;
+
   const handleArchiveMessage = async (messageId: string) => {
     try {
       await archiveMessage(messageId);
@@ -121,8 +129,22 @@ export default function Messages() {
           <h2 className="text-2xl font-semibold">Messages</h2>
         </div>
         <div className="flex items-center gap-4">
+          {/* Toggle Filter */}
+          <div className="flex items-center gap-2">
+            <FaFilter className="w-4 h-4 text-gray-500" />
+            <button
+              onClick={() => setShowAssignedOnly(!showAssignedOnly)}
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                showAssignedOnly
+                  ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                  : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+              }`}
+            >
+              {showAssignedOnly ? 'My Messages' : 'All Messages'}
+            </button>
+          </div>
           <div className="text-sm text-gray-600">
-            {messages.length} message{messages.length !== 1 ? 's' : ''}
+            {filteredMessages.length} message{filteredMessages.length !== 1 ? 's' : ''}
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -134,16 +156,23 @@ export default function Messages() {
         </div>
       </div>
 
-      {messages.length === 0 ? (
+      {filteredMessages.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
           <FaEnvelope className="text-4xl text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Messages</h3>
-          <p className="text-gray-600">You don't have any messages at the moment.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {showAssignedOnly ? 'No Messages Assigned to You' : 'No Messages'}
+          </h3>
+          <p className="text-gray-600">
+            {showAssignedOnly 
+              ? 'You don\'t have any messages assigned to you at the moment.'
+              : 'You don\'t have any messages at the moment.'
+            }
+          </p>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="divide-y divide-gray-200">
-            {messages.map((message) => (
+            {filteredMessages.map((message) => (
               <div
                 key={message.messageid}
                 className={`p-6 transition-all hover:bg-gray-50 ${
