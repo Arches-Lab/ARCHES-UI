@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getLeads, getActivities } from '../api';
-import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle } from 'react-icons/fa';
+import { FaLightbulb, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaPhone, FaEnvelope, FaUserTie, FaFlag, FaArrowLeft, FaListAlt, FaVoicemail, FaComment, FaCalendar, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle, FaEdit } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import ActivityCreation from '../components/ActivityCreation';
-import { Lead, Activity } from '../models';
+import LeadModal from '../components/LeadModal';
+import { Lead, Activity, getLeadStatusDisplayName, getLeadStatusColor, getLeadStatusIcon } from '../models';
 
 export default function LeadDetails() {
   const { leadId } = useParams<{ leadId: string }>();
@@ -13,6 +14,7 @@ export default function LeadDetails() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -127,6 +129,32 @@ export default function LeadDetails() {
     return <FaListAlt className="w-4 h-4 text-gray-400" />;
   };
 
+  const handleEditLead = () => {
+    setShowEditModal(true);
+  };
+
+  const handleSaveLead = async (leadData: {
+    description: string;
+    contactname: string;
+    phone: string;
+    email: string;
+    status: string;
+    assignedto: string;
+    storenumber: number;
+  }) => {
+    try {
+      if (lead) {
+        const { updateLead } = await import('../api');
+        const updatedLead = await updateLead(lead.leadid, leadData);
+        setLead(updatedLead);
+        setShowEditModal(false);
+      }
+    } catch (error) {
+      console.error('Error updating lead:', error);
+      alert('Failed to update lead. Please try again.');
+    }
+  };
+
 
 
   if (loading) {
@@ -183,17 +211,28 @@ export default function LeadDetails() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/leads')}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <FaArrowLeft className="w-4 h-4" />
             Back to Leads
           </button>
-          <FaLightbulb className="text-3xl text-yellow-600" />
-          <h2 className="text-2xl font-semibold">Lead Details</h2>
+          <div className="flex items-center gap-3">
+            <FaLightbulb className="text-3xl text-yellow-600" />
+            <div>
+              <h2 className="text-2xl font-semibold">Lead Details</h2>
+            </div>
+          </div>
         </div>
+        <button
+          onClick={handleEditLead}
+          className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+        >
+          <FaEdit className="w-4 h-4" />
+          Edit Lead
+        </button>
       </div>
 
       {/* Lead Information */}
@@ -206,9 +245,8 @@ export default function LeadDetails() {
               <div className="flex-1 pr-4">
                 {/* Status */}
                 <div className="flex items-center gap-2 mb-3">
-                  <FaFlag className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm font-medium text-gray-700">
-                    {lead.status}
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
+                    {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
                   </span>
                 </div>
                 
@@ -337,6 +375,16 @@ export default function LeadDetails() {
           </div>
         )}
       </div>
+
+      {/* Edit Lead Modal */}
+      {showEditModal && lead && (
+        <LeadModal
+          lead={lead}
+          onSave={handleSaveLead}
+          onCancel={() => setShowEditModal(false)}
+          selectedStore={selectedStore || 1}
+        />
+      )}
     </div>
   );
 } 

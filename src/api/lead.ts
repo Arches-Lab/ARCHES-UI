@@ -18,3 +18,16 @@ export const createLead = async (leadData: {
   const { data } = await api.post('/leads', leadData);
   return data;
 };
+
+export const updateLead = async (leadId: string, leadData: {
+  storenumber: number;
+  description: string;
+  contactname: string;
+  phone: string;
+  email: string;
+  assignedto: string;
+  status: string;
+}) => {
+  const { data } = await api.put(`/leads/${leadId}`, leadData);
+  return data;
+};
