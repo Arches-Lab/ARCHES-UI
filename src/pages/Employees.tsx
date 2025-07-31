@@ -26,7 +26,7 @@ export default function Employees() {
         setLoading(true);
         setError(null);
         console.log(`🔄 Fetching employees for store: ${selectedStore}`);
-        const data = await getEmployees();
+        const data = await getEmployees(true);
         console.log("Employees data received:", data);
         setEmployees(Array.isArray(data) ? data : []);
       } catch (err) {
