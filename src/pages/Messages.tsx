@@ -32,6 +32,7 @@ export default function Messages() {
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAssignedOnly, setShowAssignedOnly] = useState(false);
+  const [includeArchived, setIncludeArchived] = useState<boolean | null>(false);
   const { selectedStore } = useStore();
   const { user, employeeId } = useAuth();
 
@@ -43,7 +44,7 @@ export default function Messages() {
         setLoading(true);
         setError(null);
         console.log(`🔄 Fetching messages for store: ${selectedStore}`);
-        const data = await getMessages();
+        const data = await getMessages(includeArchived);
         console.log('Messages data:', data);
         setMessages(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -65,7 +66,7 @@ export default function Messages() {
       setLoading(false);
       setError(null);
     }
-  }, [selectedStore]);
+  }, [selectedStore, includeArchived]);
 
   const formatTimestamp = (timestamp: string) => {
     try {
@@ -90,7 +91,7 @@ export default function Messages() {
       await archiveMessage(messageId);
       // Refresh the messages list to show updated archive status
       // Re-fetch messages after archiving
-      const data = await getMessages();
+      const data = await getMessages(includeArchived);
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error archiving message:', error);
@@ -129,19 +130,56 @@ export default function Messages() {
           <h2 className="text-2xl font-semibold">Messages</h2>
         </div>
         <div className="flex items-center gap-4">
-          {/* Toggle Filter */}
-          <div className="flex items-center gap-2">
-            <FaFilter className="w-4 h-4 text-gray-500" />
-            <button
-              onClick={() => setShowAssignedOnly(!showAssignedOnly)}
-              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                showAssignedOnly
-                  ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                  : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
-              }`}
-            >
-              {showAssignedOnly ? 'My Messages' : 'All Messages'}
-            </button>
+          {/* Toggle Filters */}
+          <div className="flex items-center gap-4">
+            
+            {/* Message Type Filter */}
+            <div className="flex items-center gap-1 border-2 border-gray-300 rounded-md p-1 bg-gray-50">
+              <button
+                onClick={() => setShowAssignedOnly(false)}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  !showAssignedOnly
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                }`}
+              >
+                All Messages
+              </button>
+              <button
+                onClick={() => setShowAssignedOnly(true)}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  showAssignedOnly
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                }`}
+              >
+                My Messages
+              </button>
+            </div>
+
+            {/* Archive Status Filter */}
+            <div className="flex items-center gap-1 border-2 border-gray-300 rounded-md p-1 bg-gray-50">
+              <button
+                onClick={() => setIncludeArchived(null)}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  includeArchived === null
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                }`}
+              >
+                Include Archived
+              </button>
+              <button
+                onClick={() => setIncludeArchived(false)}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  includeArchived === false
+                    ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                }`}
+              >
+                Exclude Archived
+              </button>
+            </div>
           </div>
           <div className="text-sm text-gray-600">
             {filteredMessages.length} message{filteredMessages.length !== 1 ? 's' : ''}
@@ -217,11 +255,23 @@ export default function Messages() {
                       </span>
                     )}
                   </div>
-                  {message.archivedon && (
-                    <div className="flex items-center gap-1">
-                      <span>Archived: {formatTimestamp(message.archivedon)}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {!isArchived(message) && (
+                      <button
+                        onClick={() => handleArchiveMessage(message.messageid)}
+                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                        title="Archive message"
+                      >
+                        <FaArchive className="w-3 h-3" />
+                        <span>Archive</span>
+                      </button>
+                    )}
+                    {message.archivedon && (
+                      <div className="flex items-center gap-1">
+                        <span>Archived: {formatTimestamp(message.archivedon)}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -236,7 +286,7 @@ export default function Messages() {
             setShowCreateModal(false);
             // Re-fetch messages after creating a new message
             try {
-              const data = await getMessages();
+              const data = await getMessages(includeArchived);
               setMessages(Array.isArray(data) ? data : []);
             } catch (error) {
               console.error('Error refreshing messages after creation:', error);

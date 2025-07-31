@@ -33,7 +33,7 @@ export default function CreateMessage({ onMessageCreated, onCancel }: CreateMess
       try {
         setEmployeesLoading(true);
         console.log(`🔄 Fetching employees for recipient selection (store: ${selectedStore})`);
-        const data = await getEmployees();
+        const data = await getEmployees(true);
         // Filter to only active employees
         const activeEmployees = Array.isArray(data) ? data.filter((emp: Employee) => emp.active) : [];
         setEmployees(activeEmployees);
