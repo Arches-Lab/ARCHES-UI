@@ -108,6 +108,7 @@ export default function Incidents() {
     title: string;
     description: string;
     status: string;
+    casenumber?: string;
     assignedto: string;
     storenumber: number;
   }) => {
@@ -221,6 +222,11 @@ export default function Incidents() {
                     {/* Incident Title and Description */}
                     <div>
                       <h4 className="text-lg font-medium text-gray-900 mb-2">{incident.title}</h4>
+                      {incident.casenumber && (
+                        <div className="text-sm text-gray-500 mb-2">
+                          Case #: {incident.casenumber}
+                        </div>
+                      )}
                       {incident.description && (
                         <p className="text-gray-600 mb-3">{incident.description}</p>
                       )}

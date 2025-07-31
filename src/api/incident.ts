@@ -17,6 +17,7 @@ export const createIncident = async (incidentData: {
   title: string;
   description?: string;
   status?: string;
+  casenumber?: string;
   assignedto?: string;
 }) => {
   const { data } = await api.post('/incidents', incidentData);
@@ -29,6 +30,7 @@ export const updateIncident = async (incidentId: string, incidentData: {
   title: string;
   description?: string;
   status?: string;
+  casenumber?: string;
   assignedto?: string;
 }) => {
   const { data } = await api.put(`/incidents/${incidentId}`, incidentData);

@@ -5,6 +5,7 @@ export interface Incident {
   title: string;
   description: string;
   status: string;
+  casenumber?: string;
   assignedto?: string;
   assignee: {
     email: string | null;

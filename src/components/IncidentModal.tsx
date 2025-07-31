@@ -10,6 +10,7 @@ interface IncidentModalProps {
     title: string;
     description: string;
     status: string;
+    casenumber?: string;
     assignedto: string;
     storenumber: number;
   }) => void;
@@ -23,8 +24,8 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
     title: '',
     description: '',
     status: 'NEW',
-    assignedto: '',
-    storenumber: selectedStore
+    casenumber: '',
+    assignedto: ''
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
@@ -62,8 +63,8 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
         title: incident.title,
         description: incident.description || '',
         status: incident.status || 'NEW',
-        assignedto: incident.assignedto || '',
-        storenumber: incident.storenumber
+        casenumber: incident.casenumber || '',
+        assignedto: incident.assignedto || ''
       });
     }
   }, [incident, employees]);
@@ -84,7 +85,10 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
     console.log('Submitting incident data:', formData);
     console.log('Selected employee ID:', formData.assignedto);
 
-    onSave(formData);
+    onSave({
+      ...formData,
+      storenumber: selectedStore
+    });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -178,6 +182,22 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
             </div>
           </div>
 
+          {/* Case Number */}
+          <div>
+            <label htmlFor="casenumber" className="block text-sm font-medium text-gray-700 mb-2">
+              Case Number
+            </label>
+            <input
+              type="text"
+              id="casenumber"
+              name="casenumber"
+              value={formData.casenumber}
+              onChange={handleInputChange}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              placeholder="Enter case number (optional)"
+            />
+          </div>
+
           {/* Status and Assigned To */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Status */}
@@ -238,24 +258,7 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
             </div>
           </div>
 
-          {/* Store Number */}
-          <div>
-            <label htmlFor="storenumber" className="block text-sm font-medium text-gray-700 mb-2">
-              Store Number
-            </label>
-            <div className="relative">
-              <FaStore className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="number"
-                id="storenumber"
-                name="storenumber"
-                value={formData.storenumber}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                placeholder="Enter store number"
-              />
-            </div>
-          </div>
+
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
