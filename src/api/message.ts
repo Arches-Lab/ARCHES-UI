@@ -1,8 +1,16 @@
 import api from './index';
 
 // Messages API functions
-export const getMessages = async () => {
-  const { data } = await api.get('/messages');
+export const getMessages = async (archived?: boolean | null) => {
+  const params = new URLSearchParams();
+  if (archived !== null && archived !== undefined) {
+    params.append('archived', archived.toString());
+  }
+  
+  const queryString = params.toString();
+  const url = queryString ? `/messages?${queryString}` : '/messages';
+  
+  const { data } = await api.get(url);
   return data;
 };
 
