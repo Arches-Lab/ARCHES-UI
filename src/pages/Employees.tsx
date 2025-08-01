@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getEmployees, createEmployee } from '../api';
-import { FaUsers, FaSpinner, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
+import { FaUsers, FaSpinner, FaExclamationTriangle, FaPlus, FaEye, FaUser, FaCalendar } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import EmployeeModal from '../components/EmployeeModal';
 
 interface Employee {
-  id: string;
+  employeeid: string;
   firstname: string;
   lastname: string;
   email: string;
   role?: string;
   active: boolean;
+  createdon?: string;
+  creator?: {
+    firstname: string;
+    lastname: string;
+  };
 }
 
 export default function Employees() {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,6 +93,25 @@ export default function Employees() {
     }
   };
 
+  const handleViewEmployee = (employee: Employee) => {
+    navigate(`/employees/${employee.employeeid}`);
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -131,78 +157,42 @@ export default function Employees() {
       </div>
 
       {employees.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
-          <FaUsers className="text-4xl text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Employees Found</h3>
-          <p className="text-gray-600">There are no employees to display at the moment.</p>
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+          <FaUsers className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+          <p className="text-gray-500">No employees found</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Employee
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Active
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {employees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-blue-600">
-                              {(employee.firstname || '').charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {employee.firstname || 'N/A'} {employee.lastname || ''}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {employee.email}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">
-                        {employee.role || 'N/A'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">
-                        {employee.active ? 'True' : 'False'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        employee.active === true 
-                          ? 'bg-green-100 text-green-800'
-                          : employee.active === false
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {employee.active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="divide-y divide-gray-200">
+            {employees.map((employee) => (
+              <div key={employee.employeeid} className="p-4 hover:bg-gray-50 transition-colors">
+                {/* Main Content Row */}
+                <div className="flex items-start justify-between">
+                  {/* Left Side - Employee Details */}
+                  <div className="flex-1 pr-3">
+                    {/* Employee Name and Email */}
+                    <div>
+                      <h4 className="text-base font-medium text-gray-900 mb-1">
+                        {employee.firstname || 'N/A'} {employee.lastname || ''}
+                      </h4>
+                      <p className="text-sm text-gray-600">{employee.email || 'No email'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Right Side - Information */}
+                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[180px]">
+                    <button
+                      onClick={() => handleViewEmployee(employee)}
+                      className="flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="View details"
+                    >
+                      <FaEye className="w-3 h-3" />
+                      <span>View Details</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

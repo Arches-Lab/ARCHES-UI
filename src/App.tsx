@@ -5,6 +5,7 @@ import Settings from './pages/Settings';
 import ChangePassword from './pages/ChangePassword';
 import Login from './components/Login';
 import Employees from './pages/Employees';
+import EmployeeDetail from './pages/EmployeeDetail';
 import NewUser from './pages/NewUser';
 import Messages from './pages/Messages';
 import Leads from './pages/Leads';
@@ -61,6 +62,7 @@ function App() {
               <Route path="settings" element={<Settings />} />
               <Route path="change-password" element={<ChangePassword />} />
               <Route path="employees" element={<Employees />} />
+              <Route path="employees/:employeeId" element={<EmployeeDetail />} />
               <Route path="newuser" element={<NewUser />} />
               <Route path="messages" element={<Messages />} />
               <Route path="leads" element={<Leads />} />
