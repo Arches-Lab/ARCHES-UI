@@ -66,7 +66,7 @@ export default function PinAuth({ onSuccess, onCancel }: PinAuthProps) {
             Admin Authentication Required
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter the admin PIN to access the New User page
+            Enter the admin PIN to access the User Accounts page
           </p>
         </div>
         

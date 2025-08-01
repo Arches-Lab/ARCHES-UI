@@ -16,3 +16,8 @@ export const createActivity = async (activityData: {
   const { data } = await api.post('/activities', activityData);
   return data;
 };
+
+export const getActivitiesForEmployee = async (employeeId: string) => {
+  const { data } = await api.get(`/activities/parent/EMPLOYEE/${employeeId}`);
+  return data;
+};
