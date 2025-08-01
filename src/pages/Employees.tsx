@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getEmployees } from '../api';
-import { FaUsers, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { getEmployees, createEmployee } from '../api';
+import { FaUsers, FaSpinner, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
+import EmployeeModal from '../components/EmployeeModal';
 
 interface Employee {
   id: string;
@@ -16,6 +17,7 @@ export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -50,6 +52,40 @@ export default function Employees() {
     }
   }, [selectedStore]);
 
+  const handleCreateEmployee = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleEmployeeCreated = async () => {
+    setShowCreateModal(false);
+    // Refresh employees data
+    try {
+      const employeesData = await getEmployees(true);
+      setEmployees(Array.isArray(employeesData) ? employeesData : []);
+    } catch (error) {
+      console.error('Error refreshing employees:', error);
+    }
+  };
+
+  const handleSaveEmployee = async (employeeData: {
+    firstname: string;
+    lastname: string;
+    email: string;
+    role?: string;
+    active: boolean;
+  }) => {
+    try {
+      await createEmployee({
+        ...employeeData,
+        storenumber: selectedStore || 0
+      });
+      handleEmployeeCreated();
+    } catch (error) {
+      console.error('Error creating employee:', error);
+      alert('Failed to create employee. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -80,8 +116,17 @@ export default function Employees() {
           <FaUsers className="text-3xl text-blue-600" />
           <h2 className="text-2xl font-semibold">Employees</h2>
         </div>
-        <div className="text-sm text-gray-600">
-          {employees.length} employee{employees.length !== 1 ? 's' : ''}
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-600">
+            {employees.length} employee{employees.length !== 1 ? 's' : ''}
+          </div>
+          <button
+            onClick={handleCreateEmployee}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <FaPlus className="w-4 h-4" />
+            Add Employee
+          </button>
         </div>
       </div>
 
@@ -160,6 +205,15 @@ export default function Employees() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* Create Employee Modal */}
+      {showCreateModal && (
+        <EmployeeModal
+          onSave={handleSaveEmployee}
+          onCancel={() => setShowCreateModal(false)}
+          selectedStore={selectedStore || 0}
+        />
       )}
     </div>
   );

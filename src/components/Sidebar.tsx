@@ -11,7 +11,7 @@ const links = [
   { to: '/incidents', label: 'Incidents', icon: <FaExclamationTriangle /> },
   { to: '/profile', label: 'Profile', icon: <FaUser /> },
   // { to: '/settings', label: 'Settings', icon: <FaCog /> },
-  { to: '/newuser', label: 'New User', icon: <FaUserPlus /> },
+  { to: '/newuser', label: 'User Accounts', icon: <FaUserPlus /> },
 ];
 
 export default function Sidebar() {
