@@ -87,5 +87,6 @@ export * from './mailbox';
 export * from './employee';
 export * from './employeestore';
 export * from './incident';
+export * from './supply';
 
 export default api;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getDashboardData } from '../api';
 import { useStore } from '../auth/StoreContext';
+import SuppliesList from '../components/SuppliesList';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -32,7 +33,7 @@ export default function Dashboard() {
       </div>
       
       {/* Store Selection Info */}
-      {selectedStore && (
+      {/* {selectedStore && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-lg font-medium text-blue-900 mb-2">Store Context</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -62,9 +63,15 @@ export default function Dashboard() {
             💡 Use the store selector in the header to switch between stores. All data will update automatically.
           </p>
         </div>
+      )} */}
+      
+      {/* Dashboard Widgets */}
+      {selectedStore && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SuppliesList />
+          {/* Add more dashboard widgets here */}
+        </div>
       )}
-      
-      
     </div>
   );
 }
