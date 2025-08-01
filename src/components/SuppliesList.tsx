@@ -46,7 +46,7 @@ export default function SuppliesList() {
     return (
       <div className="text-center p-6">
         <FaBoxes className="text-4xl text-gray-300 mx-auto mb-2" />
-        <p className="text-gray-500 text-lg">No supplies available</p>
+        <p className="text-gray-500 text-lg">No supplies needed at this time.</p>
       </div>
     );
   }
