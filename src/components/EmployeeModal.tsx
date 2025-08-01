@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaUser, FaEnvelope, FaBuilding } from 'react-icons/fa';
 import { Employee } from '../models';
+import { EMPLOYEE_ROLES } from '../models/EmployeeRoles';
 
 interface EmployeeModalProps {
   employee?: Employee | null;
@@ -20,7 +21,7 @@ export default function EmployeeModal({ employee, onSave, onCancel, selectedStor
     firstname: '',
     lastname: '',
     email: '',
-    role: 'Employee',
+    role: 'ASSOCIATE',
     active: true
   });
 
@@ -32,7 +33,7 @@ export default function EmployeeModal({ employee, onSave, onCancel, selectedStor
         firstname: employee.firstname,
         lastname: employee.lastname,
         email: employee.email,
-        role: employee.role || 'Employee',
+        role: employee.role || 'ASSOCIATE',
         active: employee.active
       });
     }
@@ -176,10 +177,11 @@ export default function EmployeeModal({ employee, onSave, onCancel, selectedStor
                   onChange={handleInputChange}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="Employee">Employee</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Admin">Admin</option>
-                  <option value="Supervisor">Supervisor</option>
+                  {EMPLOYEE_ROLES.map((role) => (
+                    <option key={role.code} value={role.code}>
+                      {role.displayName}
+                    </option>
+                  ))}
                 </select>
               </div>
 

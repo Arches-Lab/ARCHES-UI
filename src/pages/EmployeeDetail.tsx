@@ -7,6 +7,7 @@ import { useStore } from '../auth/StoreContext';
 import ActivityCreation from '../components/ActivityCreation';
 import EmployeeModal from '../components/EmployeeModal';
 import { Employee, Activity } from '../models';
+import { getEmployeeRoleDisplayName } from '../models/EmployeeRoles';
 
 export default function EmployeeDetail() {
   const { employeeId } = useParams<{ employeeId: string }>();
@@ -234,7 +235,7 @@ export default function EmployeeDetail() {
             <FaBuilding className="text-gray-400 w-4 h-4" />
             <div>
               <p className="text-sm text-gray-500">Role</p>
-              <p className="text-gray-900">{employee.role || 'N/A'}</p>
+              <p className="text-gray-900">{employee.role ? getEmployeeRoleDisplayName(employee.role) : 'N/A'}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
