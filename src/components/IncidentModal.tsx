@@ -78,6 +78,11 @@ export default function IncidentModal({ incident, onSave, onCancel, selectedStor
       return;
     }
 
+    if (!formData.description.trim()) {
+      alert('Incident description is required');
+      return;
+    }
+
     onSave({
       ...formData,
       storenumber: selectedStore
