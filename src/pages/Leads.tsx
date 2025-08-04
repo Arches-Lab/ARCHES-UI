@@ -224,86 +224,87 @@ export default function Leads() {
             {filteredLeads.map((lead) => (
               <div
                 key={lead.leadid}
-                className="p-6 transition-all hover:bg-gray-50"
+                className="p-4 transition-all hover:bg-gray-50"
               >
-                {/* Main Content Row */}
-                <div className="flex items-start justify-between mb-4">
-                  {/* Left Side - Status and Description */}
-                  <div className="flex-1 pr-4">
+                {/* Row 1: Status, Contact, Assigned To */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-4 flex-1">
                     {/* Status */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
-                        {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
-                      </span>
-                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
+                      {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
+                    </span>
                     
-                    {/* Description */}
-                    <div>
-                      <p className="text-gray-700 whitespace-pre-wrap">{lead.description}</p>
-                    </div>
-                    <br></br>
-                    {/* Contact Information */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        {lead.contactname && (
-                          <div className="flex items-center gap-2">
-                            <FaUserTie className="w-4 h-4 text-blue-500" />
-                            <span className="font-medium">{lead.contactname}</span>
-                          </div>
-                        )}
-                        
-                        {lead.phone && (
-                          <div className="flex items-center gap-2">
-                            <FaPhone className="w-4 h-4 text-green-500" />
-                            <a 
-                              href={`tel:${lead.phone}`}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                              {formatPhone(lead.phone)}
-                            </a>
-                          </div>
-                        )}
-                        
-                        {lead.email && (
-                          <div className="flex items-center gap-2">
-                            <FaEnvelope className="w-4 h-4 text-red-500" />
-                            <a 
-                              href={`mailto:${lead.email}`}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
-                            >
-                              {lead.email}
-                            </a>
-                          </div>
-                        )}
+                    {/* Contact Name */}
+                    {lead.contactname && (
+                      <div className="flex items-center gap-2">
+                        <FaUserTie className="w-4 h-4 text-blue-500" />
+                        <span className="font-medium text-gray-900">{lead.contactname}</span>
                       </div>
-
-                    </div>
+                    )}
+                    
+                    {/* Phone */}
+                    {lead.phone && (
+                      <div className="flex items-center gap-2">
+                        <FaPhone className="w-4 h-4 text-green-500" />
+                        <a 
+                          href={`tel:${lead.phone}`}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {formatPhone(lead.phone)}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {/* Email */}
+                    {lead.email && (
+                      <div className="flex items-center gap-2">
+                        <FaEnvelope className="w-4 h-4 text-red-500" />
+                        <a 
+                          href={`mailto:${lead.email}`}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {lead.email}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {/* Assigned To */}
+                    {lead.assigned && (
+                      <div className="flex items-center gap-2">
+                        <FaUser className="w-4 h-4 text-purple-500" />
+                        <span className="text-gray-700">Assigned: {lead.assigned.firstname} {lead.assigned.lastname}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Right Side - Information */}
-                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[200px]">
-                    <button
-                      onClick={() => handleViewLead(lead.leadid)}
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                      title="View lead details"
-                    >
-                      <FaEye className="w-3 h-3" />
-                      <span>View Details</span>
-                    </button>
+                  {/* View Details Button */}
+                  <button
+                    onClick={() => handleViewLead(lead.leadid)}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors ml-4"
+                    title="View lead details"
+                  >
+                    <FaEye className="w-3 h-3" />
+                    <span>View Details</span>
+                  </button>
+                </div>
+                
+                {/* Row 2: Description, Created Info, Assigned To */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-4">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                      {lead.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-gray-500 min-w-[200px] flex-shrink-0">
                     <div className="flex items-center gap-1">
                       <FaClock className="w-3 h-3" />
-                      <span>Created On: {formatTimestamp(lead.createdon)}</span>
+                      <span>Created: {formatTimestamp(lead.createdon)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <FaUser className="w-3 h-3" />
-                      <span>Created By: {lead.creator.firstname} {lead.creator.lastname}</span>
+                      <span>By: {lead.creator.firstname} {lead.creator.lastname}</span>
                     </div>
-                    {lead.assigned && (
-                      <div className="flex items-center gap-1">
-                        <FaUser className="w-3 h-3" />
-                        <span>Assigned To: {lead.assigned.firstname} {lead.assigned.lastname}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -323,4 +324,4 @@ export default function Leads() {
       )}
     </div>
   );
-} 
+}

@@ -203,57 +203,63 @@ export default function Incidents() {
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredIncidents.map((incident) => (
-              <div key={incident.incidentid} className="p-6 hover:bg-gray-50 transition-colors">
-                {/* Main Content Row */}
-                <div className="flex items-start justify-between">
-                  {/* Left Side - Incident Details */}
-                  <div className="flex-1 pr-4">
-                    {/* Status and Type */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')}`}>
-                        {getIncidentStatusIcon(incident.status || '')} 
-                        {getIncidentStatusDisplayName(incident.status || '')}
-                      </span>
-                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                        {getIncidentTypeStatusIcon(incident.incidenttypecode)} {getIncidentTypeDisplayName(incident.incidenttypecode)}
-                      </span>
-                    </div>
+              <div key={incident.incidentid} className="p-4 hover:bg-gray-50 transition-colors">
+                {/* Row 1: Status, Type, Title, Case Number, Assigned To */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-4 flex-1">
+                    {/* Status */}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')}`}>
+                      {getIncidentStatusIcon(incident.status || '')} {getIncidentStatusDisplayName(incident.status || '')}
+                    </span>
                     
-                    {/* Incident Title and Description */}
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">{incident.title}</h4>
-                      {incident.casenumber && (
-                        <div className="text-sm text-gray-500 mb-2">
-                          Case #: {incident.casenumber}
-                        </div>
-                      )}
-                      {incident.description && (
-                        <p className="text-gray-600 mb-3">{incident.description}</p>
-                      )}
-                    </div>
+                    {/* Type */}
+                    <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                      {getIncidentTypeStatusIcon(incident.incidenttypecode)} {getIncidentTypeDisplayName(incident.incidenttypecode)}
+                    </span>
+                    
+                    {/* Case Number */}
+                    {incident.casenumber && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">Case #{incident.casenumber}</span>
+                      </div>
+                    )}
+                    
+                    {/* Assigned To */}
+                    {incident.assignedto && (
+                      <div className="flex items-center gap-2">
+                        <FaUser className="w-4 h-4 text-purple-500" />
+                        <span className="text-gray-700">Assigned: {incident.assignee.firstname} {incident.assignee.lastname}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Right Side - Information */}
-                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[200px]">
-                    <button
-                      onClick={() => handleViewIncident(incident)}
-                      className="flex items-center gap-2 p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                      title="View details"
-                    >
-                      <FaEye className="w-3 h-3" />
-                      <span>View Details</span>
-                    </button>
+                  {/* View Details Button */}
+                  <button
+                    onClick={() => handleViewIncident(incident)}
+                    className="flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors ml-4"
+                    title="View incident details"
+                  >
+                    <FaEye className="w-3 h-3" />
+                    <span>View Details</span>
+                  </button>
+                </div>
+                
+                {/* Row 2: Title: Description, Created Info */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-4">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                      <span className="font-semibold text-gray-900">{incident.title}:</span> {incident.description}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-gray-500 min-w-[200px] flex-shrink-0">
                     <div className="flex items-center gap-1">
                       <FaCalendar className="w-3 h-3" />
-                      <span>Created On: {formatDate(incident.createdon)}</span>
+                      <span>Created: {formatDate(incident.createdon)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <FaUser className="w-3 h-3" />
-                      <span>Created By: {incident.creator ? incident.creator.firstname + " " + incident.creator.lastname : 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-3 h-3" />
-                      <span>Assigned To: {incident.assignedto ? incident.assignee.firstname + " " + incident.assignee.lastname : 'Unassigned'}</span>
+                      <span>By: {incident.creator ? incident.creator.firstname + " " + incident.creator.lastname : 'N/A'}</span>
                     </div>
                   </div>
                 </div>

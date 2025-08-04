@@ -149,7 +149,7 @@ export default function Supplies() {
         </div>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
-            {supplies.length} supply{supplies.length !== 1 ? 'ies' : ''}
+            {supplies.length} suppl{supplies.length !== 1 ? 'ies' : 'y'}
           </div>
           <button
             onClick={handleCreateSupply}
@@ -199,70 +199,82 @@ export default function Supplies() {
           <div className="divide-y divide-gray-200">
             {supplies.map((supply) => (
               <div key={supply.supplyid} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 pr-3">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-base font-medium text-gray-900">
-                        {supply.supplyname}
-                      </h4>
-                      <button
-                        onClick={() => handleEditSupply(supply)}
-                        className="flex items-center gap-1 p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                        title="Edit supply"
-                      >
-                        <FaEdit className="w-3 h-3" />
-                        <span>Edit</span>
-                      </button>
+                {/* Row 1: Supply Name, Quantity, Archived Info, Edit Button */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-4 flex-1">
+                    {/* Supply Name */}
+                    <div className="flex items-center gap-2">
+                      <FaBoxes className="w-4 h-4 text-blue-500" />
+                      <span className="font-medium text-gray-900">{supply.supplyname}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>Quantity: {supply.quantity}</span>
+                    
+                    {/* Quantity */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">Quantity: {supply.quantity}</span>
                     </div>
                   </div>
                   
-                  <div className="flex items-end gap-4 text-xs text-gray-500">
-                    {/* Created Information Column */}
-                    <div className="flex flex-col items-end gap-1 min-w-[140px]">
-                      <div className="flex items-center gap-1">
-                        <FaEye className="w-3 h-3" />
-                        <span>Created: {formatDate(supply.createdon)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FaEye className="w-3 h-3" />
-                        <span>Created By: {supply.creator.firstname} {supply.creator.lastname}</span>
-                      </div>
-                    </div>
-
-                    {/* Archived Information Column */}
-                    {supply.archivedon && (
-                      <div className="flex flex-col items-end gap-1 min-w-[140px]">
-                        <div className="flex items-center gap-1">
-                          <FaEye className="w-3 h-3" />
-                          <span>Archived: {formatDate(supply.archivedon)}</span>
-                        </div>
+                  {/* Archive Button, Archived Info, and Edit Button */}
+                  <div className="flex items-center gap-2">
+                    {!supply.archivedon ? (
+                      <button
+                        onClick={() => handleArchiveSupply(supply)}
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                        title="Archive supply"
+                      >
+                        <FaArchive className="w-3 h-3" />
+                        <span>Archive</span>
+                      </button>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <FaEye className="w-3 h-3 text-gray-500" />
+                          <span className="text-xs text-gray-500">Archived: {formatDate(supply.archivedon)}</span>
                         {supply.archiver && (
-                          <div className="flex items-center gap-1">
-                            <FaEye className="w-3 h-3" />
-                            <span>Archived By: {supply.archiver.firstname} {supply.archiver.lastname}</span>
-                          </div>
+                          <span className="text-xs text-gray-500">({supply.archiver.firstname} {supply.archiver.lastname})</span>
                         )}
-                      </div>
+                        </div>
+                        {/* {supply.archiver && (
+                          <div className="flex items-center gap-2">
+                            <FaEye className="w-3 h-3 text-gray-500" />
+                            <span className="text-xs text-gray-500">By: {supply.archiver.firstname} {supply.archiver.lastname}</span>
+                          </div>
+                        )} */}
+                      </>
                     )}
-
-                    {/* Action Buttons */}
-                    <div className="flex items-center gap-2">
-                      {!supply.archivedon && (
-                        <button
-                          onClick={() => handleArchiveSupply(supply)}
-                          className="flex items-center gap-1 p-2 text-gray-600 hover:bg-gray-50 rounded-md transition-colors"
-                          title="Archive supply"
-                        >
-                          <FaArchive className="w-3 h-3" />
-                          <span>Archive</span>
-                        </button>
-                      )}
+                    
+                    <button
+                      onClick={() => handleEditSupply(supply)}
+                      className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                      title="Edit supply"
+                    >
+                      <FaEdit className="w-3 h-3" />
+                      <span>Edit</span>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Row 2: Supply Name: Quantity, Created Info, Archive Button */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-4">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                      <span className="font-semibold text-gray-900">{supply.supplyname}:</span> Quantity {supply.quantity}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-gray-500 min-w-[200px] flex-shrink-0">
+                    <div className="flex items-center gap-1">
+                      <FaEye className="w-3 h-3" />
+                      <span>Created: {formatDate(supply.createdon)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <FaEye className="w-3 h-3" />
+                      <span>By: {supply.creator.firstname} {supply.creator.lastname}</span>
                     </div>
                   </div>
                 </div>
+                
+
               </div>
             ))}
           </div>
