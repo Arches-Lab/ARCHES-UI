@@ -267,7 +267,7 @@ export default function LeadModal({ lead, onSave, onCancel, selectedStore }: Lea
                       const employeeValue = employee.employeeid || employee.email;
                       return (
                         <option key={employee.employeeid || employee.email} value={employeeValue}>
-                          {employee.firstname} {employee.lastname} ({employee.email})
+                          {employee.firstname} {employee.lastname}
                         </option>
                       );
                     })
@@ -278,7 +278,7 @@ export default function LeadModal({ lead, onSave, onCancel, selectedStore }: Lea
           </div>
 
           {/* Store Number */}
-          <div>
+          {/* <div>
             <label htmlFor="storenumber" className="block text-sm font-medium text-gray-700 mb-2">
               Store Number
             </label>
@@ -294,7 +294,7 @@ export default function LeadModal({ lead, onSave, onCancel, selectedStore }: Lea
                 placeholder="Enter store number"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">

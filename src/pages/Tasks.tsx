@@ -223,48 +223,51 @@ export default function Tasks() {
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredTasks.map((task) => (
-              <div key={task.taskid} className="p-6 hover:bg-gray-50 transition-colors">
-                {/* Main Content Row */}
-                <div className="flex items-start justify-between">
-                  {/* Left Side - Task Details */}
-                  <div className="flex-1 pr-4">
+              <div key={task.taskid} className="p-4 hover:bg-gray-50 transition-colors">
+                {/* Row 1: Status, Task Name, Assigned To */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-4 flex-1">
                     {/* Status */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(task.taskstatus || '')}`}>
-                        {getStatusIcon(task.taskstatus || '')} {task.taskstatus || 'unknown'}
-                      </span>
-                    </div>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(task.taskstatus || '')}`}>
+                      {getStatusIcon(task.taskstatus || '')} {task.taskstatus || 'unknown'}
+                    </span>
                     
-                    {/* Task Name and Description */}
-                    <div>
-                      <h4 className="text-lg font-medium text-gray-900 mb-2">{task.taskname}</h4>
-                      {task.taskdescription && (
-                        <p className="text-gray-600 mb-3">{task.taskdescription}</p>
-                      )}
-                    </div>
+                    {/* Assigned To */}
+                    {task.assignedto && (
+                      <div className="flex items-center gap-2">
+                        <FaUser className="w-4 h-4 text-purple-500" />
+                        <span className="text-gray-700">Assigned: {task.assignee.firstname} {task.assignee.lastname}</span>
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Right Side - Information */}
-                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[200px]">
-                    <button
-                      onClick={() => handleViewTask(task)}
-                      className="flex items-center gap-2 p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                      title="View details"
-                    >
-                      <FaEye className="w-3 h-3" />
-                      <span>View Details</span>
-                    </button>
+                  {/* View Details Button */}
+                  <button
+                    onClick={() => handleViewTask(task)}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors ml-4"
+                    title="View task details"
+                  >
+                    <FaEye className="w-3 h-3" />
+                    <span>View Details</span>
+                  </button>
+                </div>
+                
+                {/* Row 2: Task Name: Description, Created Info */}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-4">
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                      <span className="font-semibold text-gray-900">{task.taskname}:</span> {task.taskdescription || 'No description'}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-xs text-gray-500 min-w-[200px] flex-shrink-0">
                     <div className="flex items-center gap-1">
                       <FaCalendar className="w-3 h-3" />
-                      <span>Created On: {formatDate(task.createdon)}</span>
+                      <span>Created: {formatDate(task.createdon)}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <FaUser className="w-3 h-3" />
-                      <span>Created To: {task.creator ? task.creator.firstname + " " + task.creator.lastname : 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-3 h-3" />
-                      <span>Assigned To: {task.assignedto ? task.assignee.firstname + " " + task.assignee.lastname : 'Unassigned'}</span>
+                      <span>By: {task.creator ? task.creator.firstname + " " + task.creator.lastname : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
