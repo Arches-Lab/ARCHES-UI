@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt } from 'react-icons/fa';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
+  { to: '/recent-activities', label: 'Recent Activities', icon: <FaCalendarAlt /> },
   { to: '/employees', label: 'Employees', icon: <FaUsers /> },
   { to: '/messages', label: 'Message Board', icon: <FaEnvelope /> },
   { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },
