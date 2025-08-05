@@ -216,19 +216,13 @@ export default function RecentActivities() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Parent Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Activity Type
+                      Type
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Description
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created On
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created By
+                      Created By/On
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -239,33 +233,34 @@ export default function RecentActivities() {
                   {activities.map((activity) => (
                     <tr key={activity.activityid} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-                          {getParentTypeLabel(activity.parenttypecode)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                            {getParentTypeLabel(activity.parenttypecode)}
+                          </span>
                           <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
                             {getActivityTypeLabel(activity.activitytypecode)}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="max-w-xs">
+                      <td className="px-6 py-4 w-2/5">
+                        <div className="max-w-full">
                           <p className="text-sm text-gray-900 truncate" title={activity.details}>
                             {activity.details}
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatTimestamp(activity.createdon)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
-                            {activity.creator.firstname} {activity.creator.lastname}
-                          </span>
+                      <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <FaUser className="w-4 h-4" />
+                            <span>
+                              {activity.creator.firstname} {activity.creator.lastname}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-400">
+                            <FaClock className="w-4 h-4" />
+                            <span>{formatTimestamp(activity.createdon)}</span>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
