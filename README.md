@@ -42,6 +42,23 @@ npm run dev
 - `src/auth/` – authentication context and utilities
 - `src/api/` – centralized API logic
 
+## Features
+
+### Recent Activities
+The Recent Activities page displays a comprehensive view of all activities across different entities (leads, incidents, tasks, mailboxes, etc.) within a selected time period. Users can:
+
+- View activities from the last 1-7 days (default: 2 days)
+- See activity details including parent type, activity type, description, creation date, and creator
+- Navigate directly to the corresponding parent detail page
+- Filter activities by date range with a maximum of 7 days
+
+**Key Features:**
+- **Cross-entity Activity Tracking**: Shows activities from leads, incidents, tasks, employees, mailboxes, and supplies
+- **Date Range Selection**: Users can select from 1-7 days to view historical activities
+- **Activity Details**: Displays parent type, activity type, description, creation timestamp, and creator information
+- **Direct Navigation**: Each activity includes a link to view the corresponding parent detail page
+- **Visual Indicators**: Different icons and color-coded badges for different activity types and parent types
+
 ## Authentication
 
 This application uses Supabase for authentication. The authentication flow includes:
