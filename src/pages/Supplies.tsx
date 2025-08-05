@@ -216,7 +216,7 @@ export default function Supplies() {
                   <tr key={supply.supplyid} className={`hover:bg-gray-50 ${
                     isArchived(supply) ? 'bg-gray-50 opacity-75' : ''
                   }`}>
-                    <td className="px-6 py-4 w-1/2">
+                    <td className="px-6 py-4 w-1/3">
                       <div className="max-w-full">
                         <div className="flex items-start gap-2">
                           <p className="text-sm text-gray-900 whitespace-pre-wrap" title={`${supply.supplyname}: Quantity ${supply.quantity}`}>
@@ -226,17 +226,13 @@ export default function Supplies() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
-                            {supply.creator ? `${supply.creator.firstname} ${supply.creator.lastname}` : 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-gray-400">
-                          <FaClock className="w-4 h-4" />
-                          <span>{formatDate(supply.createdon)}</span>
-                        </div>
+                      <div className="flex items-center gap-4">
+                        <FaUser className="w-4 h-4" />
+                        <span>
+                          {supply.creator ? `${supply.creator.firstname} ${supply.creator.lastname}` : 'N/A'}
+                        </span>
+                        <FaClock className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-400">{formatDate(supply.createdon)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
