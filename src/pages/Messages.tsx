@@ -209,72 +209,91 @@ export default function Messages() {
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="divide-y divide-gray-200">
-            {filteredMessages.map((message) => (
-              <div
-                key={message.messageid}
-                className={`p-6 transition-all hover:bg-gray-50 ${
-                  isArchived(message) 
-                    ? 'bg-gray-50 opacity-75' 
-                    : 'bg-white'
-                }`}
-              >
-                <div className="flex items-top justify-between mb-3">
-                  <div className="flex-1 pr-4">
-                    <p className="text-gray-700 whitespace-pre-wrap">{message.message}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 text-xs text-gray-500 min-w-[200px]">
-                    {message.notification && (
-                      <button className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-                        <FaBell className="w-3 h-3" />
-                        <span>Notification</span>
-                      </button>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <FaClock className="w-3 h-3" />
-                      <span>Created On: {formatTimestamp(message.createdon)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-3 h-3" />
-                      <span>Created By: {message.creator.firstname} {message.creator.lastname}</span>
-                    </div>
-                    {message.createdfor && (
-                      <div className="flex items-center gap-1">
-                        <FaUser className="w-3 h-3" />
-                        <span>Created For: {message.recipient.firstname} {message.recipient.lastname}</span>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Message
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created For
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created By/On
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                                  {filteredMessages.map((message) => (
+                    <tr key={message.messageid} className={`hover:bg-gray-50 ${
+                      isArchived(message) ? 'bg-gray-50 opacity-75' : ''
+                    } ${
+                      message.notification ? 'bg-red-50' : ''
+                    }`}>
+                      <td className={`px-6 py-4 w-1/2 ${
+                        message.notification ? 'border-l-4 border-red-500' : ''
+                      }`}>
+                        <div className="max-w-full">
+                          <div className="flex items-start gap-2">
+                            {message.notification && (
+                              <FaBell className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            )}
+                            <p className="text-sm text-gray-900 whitespace-pre-wrap" title={message.message}>
+                              {message.message}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
+                      {message.createdfor ? (
+                        <div className="flex items-center gap-1">
+                          <FaUser className="w-4 h-4" />
+                          <span>
+                            {message.recipient.firstname} {message.recipient.lastname}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <FaUser className="w-4 h-4" />
+                          <span>
+                            {message.creator.firstname} {message.creator.lastname}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-400">
+                          <FaClock className="w-4 h-4" />
+                          <span>{formatTimestamp(message.createdon)}</span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-4">
-                    {isArchived(message) && (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                        Archived
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {!isArchived(message) && (
-                      <button
-                        onClick={() => handleArchiveMessage(message.messageid)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                        title="Archive message"
-                      >
-                        <FaArchive className="w-3 h-3" />
-                        <span>Archive</span>
-                      </button>
-                    )}
-                    {message.archivedon && (
-                      <div className="flex items-center gap-1">
-                        <span>Archived: {formatTimestamp(message.archivedon)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
+                      {isArchived(message) ? (
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                          Archived
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleArchiveMessage(message.messageid)}
+                          className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
+                          title="Archive message"
+                        >
+                          <FaArchive className="w-3 h-3" />
+                          Archive
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

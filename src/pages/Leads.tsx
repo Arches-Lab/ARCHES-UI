@@ -133,7 +133,7 @@ export default function Leads() {
     return (
       <div className="flex items-center justify-center min-h-64">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
+          <FaSpinner className="animate-spin text-4xl text-yellow-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading leads...</p>
         </div>
       </div>
@@ -161,11 +161,11 @@ export default function Leads() {
         </div>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
-            {leads.length} lead{leads.length !== 1 ? 's' : ''}
+            {filteredLeads.length} lead{filteredLeads.length !== 1 ? 's' : ''}
           </div>
           <button
             onClick={() => setShowCreateLeadModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-yellow-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-yellow-600 border border-transparent rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-colors"
           >
             <FaPlus className="w-4 h-4" />
             New Lead
@@ -220,95 +220,111 @@ export default function Leads() {
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="divide-y divide-gray-200">
-            {filteredLeads.map((lead) => (
-              <div
-                key={lead.leadid}
-                className="p-4 transition-all hover:bg-gray-50"
-              >
-                {/* Row 1: Status, Contact, Assigned To */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-4 flex-1">
-                    {/* Status */}
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
-                      {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
-                    </span>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Lead
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assigned To
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created By/On
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     
-                    {/* Contact Name */}
-                    {lead.contactname && (
-                      <div className="flex items-center gap-2">
-                        <FaUserTie className="w-4 h-4 text-blue-500" />
-                        <span className="font-medium text-gray-900">{lead.contactname}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredLeads.map((lead) => (
+                  <tr key={lead.leadid} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 w-1/2">
+                      <div className="max-w-full">
+                        <div className="flex items-start gap-2">
+                          <div className="w-full">
+                            <div className="flex items-center gap-4 mb-2">
+                              <span className={`inline-flex items-center px-1 py-0.5 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
+                                {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
+                              </span>
+                              {lead.contactname && (
+                                <div className="flex items-center gap-2">
+                                  <FaUserTie className="w-4 h-4 text-blue-500" />
+                                  <span className="font-medium text-gray-900">{lead.contactname}</span>
+                                </div>
+                              )}
+                              {lead.phone && (
+                                <div className="flex items-center gap-2">
+                                  <FaPhone className="w-4 h-4 text-green-500" />
+                                  <a 
+                                    href={`tel:${lead.phone}`}
+                                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                                  >
+                                    {formatPhone(lead.phone)}
+                                  </a>
+                                </div>
+                              )}
+                              {lead.email && (
+                                <div className="flex items-center gap-2">
+                                  <FaEnvelope className="w-4 h-4 text-red-500" />
+                                  <a 
+                                    href={`mailto:${lead.email}`}
+                                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                                  >
+                                    {lead.email}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-900 whitespace-pre-wrap" title={lead.description}>
+                              {lead.description}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* Phone */}
-                    {lead.phone && (
-                      <div className="flex items-center gap-2">
-                        <FaPhone className="w-4 h-4 text-green-500" />
-                        <a 
-                          href={`tel:${lead.phone}`}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          {formatPhone(lead.phone)}
-                        </a>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
+                      {lead.assigned ? (
+                        <div className="flex items-center gap-1">
+                          <FaUser className="w-4 h-4" />
+                          <span>
+                            {lead.assigned.firstname} {lead.assigned.lastname}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1">
+                          <FaUser className="w-4 h-4" />
+                          <span>
+                            {lead.creator ? `${lead.creator.firstname} ${lead.creator.lastname}` : 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-400">
+                          <FaClock className="w-4 h-4" />
+                          <span>{formatTimestamp(lead.createdon)}</span>
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* Email */}
-                    {lead.email && (
-                      <div className="flex items-center gap-2">
-                        <FaEnvelope className="w-4 h-4 text-red-500" />
-                        <a 
-                          href={`mailto:${lead.email}`}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          {lead.email}
-                        </a>
-                      </div>
-                    )}
-                    
-                    {/* Assigned To */}
-                    {lead.assigned && (
-                      <div className="flex items-center gap-2">
-                        <FaUser className="w-4 h-4 text-purple-500" />
-                        <span className="text-gray-700">Assigned: {lead.assigned.firstname} {lead.assigned.lastname}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* View Details Button */}
-                  <button
-                    onClick={() => handleViewLead(lead.leadid)}
-                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors ml-4"
-                    title="View lead details"
-                  >
-                    <FaEye className="w-3 h-3" />
-                    <span>View Details</span>
-                  </button>
-                </div>
-                
-                {/* Row 2: Description, Created Info, Assigned To */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 pr-4">
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
-                      {lead.description}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-xs text-gray-500 min-w-[200px] flex-shrink-0">
-                    <div className="flex items-center gap-1">
-                      <FaClock className="w-3 h-3" />
-                      <span>Created: {formatTimestamp(lead.createdon)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaUser className="w-3 h-3" />
-                      <span>By: {lead.creator.firstname} {lead.creator.lastname}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
+                      <button
+                        onClick={() => handleViewLead(lead.leadid)}
+                        className="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 transition-colors"
+                        title="View lead details"
+                      >
+                        <FaEye className="w-3 h-3" />
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
