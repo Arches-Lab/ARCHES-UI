@@ -198,7 +198,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
                       console.log(`Using value: ${employeeValue}`);
                       return (
                         <option key={employee.employeeid || employee.email} value={employeeValue}>
-                          {employee.firstname} {employee.lastname} ({employee.email})
+                          {employee.firstname} {employee.lastname}
                         </option>
                       );
                     })
@@ -209,7 +209,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
           </div>
 
           {/* Store Number */}
-          <div>
+          {/* <div>
             <label htmlFor="storenumber" className="block text-sm font-medium text-gray-700 mb-2">
               Store Number
             </label>
@@ -225,7 +225,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
                 placeholder="Enter store number"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
