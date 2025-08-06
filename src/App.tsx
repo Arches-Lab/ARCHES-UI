@@ -17,6 +17,7 @@ import Incidents from './pages/Incidents';
 import IncidentDetail from './pages/IncidentDetail';
 import Supplies from './pages/Supplies';
 import RecentActivities from './pages/RecentActivities';
+import StoreOperations from './pages/StoreOperations';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -76,6 +77,7 @@ function App() {
               <Route path="incidents/:incidentId" element={<IncidentDetail />} />
               <Route path="supplies" element={<Supplies />} />
               <Route path="recent-activities" element={<RecentActivities />} />
+              <Route path="store-operations" element={<StoreOperations />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

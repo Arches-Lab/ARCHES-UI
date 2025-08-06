@@ -5,5 +5,6 @@ export * from './IncidentStatus';
 export * from './IncidentTypes';
 export * from './Lead';
 export * from './LeadStatus';
+export * from './StoreOperation';
 export * from './Supply';
 export * from './Task'; 
