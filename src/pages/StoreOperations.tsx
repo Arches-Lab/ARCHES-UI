@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaUser, FaMoneyBillWave, FaCoins } from 'react-icons/fa';
+import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaUser, FaMoneyBillWave, FaCoins, FaStickyNote } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
 import { getStoreOperations, createStoreOperation } from '../api/storeOperations';
@@ -14,6 +14,8 @@ export default function StoreOperations() {
   const [operations, setOperations] = useState<StoreOperation[]>([]);
   const [operationsLoading, setOperationsLoading] = useState(false);
   const [operationsError, setOperationsError] = useState<string | null>(null);
+  const [hoveredNote, setHoveredNote] = useState<string | null>(null);
+  const [notePosition, setNotePosition] = useState({ x: 0, y: 0 });
 
   const getCurrentLocalDate = () => {
     const now = new Date();
@@ -32,6 +34,7 @@ export default function StoreOperations() {
     coins: 70,
     collected: 0,
     collectedpos: 0,
+    note: '',
   });
 
   // Fetch operations list
@@ -71,6 +74,7 @@ export default function StoreOperations() {
       coins: 70,
       collected: 0,
       collectedpos: 0,
+      note: '',
     });
   };
 
@@ -108,6 +112,7 @@ export default function StoreOperations() {
         coins: formData.coins || 0,
         collected: formData.collected || null,
         collectedpos: formData.collectedpos || null,
+        note: formData.note || null,
         createdby: user.id || user.email || 'Unknown',
       };
 
@@ -132,6 +137,7 @@ export default function StoreOperations() {
         coins: 70,
         collected: 0,
         collectedpos: 0,
+        note: '',
       });
       
       // Show success message (optional)
@@ -156,6 +162,7 @@ export default function StoreOperations() {
       coins: 70,
       collected: 0,
       collectedpos: 0,
+      note: '',
     });
     setError(null);
   };
@@ -388,6 +395,20 @@ export default function StoreOperations() {
               )}
             </div>
 
+            {/* Note field - Full width */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Note (Optional)
+              </label>
+              <textarea
+                value={formData.note || ''}
+                onChange={(e) => handleInputChange('note', e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                rows={1}
+                placeholder="Add any additional notes about this operation..."
+              />
+            </div>
+
             <div className="pt-6 border-t border-gray-200">
             </div>
           </form>
@@ -432,6 +453,7 @@ export default function StoreOperations() {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COLLECTED</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COLLECTED POS</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DIFF</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NOTE</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By/On</th>
                 </tr>
               </thead>
@@ -478,6 +500,25 @@ export default function StoreOperations() {
                         return diff < 0 ? diff : '-';
                       })()}
                     </td>
+                    <td className="px-4 py-2 text-xs text-gray-900 max-w-[200px]">
+                      {operation.note ? (
+                        <div 
+                          className="inline-flex items-center cursor-pointer text-blue-600 hover:text-blue-800"
+                          onMouseEnter={(e) => {
+                            setHoveredNote(operation.note);
+                            setNotePosition({ x: e.clientX, y: e.clientY });
+                          }}
+                          onMouseLeave={() => setHoveredNote(null)}
+                        >
+                          <FaStickyNote className="w-4 h-4 mr-1" />
+                          {/* <span className="truncate max-w-[150px]" title={operation.note}>
+                            {operation.note.length > 20 ? operation.note.substring(0, 20) + '...' : operation.note}
+                          </span> */}
+                        </div>
+                      ) : (
+                        ''
+                      )}
+                    </td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
                       {operation.creator ? `${operation.creator.firstname} ${operation.creator.lastname}` : operation.createdby}
                       {/* <br /> */}
@@ -490,6 +531,25 @@ export default function StoreOperations() {
           </div>
         )}
       </div>
+
+      {/* Note Overlay */}
+      {hoveredNote && (
+        <div 
+          className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-md"
+          style={{
+            left: notePosition.x + 10,
+            top: notePosition.y - 10,
+            transform: 'translateY(-100%)'
+          }}
+        >
+          <div className="flex items-start gap-2">
+            <FaStickyNote className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="text-sm text-gray-900 whitespace-pre-wrap">
+              {hoveredNote}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
