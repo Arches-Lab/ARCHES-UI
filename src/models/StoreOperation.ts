@@ -10,6 +10,7 @@ export interface StoreOperation {
   coins: number | null;        
   collected: number | null;    
   collectedpos: number | null; // Collected POS amount
+  note: string | null;         // Optional note field
   createdby: string;           
   creator: {
     email: string | null;
