@@ -34,3 +34,8 @@ export const getRecentActivities = async (days: number = 2, storeNumber: number)
   const { data } = await api.get(`/activities/date-range?startDate=${startDate}&endDate=${endDate}&storenumber=${storeNumber}`);
   return data;
 };
+
+export const getActivitiesForParent = async (parentId: string, parentType: string) => {
+  const { data } = await api.get(`/activities/parent/${parentType}/${parentId}`);
+  return data;
+};
