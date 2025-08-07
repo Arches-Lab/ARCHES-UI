@@ -14,8 +14,17 @@ export default function StoreOperations() {
   const [operations, setOperations] = useState<StoreOperation[]>([]);
   const [operationsLoading, setOperationsLoading] = useState(false);
   const [operationsError, setOperationsError] = useState<string | null>(null);
+
+  const getCurrentLocalDate = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [formData, setFormData] = useState<Partial<StoreOperation>>({
-    operationdate: new Date().toISOString().split('T')[0],
+    operationdate: getCurrentLocalDate(),
     posa: 200,
     posb: 200,
     posc: 200,
@@ -54,7 +63,7 @@ export default function StoreOperations() {
   const handleOperationSelect = (type: 'OPEN' | 'CLOSE') => {
     setOperationType(type);
     setFormData({
-      operationdate: new Date().toISOString().split('T')[0],
+      operationdate: getCurrentLocalDate(),
       posa: 200,
       posb: 200,
       posc: 200,
@@ -91,7 +100,7 @@ export default function StoreOperations() {
       const operationData = {
         storenumber: selectedStore,
         operation: operationType,
-        operationdate: formData.operationdate || new Date().toISOString().split('T')[0],
+        operationdate: formData.operationdate || getCurrentLocalDate(),
         posa: formData.posa || 0,
         posb: formData.posb || 0,
         posc: formData.posc || 0,
@@ -115,7 +124,7 @@ export default function StoreOperations() {
       // Reset form
       setOperationType(null);
       setFormData({
-        operationdate: new Date().toISOString().split('T')[0],
+        operationdate: getCurrentLocalDate(),
         posa: 200,
         posb: 200,
         posc: 200,
@@ -139,7 +148,7 @@ export default function StoreOperations() {
   const handleCancel = () => {
     setOperationType(null);
     setFormData({
-      operationdate: new Date().toISOString().split('T')[0],
+      operationdate: getCurrentLocalDate(),
       posa: 200,
       posb: 200,
       posc: 200,
@@ -274,7 +283,7 @@ export default function StoreOperations() {
                   onChange={(e) => handleInputChange('operationdate', e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
                   required
-                  // readOnly
+                  readOnly
                 />
               </div>
 
