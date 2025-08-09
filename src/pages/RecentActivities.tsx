@@ -242,13 +242,13 @@ export default function RecentActivities() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 w-2/5">
-                        <div className="max-w-full">
-                          <p className="text-sm text-gray-900 truncate" title={activity.details}>
-                            {activity.details}
-                          </p>
-                        </div>
-                      </td>
+                                              <td className="px-6 py-4 w-2/5">
+                          <div className="max-w-full">
+                            <p className="text-sm text-gray-900 break-words" title={activity.details}>
+                              {activity.details}
+                            </p>
+                          </div>
+                        </td>
                       <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
