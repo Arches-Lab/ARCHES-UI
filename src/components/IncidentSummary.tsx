@@ -3,6 +3,7 @@ import { FaExclamationTriangle, FaUser, FaClock, FaCheckCircle, FaSpinner } from
 import { getIncidents } from '../api/incident';
 import { Incident } from '../models/Incident';
 import { useStore } from '../auth/StoreContext';
+import { useAuth } from '../auth/AuthContext';
 import { INCIDENT_STATUSES } from '../models/IncidentStatus';
 
 interface IncidentStatusCount {
@@ -14,6 +15,7 @@ interface IncidentStatusCount {
 
 const IncidentSummary: React.FC = () => {
   const { selectedStore } = useStore();
+  const { employeeId } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,8 +40,18 @@ const IncidentSummary: React.FC = () => {
     fetchIncidents();
   }, [selectedStore]);
 
-  // Filter open incidents (not resolved)
-  const openIncidents = incidents.filter(incident => incident.status !== 'RESOLVED');
+  // Filter incidents by logged-in employee and open status
+  const openIncidents = incidents.filter(incident => {
+    const isOpen = incident.status !== 'RESOLVED';
+    const isAssignedToMe = incident.assignedto === employeeId;
+    
+    // Debug logging
+    if (incident.assignedto && employeeId) {
+      console.log(`🔍 Incident ${incident.incidentid}: assignedto=${incident.assignedto}, employeeId=${employeeId}, isAssignedToMe=${isAssignedToMe}`);
+    }
+    
+    return isOpen && isAssignedToMe;
+  });
 
   // Group incidents by status
   const getStatusCounts = (): IncidentStatusCount[] => {
@@ -79,6 +91,18 @@ const IncidentSummary: React.FC = () => {
     );
   }
 
+  if (!employeeId) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <FaExclamationTriangle className="mx-auto text-4xl text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Employee ID Not Available</h3>
+          <p className="text-gray-500">Unable to identify your employee ID. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -106,7 +130,7 @@ const IncidentSummary: React.FC = () => {
       {/* Chart Visualization */}
       {statusCounts.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Incidents</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">My Incidents</h3>
           <div className="space-y-3">
             {statusCounts.map((statusCount) => {
               const percentage = totalOpenIncidents > 0 ? (statusCount.count / totalOpenIncidents) * 100 : 0;
@@ -140,8 +164,8 @@ const IncidentSummary: React.FC = () => {
       {openIncidents.length === 0 && !loading && (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <FaExclamationTriangle className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Open Incidents</h3>
-          <p className="text-gray-500">All incidents are resolved.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Open Incidents Assigned to You</h3>
+          <p className="text-gray-500">You have no open incidents assigned to you.</p>
         </div>
       )}
     </div>

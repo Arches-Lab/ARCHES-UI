@@ -3,6 +3,7 @@ import { FaUser, FaPhone, FaEnvelope, FaCheckCircle, FaTimesCircle, FaSpinner, F
 import { getLeads } from '../api/lead';
 import { Lead } from '../models/Lead';
 import { useStore } from '../auth/StoreContext';
+import { useAuth } from '../auth/AuthContext';
 import { LEAD_STATUSES } from '../models/LeadStatus';
 
 interface LeadStatusCount {
@@ -15,6 +16,7 @@ interface LeadStatusCount {
 
 const LeadSummary: React.FC = () => {
   const { selectedStore } = useStore();
+  const { employeeId } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +41,18 @@ const LeadSummary: React.FC = () => {
     fetchLeads();
   }, [selectedStore]);
 
-  // Filter active leads (not closed)
-  const activeLeads = leads.filter(lead => 
-    lead.status !== 'CLOSED_WON' && lead.status !== 'CLOSED_LOST'
-  );
+  // Filter leads by logged-in employee and active status
+  const activeLeads = leads.filter(lead => {
+    const isActive = lead.status !== 'CLOSED_WON' && lead.status !== 'CLOSED_LOST';
+    const isAssignedToMe = lead.assignedto === employeeId;
+    
+    // Debug logging
+    if (lead.assignedto && employeeId) {
+      console.log(`🔍 Lead ${lead.leadid}: assignedto=${lead.assignedto}, employeeId=${employeeId}, isAssignedToMe=${isAssignedToMe}`);
+    }
+    
+    return isActive && isAssignedToMe;
+  });
 
   // Group leads by status
   const getStatusCounts = (): LeadStatusCount[] => {
@@ -57,11 +67,11 @@ const LeadSummary: React.FC = () => {
     console.log('🔍 Lead statuses found:', Array.from(statusMap.keys()));
 
     const statusConfigs: { [key: string]: { color: string; icon: React.ReactNode; displayName: string } } = {
-      'NEW': { color: 'bg-blue-500', icon: <FaUser className="w-4 h-4" />, displayName: 'New' },
+      'NEW': { color: 'bg-red-500', icon: <FaUser className="w-4 h-4" />, displayName: 'New' },
       'CONTACTED': { color: 'bg-yellow-500', icon: <FaPhone className="w-4 h-4" />, displayName: 'Contacted' },
       'PROPOSAL': { color: 'bg-purple-500', icon: <FaEnvelope className="w-4 h-4" />, displayName: 'Proposal' },
       'CLOSED_WON': { color: 'bg-green-500', icon: <FaCheckCircle className="w-4 h-4" />, displayName: 'Closed Won' },
-      'CLOSED_LOST': { color: 'bg-red-500', icon: <FaTimesCircle className="w-4 h-4" />, displayName: 'Closed Lost' }
+      'CLOSED_LOST': { color: 'bg-orange-500', icon: <FaTimesCircle className="w-4 h-4" />, displayName: 'Closed Lost' }
     };
 
     return Array.from(statusMap.entries()).map(([status, count]) => {
@@ -98,6 +108,18 @@ const LeadSummary: React.FC = () => {
     );
   }
 
+  if (!employeeId) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <FaUser className="mx-auto text-4xl text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Employee ID Not Available</h3>
+          <p className="text-gray-500">Unable to identify your employee ID. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -125,7 +147,7 @@ const LeadSummary: React.FC = () => {
       {/* Chart Visualization */}
       {statusCounts.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Leads</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">My Leads</h3>
           <div className="space-y-3">
             {statusCounts.map((statusCount) => {
               const percentage = totalActiveLeads > 0 ? (statusCount.count / totalActiveLeads) * 100 : 0;
@@ -187,8 +209,8 @@ const LeadSummary: React.FC = () => {
       {activeLeads.length === 0 && !loading && (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <FaUser className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Leads</h3>
-          <p className="text-gray-500">All leads are closed or there are no leads yet.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Leads Assigned to You</h3>
+          <p className="text-gray-500">You have no active leads assigned to you.</p>
         </div>
       )}
     </div>
