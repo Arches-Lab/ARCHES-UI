@@ -239,7 +239,7 @@ export default function Texts() {
               >
                 All Senders
               </button>
-              {Array.from(new Set(texts.map(text => text.from)))
+              {Array.from(new Set(filteredTexts.map(text => text.from)))
                 .sort()
                 .map(phoneNumber => (
                   <button
