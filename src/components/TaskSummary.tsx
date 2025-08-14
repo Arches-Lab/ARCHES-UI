@@ -208,7 +208,6 @@ const TaskSummary: React.FC = () => {
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <FaTasks className="mx-auto text-4xl text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No Open Tasks Assigned to You</h3>
-          <p className="text-gray-500">You have no open tasks assigned to you.</p>
         </div>
       )}
     </div>
