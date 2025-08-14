@@ -3,6 +3,7 @@ import { FaTasks, FaUser, FaClock, FaCheckCircle, FaExclamationTriangle, FaSpinn
 import { getTasks } from '../api/task';
 import { Task } from '../models/Task';
 import { useStore } from '../auth/StoreContext';
+import { useAuth } from '../auth/AuthContext';
 
 interface TaskStatusCount {
   status: string;
@@ -14,6 +15,7 @@ interface TaskStatusCount {
 
 const TaskSummary: React.FC = () => {
   const { selectedStore } = useStore();
+  const { employeeId } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,8 +40,18 @@ const TaskSummary: React.FC = () => {
     fetchTasks();
   }, [selectedStore]);
 
-  // Filter open tasks (not completed)
-  const openTasks = tasks.filter(task => task.taskstatus !== 'COMPLETED' && task.taskstatus !== 'CANCELLED');
+  // Filter tasks by logged-in employee and open status
+  const openTasks = tasks.filter(task => {
+    const isOpen = task.taskstatus !== 'COMPLETED' && task.taskstatus !== 'CANCELLED';
+    const isAssignedToMe = task.assignedto === employeeId;
+    
+    // Debug logging
+    if (task.assignedto && employeeId) {
+      console.log(`🔍 Task ${task.taskid}: assignedto=${task.assignedto}, employeeId=${employeeId}, isAssignedToMe=${isAssignedToMe}`);
+    }
+    
+    return isOpen && isAssignedToMe;
+  });
 
   // Group tasks by status
   const getStatusCounts = (): TaskStatusCount[] => {
@@ -94,6 +106,18 @@ const TaskSummary: React.FC = () => {
     );
   }
 
+  if (!employeeId) {
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <FaTasks className="mx-auto text-4xl text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Employee ID Not Available</h3>
+          <p className="text-gray-500">Unable to identify your employee ID. Please try refreshing the page.</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -121,7 +145,7 @@ const TaskSummary: React.FC = () => {
       {/* Chart Visualization */}
       {statusCounts.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Tasks</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">My Tasks</h3>
           <div className="space-y-3">
             {statusCounts.map((statusCount) => {
               const percentage = totalOpenTasks > 0 ? (statusCount.count / totalOpenTasks) * 100 : 0;
@@ -183,8 +207,8 @@ const TaskSummary: React.FC = () => {
       {openTasks.length === 0 && !loading && (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <FaTasks className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Open Tasks</h3>
-          <p className="text-gray-500">All tasks are completed or closed.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Open Tasks Assigned to You</h3>
+          <p className="text-gray-500">You have no open tasks assigned to you.</p>
         </div>
       )}
     </div>
