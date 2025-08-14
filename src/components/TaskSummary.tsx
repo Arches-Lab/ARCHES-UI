@@ -39,7 +39,7 @@ const TaskSummary: React.FC = () => {
   }, [selectedStore]);
 
   // Filter open tasks (not completed)
-  const openTasks = tasks.filter(task => task.taskstatus !== 'Completed' && task.taskstatus !== 'Closed');
+  const openTasks = tasks.filter(task => task.taskstatus !== 'COMPLETED' && task.taskstatus !== 'CANCELLED');
 
   // Group tasks by status
   const getStatusCounts = (): TaskStatusCount[] => {
