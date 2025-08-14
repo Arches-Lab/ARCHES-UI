@@ -162,8 +162,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
                 onChange={handleInputChange}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="OPEN">Open</option>
-                <option value="PENDING">Pending</option>
+                <option value="NEW">New</option>
                 <option value="INPROGRESS">In Progress</option>
                 <option value="COMPLETED">Completed</option>
                 <option value="CANCELLED">Cancelled</option>

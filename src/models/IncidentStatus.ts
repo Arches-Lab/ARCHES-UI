@@ -7,8 +7,7 @@ export interface IncidentStatus {
 
 export const INCIDENT_STATUSES: IncidentStatus[] = [
   { code: 'NEW', displayName: 'New', color: 'bg-red-100 text-red-800', icon: '🚨' },
-  { code: 'ASSIGNED', displayName: 'Assigned', color: 'bg-yellow-100 text-yellow-800', icon: '🔄' },
-  { code: 'IN_PROGRESS', displayName: 'In Progress', color: 'bg-blue-100 text-blue-800', icon: '🔄' },
+  { code: 'INPROGRESS', displayName: 'In Progress', color: 'bg-blue-100 text-blue-800', icon: '🔄' },
   { code: 'RESOLVED', displayName: 'Resolved', color: 'bg-green-100 text-green-800', icon: '✅' }
 ];
 

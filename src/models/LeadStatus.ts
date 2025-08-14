@@ -7,7 +7,6 @@ export interface LeadStatus {
 
 export const LEAD_STATUSES: LeadStatus[] = [
   { code: 'NEW', displayName: 'New', color: 'bg-blue-100 text-blue-800', icon: '🆕' },
-  { code: 'ASSIGNED', displayName: 'Assigned', color: 'bg-green-100 text-green-800', icon: '✅' },
   { code: 'CONTACTED', displayName: 'Contacted', color: 'bg-yellow-100 text-yellow-800', icon: '📞' },
   { code: 'PROPOSAL', displayName: 'Proposal', color: 'bg-purple-100 text-purple-800', icon: '📋' },
   { code: 'CLOSED_WON', displayName: 'Closed Won', color: 'bg-green-100 text-green-800', icon: '🏆' },

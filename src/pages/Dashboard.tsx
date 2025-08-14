@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { getDashboardData } from '../api';
 import { useStore } from '../auth/StoreContext';
 import SuppliesList from '../components/SuppliesList';
+import TaskSummary from '../components/TaskSummary';
+import IncidentSummary from '../components/IncidentSummary';
+import LeadSummary from '../components/LeadSummary';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -68,6 +71,9 @@ export default function Dashboard() {
       {/* Dashboard Widgets */}
       {selectedStore && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TaskSummary />
+          <IncidentSummary />
+          <LeadSummary />
           <SuppliesList />
           {/* Add more dashboard widgets here */}
         </div>
