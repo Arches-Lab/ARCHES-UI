@@ -15,6 +15,7 @@ export default function IncidentDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [activitiesRefreshKey, setActivitiesRefreshKey] = useState(0);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -88,11 +89,19 @@ export default function IncidentDetail() {
         const updatedIncident = await updateIncident(incident.incidentid, incidentData);
         setIncident(updatedIncident);
         setShowEditModal(false);
+        // Refresh activities after incident update
+        setActivitiesRefreshKey(prev => prev + 1);
       }
     } catch (error) {
       console.error('Error updating incident:', error);
       alert('Failed to update incident. Please try again.');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+    // Refresh activities when modal is closed (in case any activities were created)
+    setActivitiesRefreshKey(prev => prev + 1);
   };
 
   if (loading) {
@@ -230,6 +239,7 @@ export default function IncidentDetail() {
               parentId={incident.incidentid} 
               title="Activities"
               storeNumber={selectedStore || 1}
+              key={activitiesRefreshKey}
             />
           {/* </div>
         </div>
@@ -240,7 +250,7 @@ export default function IncidentDetail() {
         <IncidentModal
           incident={incident}
           onSave={handleSaveIncident}
-          onCancel={() => setShowEditModal(false)}
+          onCancel={handleCancelEdit}
           selectedStore={selectedStore || 1}
         />
       )}
