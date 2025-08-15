@@ -194,7 +194,7 @@ const TaskSummary: React.FC = () => {
                   </div>
                   <div className="w-16 text-right">
                     <span className="text-sm font-medium text-gray-900">{statusCount.count}</span>
-                    <span className="text-xs text-gray-500 ml-1">({percentage.toFixed(1)}%)</span>
+                    {/* <span className="text-xs text-gray-500 ml-1">({percentage.toFixed(1)}%)</span> */}
                   </div>
                 </div>
               );
