@@ -15,6 +15,7 @@ export default function TaskDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [activitiesRefreshKey, setActivitiesRefreshKey] = useState(0);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -120,11 +121,19 @@ export default function TaskDetail() {
         const updatedTask = await updateTask(task.taskid, taskData);
         setTask(updatedTask);
         setShowEditModal(false);
+        // Refresh activities after task update
+        setActivitiesRefreshKey(prev => prev + 1);
       }
     } catch (error) {
       console.error('Error updating task:', error);
       alert('Failed to update task. Please try again.');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+    // Refresh activities when modal is closed (in case any activities were created)
+    setActivitiesRefreshKey(prev => prev + 1);
   };
 
   if (loading) {
@@ -254,6 +263,7 @@ export default function TaskDetail() {
             parentId={task.taskid}
             title="Activities"
             storeNumber={selectedStore || 1}
+            key={activitiesRefreshKey}
           />
         {/* </div>
       </div> */}
@@ -263,7 +273,7 @@ export default function TaskDetail() {
         <TaskModal
           task={task}
           onSave={handleSaveTask}
-          onCancel={() => setShowEditModal(false)}
+          onCancel={handleCancelEdit}
           selectedStore={selectedStore || 1}
         />
       )}
