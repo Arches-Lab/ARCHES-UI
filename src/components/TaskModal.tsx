@@ -20,7 +20,7 @@ export default function TaskModal({ task, onSave, onCancel, selectedStore }: Tas
   const [formData, setFormData] = useState({
     taskname: '',
     taskdescription: '',
-    taskstatus: 'OPEN',
+    taskstatus: 'NEW',
     assignedto: '',
     storenumber: selectedStore
   });
