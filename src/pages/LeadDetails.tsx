@@ -14,6 +14,7 @@ export default function LeadDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [activitiesRefreshKey, setActivitiesRefreshKey] = useState(0);
   const { selectedStore } = useStore();
 
   useEffect(() => {
@@ -92,11 +93,19 @@ export default function LeadDetails() {
         const updatedLead = await updateLead(lead.leadid, leadData);
         setLead(updatedLead);
         setShowEditModal(false);
+        // Refresh activities after lead update
+        setActivitiesRefreshKey(prev => prev + 1);
       }
     } catch (error) {
       console.error('Error updating lead:', error);
       alert('Failed to update lead. Please try again.');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditModal(false);
+    // Refresh activities when modal is closed (in case any activities were created)
+    setActivitiesRefreshKey(prev => prev + 1);
   };
 
 
@@ -262,6 +271,7 @@ export default function LeadDetails() {
         parentId={lead.leadid} 
         title="Activities"
         storeNumber={selectedStore || 1}
+        key={activitiesRefreshKey}
       />
 
       {/* Edit Lead Modal */}
@@ -269,7 +279,7 @@ export default function LeadDetails() {
         <LeadModal
           lead={lead}
           onSave={handleSaveLead}
-          onCancel={() => setShowEditModal(false)}
+          onCancel={handleCancelEdit}
           selectedStore={selectedStore || 1}
         />
       )}
