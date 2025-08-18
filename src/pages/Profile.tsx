@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaLock, FaUser, FaEnvelope, FaCog } from 'react-icons/fa';
+import { FaLock, FaUser, FaEnvelope, FaCog, FaFingerprint } from 'react-icons/fa';
 import { getUserProfile } from '../api';
 import { useAuth } from '../auth/AuthContext';
+import FingerprintRegistrationModal from '../components/FingerprintRegistrationModal';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
+  const [showFingerprintModal, setShowFingerprintModal] = useState(false);
 
   useEffect(() => {
     getUserProfile().then(setProfile).catch(console.error);
   }, []);
+
+  const handleFingerprintRegistration = () => {
+    setShowFingerprintModal(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -59,6 +65,17 @@ export default function Profile() {
           </button>
           
           <button
+            onClick={handleFingerprintRegistration}
+            className="flex items-center gap-3 w-full p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <FaFingerprint className="w-5 h-5 text-green-600" />
+            <div>
+              <div className="font-medium text-gray-900">Register Fingerprint</div>
+              <div className="text-sm text-gray-500">Set up biometric authentication for quick login</div>
+            </div>
+          </button>
+          
+          <button
             onClick={() => navigate('/settings')}
             className="flex items-center gap-3 w-full p-3 text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
@@ -77,6 +94,13 @@ export default function Profile() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Data</h3>
           <pre className="text-sm text-gray-600 overflow-auto">{JSON.stringify(profile, null, 2)}</pre>
         </div>
+      )}
+
+      {/* Fingerprint Registration Modal */}
+      {showFingerprintModal && (
+        <FingerprintRegistrationModal
+          onClose={() => setShowFingerprintModal(false)}
+        />
       )}
     </div>
   );
