@@ -431,7 +431,7 @@ export default function SchedulePage() {
       // Reload data to reflect changes
       loadData();
       
-      alert('Schedule drafts published successfully!');
+      // alert('Schedule drafts published successfully!');
     } catch (err: any) {
       console.error('Error publishing drafts:', err);
       
