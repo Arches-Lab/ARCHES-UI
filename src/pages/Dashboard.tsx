@@ -5,6 +5,7 @@ import SuppliesList from '../components/SuppliesList';
 import TaskSummary from '../components/TaskSummary';
 import IncidentSummary from '../components/IncidentSummary';
 import LeadSummary from '../components/LeadSummary';
+import MySchedule from '../components/MySchedule';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -71,11 +72,18 @@ export default function Dashboard() {
       {/* Dashboard Widgets */}
       {selectedStore && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TaskSummary />
-          <IncidentSummary />
-          <LeadSummary />
-          <SuppliesList />
-          {/* Add more dashboard widgets here */}
+          {/* Left Column */}
+          <div className="space-y-6">
+            <TaskSummary />
+            <IncidentSummary />
+            <LeadSummary />
+          </div>
+          
+          {/* Right Column */}
+          <div className="space-y-6">
+            <MySchedule />
+            <SuppliesList />
+          </div>
         </div>
       )}
     </div>
