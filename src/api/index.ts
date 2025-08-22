@@ -88,5 +88,8 @@ export * from './employee';
 export * from './employeestore';
 export * from './incident';
 export * from './supply';
+export * from './schedule';
+export * from './scheduleDraft';
+export * from './shift';
 
 export default api;
