@@ -52,20 +52,31 @@ export default function SuppliesList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <FaBoxes className="text-2xl text-blue-600" />
-        <h3 className="text-xl font-semibold">Supplies List</h3>
+    <div className="bg-white rounded-lg shadow">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-200">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-900">Supplies List</h3>
+          <span className="text-sm text-gray-500">
+            {supplies.length} item{supplies.length !== 1 ? 's' : ''}
+          </span>
+        </div>
       </div>
-      
-      <div className="space-y-0">
+
+      {/* Items List */}
+      <div className="divide-y divide-gray-200">
         {supplies.map((supply) => (
-          <div key={supply.supplyid} className="bg-white border border-gray-200 p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h4 className="text-xl font-semibold text-gray-900">
-                  {supply.supplyname} ({supply.quantity})
-                </h4>
+          <div key={supply.supplyid} className="px-4 py-3 hover:bg-gray-50">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {supply.supplyname}
+                </p>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm text-gray-600 truncate">
+                  {supply.quantity}
+                </p>
               </div>
             </div>
           </div>

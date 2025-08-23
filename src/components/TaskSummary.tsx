@@ -141,12 +141,21 @@ const TaskSummary: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white rounded-lg shadow">
+      {/* Header */}
+      <div className="px-4 py-2 border-b border-gray-200">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-900">My Tasks</h3>
+          <span className="text-sm text-gray-500">
+            {totalOpenTasks} task{totalOpenTasks !== 1 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+
       {/* Chart Visualization */}
       {statusCounts.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">My Tasks</h3>
-          <div className="space-y-3">
+        <div className="p-4">
+          <div className="space-y-2">
             {statusCounts.map((statusCount) => {
               const percentage = totalOpenTasks > 0 ? (statusCount.count / totalOpenTasks) * 100 : 0;
               
@@ -157,44 +166,34 @@ const TaskSummary: React.FC = () => {
                   case 'bg-blue-500': return '#3b82f6';
                   case 'bg-green-500': return '#22c55e';
                   case 'bg-orange-500': return '#f97316';
-                  // case 'bg-yellow-500': return '#eab308';
-                  // case 'bg-purple-500': return '#8b5cf6';
-                  // case 'bg-gray-500': return '#6b7280';
                   default: return '#6b7280';
                 }
               };
               
               const backgroundColor = getColorHex(statusCount.color);
               
-              console.log(`🔍 Progress bar for ${statusCount.status}:`, { 
-                colorClass: statusCount.color, 
-                backgroundColor, 
-                percentage 
-              });
-              
               return (
-                <div key={statusCount.status} className="flex items-center gap-3">
+                <div key={statusCount.status} className="flex items-center gap-2">
                   <div className="flex items-center gap-2 w-32">
                     <div 
-                      className={`p-2 rounded-full text-white`}
+                      className="p-1 rounded-full text-white flex-shrink-0"
                       style={{ backgroundColor }}
                     >
                       {statusCount.icon}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{statusCount.displayName}</span>
+                    <span className="text-sm font-medium text-gray-700 truncate whitespace-nowrap">{statusCount.displayName}</span>
                   </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-3">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
-                      className="h-3 rounded-full"
+                      className="h-2 rounded-full"
                       style={{ 
                         width: `${percentage}%`,
                         backgroundColor
                       }}
                     />
                   </div>
-                  <div className="w-16 text-right">
+                  <div className="w-12 text-right">
                     <span className="text-sm font-medium text-gray-900">{statusCount.count}</span>
-                    {/* <span className="text-xs text-gray-500 ml-1">({percentage.toFixed(1)}%)</span> */}
                   </div>
                 </div>
               );
@@ -205,9 +204,9 @@ const TaskSummary: React.FC = () => {
 
       {/* Empty State */}
       {openTasks.length === 0 && !loading && (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <FaTasks className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Open Tasks Assigned to You</h3>
+        <div className="p-4 text-center">
+          <FaTasks className="mx-auto text-2xl text-gray-300 mb-2" />
+          <p className="text-sm text-gray-500">No open tasks assigned</p>
         </div>
       )}
     </div>

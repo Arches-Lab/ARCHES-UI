@@ -143,12 +143,21 @@ const LeadSummary: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="bg-white rounded-lg shadow">
+      {/* Header */}
+      <div className="px-4 py-2 border-b border-gray-200">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-900">My Leads</h3>
+          <span className="text-sm text-gray-500">
+            {totalActiveLeads} lead{totalActiveLeads !== 1 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+
       {/* Chart Visualization */}
       {statusCounts.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">My Leads</h3>
-          <div className="space-y-3">
+        <div className="p-4">
+          <div className="space-y-2">
             {statusCounts.map((statusCount) => {
               const percentage = totalActiveLeads > 0 ? (statusCount.count / totalActiveLeads) * 100 : 0;
               
@@ -168,35 +177,28 @@ const LeadSummary: React.FC = () => {
               
               const backgroundColor = getColorHex(statusCount.color);
               
-              console.log(`🔍 Progress bar for ${statusCount.status}:`, { 
-                colorClass: statusCount.color, 
-                backgroundColor, 
-                percentage 
-              });
-              
               return (
-                <div key={statusCount.status} className="flex items-center gap-3">
+                <div key={statusCount.status} className="flex items-center gap-2">
                   <div className="flex items-center gap-2 w-32">
                     <div 
-                      className={`p-2 rounded-full text-white`}
+                      className="p-1 rounded-full text-white flex-shrink-0"
                       style={{ backgroundColor }}
                     >
                       {statusCount.icon}
                     </div>
-                    <span className="text-sm font-medium text-gray-700">{statusCount.displayName}</span>
+                    <span className="text-sm font-medium text-gray-700 truncate whitespace-nowrap">{statusCount.displayName}</span>
                   </div>
-                  <div className="flex-1 bg-gray-200 rounded-full h-3">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
-                      className="h-3 rounded-full"
+                      className="h-2 rounded-full"
                       style={{ 
                         width: `${percentage}%`,
                         backgroundColor
                       }}
                     />
                   </div>
-                  <div className="w-16 text-right">
+                  <div className="w-12 text-right">
                     <span className="text-sm font-medium text-gray-900">{statusCount.count}</span>
-                    {/* <span className="text-xs text-gray-500 ml-1">({percentage.toFixed(1)}%)</span> */}
                   </div>
                 </div>
               );
@@ -207,9 +209,9 @@ const LeadSummary: React.FC = () => {
 
       {/* Empty State */}
       {activeLeads.length === 0 && !loading && (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <FaUser className="mx-auto text-4xl text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Active Leads Assigned to You</h3>
+        <div className="p-4 text-center">
+          <FaUser className="mx-auto text-2xl text-gray-300 mb-2" />
+          <p className="text-sm text-gray-500">No active leads assigned</p>
         </div>
       )}
     </div>

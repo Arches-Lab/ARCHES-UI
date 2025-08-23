@@ -160,83 +160,50 @@ export default function MySchedule({ currentEmployeeId }: MyScheduleProps) {
   }
 
   return (
-    <div className="p-6">
+    <div className="bg-white rounded-lg shadow">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <FaCalendar />
-          My Upcoming Schedule
-        </h1>
+      <div className="px-4 py-3 border-b border-gray-200">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-900">My Schedule</h3>
+          <span className="text-sm text-gray-500">
+            {schedules.length} shift{schedules.length !== 1 ? 's' : ''}
+          </span>
+        </div>
       </div>
 
       {/* Schedules List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {schedules.length === 0 ? (
-          <div className="p-8 text-center">
-            <FaCalendar className="text-4xl text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No upcoming schedules found</p>
-            <p className="text-sm text-gray-500 mt-2">Your schedule will appear here once assigned</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-200">
-            {schedules.map((schedule) => (
-              <div key={schedule.scheduleid} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0">
-                      <div className={`w-3 h-3 rounded-full ${
-                        isToday(schedule.scheduledate) 
-                          ? 'bg-green-500' 
-                          : isTomorrow(schedule.scheduledate)
-                          ? 'bg-yellow-500'
-                          : 'bg-blue-500'
-                      }`} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-4">
-                        <span className="font-medium text-gray-900">
-                          {getDateLabel(schedule.scheduledate)}
-                        </span>
-                        <div className="flex items-center gap-1 text-sm text-gray-600">
-                          <FaClock className="text-gray-400" />
-                          <span>
-                            {formatTime(schedule.starttime)} - {formatTime(schedule.endtime)}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {calculateHours(schedule.starttime, schedule.endtime, schedule.lunchminutes || 0)}h
-                          {(schedule.lunchminutes || 0) > 0 && (
-                            <span className="text-gray-400 ml-1">
-                              (includes {schedule.lunchminutes || 0}min lunch)
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+      {schedules.length === 0 ? (
+        <div className="p-6 text-center">
+          <FaCalendar className="text-2xl text-gray-300 mx-auto mb-2" />
+          <p className="text-sm text-gray-500">No upcoming schedules</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-200">
+          {schedules.map((schedule) => (
+            <div key={schedule.scheduleid} className="px-4 py-3 hover:bg-gray-50">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      isToday(schedule.scheduledate) 
+                        ? 'bg-green-500' 
+                        : isTomorrow(schedule.scheduledate)
+                        ? 'bg-yellow-500'
+                        : 'bg-blue-500'
+                    }`} />
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {getDateLabel(schedule.scheduledate)}
+                    </p>
                   </div>
-
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-600 truncate">
+                    {formatTime(schedule.starttime)} - {formatTime(schedule.endtime)}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Summary */}
-      {schedules.length > 0 && (
-        <div className="mt-6 bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              <span className="font-medium">{schedules.length}</span> upcoming shifts
             </div>
-            <div className="text-sm text-gray-600">
-              Total hours: <span className="font-medium">
-                {schedules.reduce((total, schedule) => 
-                  total + calculateHours(schedule.starttime, schedule.endtime, schedule.lunchminutes), 0
-                ).toFixed(1)}h
-              </span>
-            </div>
-          </div>
+          ))}
         </div>
       )}
     </div>
