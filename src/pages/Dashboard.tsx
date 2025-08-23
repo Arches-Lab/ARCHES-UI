@@ -85,7 +85,8 @@ export default function Dashboard() {
           <div className="space-y-6">
             <MySchedule />
             <ListItemsDisplay 
-              listId="dc882cc8-c0a5-464a-9297-63205b31e51f" 
+              // listId="dc882cc8-c0a5-464a-9297-63205b31e51f" 
+              listId="f62014a2-c905-46fd-b6a5-2b8f0eafcb9f" 
               maxItems={10}
             />
             </div>
