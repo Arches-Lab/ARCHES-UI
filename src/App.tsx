@@ -21,6 +21,7 @@ import StoreOperations from './pages/StoreOperations';
 import Texts from './pages/Texts';
 import Schedule from './pages/Schedule';
 import MySchedule from './components/MySchedule';
+import ListItems from './pages/ListItems';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -84,6 +85,7 @@ function App() {
               <Route path="my-schedule" element={<MySchedule />} /> 
               <Route path="recent-activities" element={<RecentActivities />} />
               <Route path="store-operations" element={<StoreOperations />} />
+              <Route path="list-items" element={<ListItems />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
 

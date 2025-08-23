@@ -6,6 +6,7 @@ import TaskSummary from '../components/TaskSummary';
 import IncidentSummary from '../components/IncidentSummary';
 import LeadSummary from '../components/LeadSummary';
 import MySchedule from '../components/MySchedule';
+import ListItemsDisplay from '../components/ListItemsDisplay';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
@@ -26,14 +27,14 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold mb-4">Dashboard</h2>
-        {selectedStore && (
+        {/* {selectedStore && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>Currently viewing:</span>
             <span className="px-2 py-1 bg-blue-100 text-blue-800 font-medium rounded">
               Store {selectedStore}
             </span>
           </div>
-        )}
+        )} */}
       </div>
       
       {/* Store Selection Info */}
@@ -77,13 +78,17 @@ export default function Dashboard() {
             <TaskSummary />
             <IncidentSummary />
             <LeadSummary />
+            <SuppliesList />
           </div>
           
           {/* Right Column */}
           <div className="space-y-6">
             <MySchedule />
-            <SuppliesList />
-          </div>
+            <ListItemsDisplay 
+              listId="dc882cc8-c0a5-464a-9297-63205b31e51f" 
+              maxItems={10}
+            />
+            </div>
         </div>
       )}
     </div>
