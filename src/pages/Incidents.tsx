@@ -261,7 +261,7 @@ export default function Incidents() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top">
                       <div className="space-y-2">
                         {/* Assigned To */}
                         <div className="flex items-center gap-1">
@@ -285,7 +285,7 @@ export default function Incidents() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px] align-top">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1">
                           <FaUser className="w-4 h-4" />
@@ -299,7 +299,7 @@ export default function Incidents() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px] align-top">
                       <button
                         onClick={() => handleViewIncident(incident)}
                         className="flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors"
