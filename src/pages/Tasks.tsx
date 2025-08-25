@@ -277,25 +277,32 @@ export default function Tasks() {
                       <div className="max-w-full">
                         <div className="flex items-start gap-2">
                           <p className="text-sm text-gray-900 whitespace-pre-wrap" title={task.taskdescription}>
-                            <span className={`inline-flex items-center px-1 py-0.5 text-xs font-medium rounded-full ${getStatusColor(task.taskstatus || '')} mr-2`}>
-                              {getStatusIcon(task.taskstatus || '')} {task.taskstatus || 'unknown'}
-                            </span>
                             <span className="font-semibold text-gray-900">{task.taskname}:</span> {task.taskdescription || 'No description'}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
-                      {task.assignedto ? (
-                        <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
-                            {task.assignee ? `${task.assignee.firstname} ${task.assignee.lastname}` : getEmployeeNameById(task.assignedto)}
+                      <div className="space-y-2">
+                        {/* Assigned To */}
+                        {task.assignedto ? (
+                          <div className="flex items-center gap-1">
+                            <FaUser className="w-4 h-4" />
+                            <span>
+                              {task.assignee ? `${task.assignee.firstname} ${task.assignee.lastname}` : getEmployeeNameById(task.assignedto)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                        
+                        {/* Status Badge */}
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(task.taskstatus || '')}`}>
+                            {getStatusIcon(task.taskstatus || '')} {task.taskstatus || 'unknown'}
                           </span>
                         </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
                       <div className="space-y-1">

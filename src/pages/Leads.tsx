@@ -242,60 +242,66 @@ export default function Leads() {
                 {filteredLeads.map((lead) => (
                   <tr key={lead.leadid} className="hover:bg-gray-50">
                     <td className="px-6 py-4 w-1/2">
-                      <div className="max-w-full">
-                        <div className="flex items-start gap-2">
-                          <div className="w-full">
-                            <div className="flex items-center gap-4 mb-2">
-                              <span className={`inline-flex items-center px-1 py-0.5 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
-                                {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
-                              </span>
-                              {lead.contactname && (
-                                <div className="flex items-center gap-2">
-                                  <FaUserTie className="w-4 h-4 text-blue-500" />
-                                  <span className="font-medium text-gray-900">{lead.contactname}</span>
-                                </div>
-                              )}
-                              {lead.phone && (
-                                <div className="flex items-center gap-2">
-                                  <FaPhone className="w-4 h-4 text-green-500" />
-                                  <a 
-                                    href={`tel:${lead.phone}`}
-                                    className="text-blue-600 hover:text-blue-800 transition-colors"
-                                  >
-                                    {formatPhone(lead.phone)}
-                                  </a>
-                                </div>
-                              )}
-                              {lead.email && (
-                                <div className="flex items-center gap-2">
-                                  <FaEnvelope className="w-4 h-4 text-red-500" />
-                                  <a 
-                                    href={`mailto:${lead.email}`}
-                                    className="text-blue-600 hover:text-blue-800 transition-colors"
-                                  >
-                                    {lead.email}
-                                  </a>
-                                </div>
-                              )}
+                      <div className="space-y-3">
+                        {/* Description */}
+                        <p className="text-sm text-gray-900 whitespace-pre-wrap" title={lead.description}>
+                          {lead.description}
+                        </p>
+                        
+                        {/* Contact Info */}
+                        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-100 text-sm">
+                          {lead.contactname && (
+                            <div className="flex items-center gap-2">
+                              <FaUserTie className="w-4 h-4 text-blue-500" />
+                              <span className="font-medium text-gray-900">{lead.contactname}</span>
                             </div>
-                            <p className="text-sm text-gray-900 whitespace-pre-wrap" title={lead.description}>
-                              {lead.description}
-                            </p>
-                          </div>
+                          )}
+                          {lead.email && (
+                            <div className="flex items-center gap-2">
+                              <FaEnvelope className="w-4 h-4 text-red-500" />
+                              <a 
+                                href={`mailto:${lead.email}`}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                {lead.email}
+                              </a>
+                            </div>
+                          )}
+                          {lead.phone && (
+                            <div className="flex items-center gap-2">
+                              <FaPhone className="w-4 h-4 text-green-500" />
+                              <a 
+                                href={`tel:${lead.phone}`}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                {formatPhone(lead.phone)}
+                              </a>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
-                      {lead.assigned ? (
-                        <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
-                            {lead.assigned.firstname} {lead.assigned.lastname}
+                      <div className="space-y-2">
+                        {/* Assigned To */}
+                        {lead.assigned ? (
+                          <div className="flex items-center gap-1">
+                            <FaUser className="w-4 h-4" />
+                            <span>
+                              {lead.assigned.firstname} {lead.assigned.lastname}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                        
+                        {/* Status Badge */}
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
+                            {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
                           </span>
                         </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
                       <div className="space-y-1">

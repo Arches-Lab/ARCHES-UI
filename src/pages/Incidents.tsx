@@ -244,39 +244,44 @@ export default function Incidents() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredIncidents.map((incident) => (
                   <tr key={incident.incidentid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 w-1/2">
+                    <td className="px-6 py-4 w-1/2 align-top">
                       <div className="max-w-full">
                         <div className="flex items-start gap-2">
                           <p className="text-sm text-gray-900 whitespace-pre-wrap" title={incident.description}>
-                            <span className="inline-flex items-center px-1 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full mr-2">
-                              {getIncidentTypeStatusIcon(incident.incidenttypecode)} {getIncidentTypeDisplayName(incident.incidenttypecode)}
-                            </span>
-                            <span className={`inline-flex items-center px-1 py-0.5 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')} mr-2`}>
-                              {getIncidentStatusIcon(incident.status || '')} {getIncidentStatusDisplayName(incident.status || '')}
-                            </span>
-                            <span className="font-semibold text-gray-900">{incident.title}:</span> {incident.description}
                             {incident.casenumber && (
-                              <span className="inline-flex items-center px-1 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full ml-2">
+                              <span className="font-bold text-blue-600 mr-2">
                                 Case #{incident.casenumber}
                               </span>
                             )}
+                            <span className="font-semibold text-gray-900">{incident.title}:</span> {incident.description}
+                            <span className="inline-flex items-center px-1 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full ml-2">
+                              {getIncidentTypeStatusIcon(incident.incidenttypecode)} {getIncidentTypeDisplayName(incident.incidenttypecode)}
+                            </span>
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px]">
                       <div className="space-y-2">
+                        {/* Assigned To */}
                         <div className="flex items-center gap-1">
                           {incident.assignedto ? (
                             <>
-                              <FaUser className="w-3 h-3" />
-                              <span className="text-xs">
+                              <FaUser className="w-4 h-4" />
+                              <span>
                                 {incident.assignee ? `${incident.assignee.firstname} ${incident.assignee.lastname}` : getEmployeeNameById(incident.assignedto)}
                               </span>
                             </>
                           ) : (
-                            <span className="text-gray-400 text-xs">-</span>
+                            <span className="text-gray-400">-</span>
                           )}
+                        </div>
+                        
+                        {/* Status Badge */}
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')}`}>
+                            {getIncidentStatusIcon(incident.status || '')} {getIncidentStatusDisplayName(incident.status || '')}
+                          </span>
                         </div>
                       </div>
                     </td>
