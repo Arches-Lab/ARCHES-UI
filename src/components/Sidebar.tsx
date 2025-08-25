@@ -1,21 +1,26 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard } from 'react-icons/fa';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
   { to: '/recent-activities', label: 'Recent Activities', icon: <FaCalendarAlt /> },
   { to: '/employees', label: 'Employees', icon: <FaUsers /> },
-  { to: '/schedule', label: 'Schedule', icon: <FaClock /> },
-  { to: '/my-schedule', label: 'My Schedule', icon: <FaCalendarCheck /> },
   { to: '/messages', label: 'Message Board', icon: <FaEnvelope /> },
-  { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },
-  { to: '/texts', label: 'Dropoffs', icon: <FaSms /> },
+  { to: '/store-operations', label: 'Operations', icon: <FaStore /> },
+  { to: '/supplies', label: 'Supplies', icon: <FaBoxes /> },
   { to: '/leads', label: 'Leads', icon: <FaLightbulb /> },
   { to: '/tasks', label: 'Tasks', icon: <FaTasks /> },
   { to: '/incidents', label: 'Incidents', icon: <FaExclamationTriangle /> },
-  { to: '/supplies', label: 'Supplies', icon: <FaBoxes /> },
-  { to: '/store-operations', label: 'Operations', icon: <FaStore /> },
+  { to: '/mailboxes', label: 'Mailboxes', icon: <FaInbox /> },
   { to: '/list-items', label: 'Lists', icon: <FaList /> },
+  { to: '/texts', label: 'Dropoffs', icon: <FaSms /> },
+
+  { to: '/schedule', label: 'Schedule', icon: <FaClock /> },
+  { to: '/my-schedule', label: 'My Schedule', icon: <FaCalendarCheck /> },
+  { to: '/expenses', label: 'Expenses', icon: <FaDollarSign /> },
+  { to: '/expense-categories', label: 'Categories', icon: <FaTag /> },
+  { to: '/payees', label: 'Payees', icon: <FaUserFriends /> },
+  { to: '/payment-accounts', label: 'Payment Accounts', icon: <FaCreditCard /> },
   { to: '/profile', label: 'Profile', icon: <FaUser /> },
   // { to: '/settings', label: 'Settings', icon: <FaCog /> },
   { to: '/newuser', label: 'User Accounts', icon: <FaUserPlus /> },

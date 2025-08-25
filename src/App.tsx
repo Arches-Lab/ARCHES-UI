@@ -22,6 +22,10 @@ import Texts from './pages/Texts';
 import Schedule from './pages/Schedule';
 import MySchedule from './components/MySchedule';
 import ListItems from './pages/ListItems';
+import Expenses from './pages/Expenses';
+import ExpenseCategories from './pages/ExpenseCategories';
+import Payees from './pages/Payees';
+import PaymentAccounts from './pages/PaymentAccounts';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -86,6 +90,10 @@ function App() {
               <Route path="recent-activities" element={<RecentActivities />} />
               <Route path="store-operations" element={<StoreOperations />} />
               <Route path="list-items" element={<ListItems />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="expense-categories" element={<ExpenseCategories />} />
+              <Route path="payees" element={<Payees />} />
+              <Route path="payment-accounts" element={<PaymentAccounts />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
 
