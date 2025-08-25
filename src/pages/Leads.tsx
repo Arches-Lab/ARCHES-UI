@@ -241,7 +241,7 @@ export default function Leads() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredLeads.map((lead) => (
                   <tr key={lead.leadid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 w-1/2">
+                    <td className="px-6 py-4 w-1/2 align-top">
                       <div className="space-y-3">
                         {/* Description */}
                         <p className="text-sm text-gray-900 whitespace-pre-wrap" title={lead.description}>
@@ -281,7 +281,7 @@ export default function Leads() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px] align-top">
                       <div className="space-y-2">
                         {/* Assigned To */}
                         {lead.assigned ? (
@@ -303,7 +303,7 @@ export default function Leads() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px] align-top">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1">
                           <FaUser className="w-4 h-4" />
@@ -317,7 +317,7 @@ export default function Leads() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px] align-top">
                       <button
                         onClick={() => handleViewLead(lead.leadid)}
                         className="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 transition-colors"
