@@ -273,7 +273,7 @@ export default function Tasks() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTasks.map((task) => (
                   <tr key={task.taskid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 w-1/2">
+                    <td className="px-6 py-4 w-1/2 align-top">
                       <div className="max-w-full">
                         <div className="flex items-start gap-2">
                           <p className="text-sm text-gray-900 whitespace-pre-wrap" title={task.taskdescription}>
@@ -282,7 +282,7 @@ export default function Tasks() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px] align-top">
                       <div className="space-y-2">
                         {/* Assigned To */}
                         {task.assignedto ? (
@@ -304,7 +304,7 @@ export default function Tasks() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px] align-top">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1">
                           <FaUser className="w-4 h-4" />
@@ -318,7 +318,7 @@ export default function Tasks() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px] align-top">
                       <button
                         onClick={() => handleViewTask(task)}
                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
