@@ -232,7 +232,7 @@ export default function RecentActivities() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {activities.map((activity) => (
                     <tr key={activity.activityid} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap align-top">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
                             {getParentTypeLabel(activity.parenttypecode)}
@@ -242,14 +242,14 @@ export default function RecentActivities() {
                           </span>
                         </div>
                       </td>
-                                              <td className="px-6 py-4 w-2/5">
+                                              <td className="px-6 py-4 w-2/5 align-top">
                           <div className="max-w-full">
                             <p className="text-sm text-gray-900 break-words" title={activity.details}>
                               {activity.details}
                             </p>
                           </div>
                         </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
+                      <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px] align-top">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1">
                             <FaUser className="w-4 h-4" />
@@ -263,7 +263,7 @@ export default function RecentActivities() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-top">
                         <Link
                           to={getParentDetailLink(activity)}
                           className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
