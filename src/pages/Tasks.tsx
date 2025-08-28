@@ -215,9 +215,8 @@ export default function Tasks() {
               className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Statuses</option>
-              <option value="open">Open</option>
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
+              <option value="new">New</option>
+              <option value="inprogress">In Progress</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
