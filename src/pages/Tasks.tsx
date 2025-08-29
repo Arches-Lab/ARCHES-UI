@@ -6,6 +6,7 @@ import { useStore } from '../auth/StoreContext';
 import { getTasks, getEmployees, createTask } from '../api';
 import { Task, Employee } from '../models';
 import TaskModal from '../components/TaskModal';
+import { logDebug, logError } from '../utils/logger';
 
 export default function Tasks() {
   const { user } = useAuth();
@@ -24,14 +25,12 @@ export default function Tasks() {
     try {
       setLoading(true);
       setError(null);
-      console.log(`🔄 Fetching tasks for store: ${selectedStore}`);
+      logDebug(`🔄 Fetching tasks for store: ${selectedStore}`);
       const tasksData = await getTasks();
-      console.log('Tasks from API:', tasksData);
-      console.log('Status values found:', [...new Set(tasksData.map((task: Task) => task.taskstatus))]);
-      console.log('Unique status values:', Array.from(new Set(tasksData.map((task: Task) => task.taskstatus?.toLowerCase()))));
+      logDebug('Tasks from API:', tasksData);
       setTasks(Array.isArray(tasksData) ? tasksData : []);
     } catch (err) {
-      console.error('Error fetching tasks:', err);
+      logError('Error fetching tasks:', err);
       setError('Failed to load tasks. Please try again later.');
     } finally {
       setLoading(false);
@@ -44,22 +43,19 @@ export default function Tasks() {
       const employeesData = await getEmployees();
       setEmployees(Array.isArray(employeesData) ? employeesData : []);
     } catch (error) {
-      console.error('Error fetching employees:', error);
+      logError('Error fetching employees:', error);
       setEmployees([]);
     }
   };
 
   useEffect(() => {
-    console.log(`🔄 Tasks useEffect - selectedStore: ${selectedStore}`);
-    
     // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
     if (selectedStore !== null && selectedStore !== undefined) {
-      console.log(`🔄 Loading tasks for store: ${selectedStore}`);
       fetchTasks();
       fetchEmployees();
     } else {
       // Clear data only when no store is selected
-      console.log(`🔄 No store selected, clearing tasks data`);
+      logDebug(`🔄 No store selected, clearing tasks data`);
       setTasks([]);
       setLoading(false);
       setError(null);
@@ -139,7 +135,7 @@ export default function Tasks() {
       const tasksData = await getTasks();
       setTasks(Array.isArray(tasksData) ? tasksData : []);
     } catch (error) {
-      console.error('Error refreshing tasks:', error);
+      logError('Error refreshing tasks:', error);
     }
   };
 
@@ -154,7 +150,7 @@ export default function Tasks() {
       await createTask(taskData);
       await handleTaskCreated();
     } catch (error) {
-      console.error('Error creating task:', error);
+      logError('Error creating task:', error);
       alert('Failed to create task. Please try again.');
     }
   };
