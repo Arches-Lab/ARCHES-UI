@@ -6,6 +6,7 @@ import { useStore } from '../auth/StoreContext';
 import { getIncidents, getEmployees, createIncident } from '../api';
 import { Incident, Employee, getIncidentTypeDisplayName, getIncidentTypeStatusIcon, getIncidentStatusDisplayName, getIncidentStatusColor, getIncidentStatusIcon, INCIDENT_STATUSES } from '../models';
 import IncidentModal from '../components/IncidentModal';
+import { logDebug, logError } from '../utils/logger';
 
 export default function Incidents() {
   const { user } = useAuth();
@@ -15,22 +16,22 @@ export default function Incidents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<string>('ALLOPEN');
   const [filterAssignedTo, setFilterAssignedTo] = useState<string>('');
   const navigate = useNavigate();
 
   // Fetch incidents from API
-  const fetchIncidents = async () => {
+  const fetchIncidents = async (status?: string) => {
     try {
       setLoading(true);
       setError(null);
-      console.log(`🔄 Fetching incidents for store: ${selectedStore}`);
-      const incidentsData = await getIncidents();
-      console.log('Incidents from API:', incidentsData);
-      console.log('Status values found:', [...new Set(incidentsData.map((incident: Incident) => incident.status))]);
-      setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
+      logDebug(`🔄 Fetching incidents for store: ${selectedStore}, status: ${status || 'all'}`);
+      const incidentsData = await getIncidents(status);
+      logDebug('Incidents from API:', incidentsData);
+      const incidentsArray = Array.isArray(incidentsData) ? incidentsData : [];
+      setIncidents(incidentsArray);
     } catch (err) {
-      console.error('Error fetching incidents:', err);
+      logError('Error fetching incidents:', err);
       setError('Failed to load incidents. Please try again later.');
     } finally {
       setLoading(false);
@@ -43,33 +44,30 @@ export default function Incidents() {
       const employeesData = await getEmployees();
       setEmployees(Array.isArray(employeesData) ? employeesData : []);
     } catch (error) {
-      console.error('Error fetching employees:', error);
+      logError('Error fetching employees:', error);
       setEmployees([]);
     }
   };
 
   useEffect(() => {
-    console.log(`🔄 Incidents useEffect - selectedStore: ${selectedStore}`);
-    
     // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
     if (selectedStore !== null && selectedStore !== undefined) {
-      console.log(`🔄 Loading incidents for store: ${selectedStore}`);
-      fetchIncidents();
+      logDebug(`🔄 Loading incidents for store: ${selectedStore}`);
+      fetchIncidents(filterStatus || undefined);
       fetchEmployees();
     } else {
       // Clear data only when no store is selected
-      console.log(`🔄 No store selected, clearing incidents data`);
+      logDebug(`🔄 No store selected, clearing incidents data`);
       setIncidents([]);
       setLoading(false);
       setError(null);
     }
-  }, [selectedStore]);
+  }, [selectedStore, filterStatus]);
 
   const filteredIncidents = incidents.filter(incident => {
-    const matchesStatus = !filterStatus || incident.status?.toLowerCase() === filterStatus.toLowerCase();
+    // If we have a server-side filter applied, only do client-side filtering for assignedTo
     const matchesAssignedTo = !filterAssignedTo || incident.assignedto === filterAssignedTo;
-    
-    return matchesStatus && matchesAssignedTo;
+    return matchesAssignedTo;
   });
 
   // Get unique employee IDs from incidents
@@ -105,10 +103,10 @@ export default function Incidents() {
     setShowCreateModal(false);
     // Refresh incidents data
     try {
-      const incidentsData = await getIncidents();
+      const incidentsData = await getIncidents(filterStatus || undefined);
       setIncidents(Array.isArray(incidentsData) ? incidentsData : []);
     } catch (error) {
-      console.error('Error refreshing incidents:', error);
+      logError('Error refreshing incidents:', error);
     }
   };
 
@@ -125,7 +123,7 @@ export default function Incidents() {
       await createIncident(incidentData);
       await handleIncidentCreated();
     } catch (error) {
-      console.error('Error creating incident:', error);
+      logError('Error creating incident:', error);
       alert('Failed to create incident. Please try again.');
     }
   };
@@ -182,10 +180,15 @@ export default function Incidents() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
             <select
               value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+              onChange={(e) => {
+                const newStatus = e.target.value;
+                setFilterStatus(newStatus);
+                setFilterAssignedTo('');
+                fetchIncidents(newStatus || undefined);
+              }}
               className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
             >
-              <option value="">All Statuses</option>
+              <option value="ALLOPEN">All Open</option>
               {INCIDENT_STATUSES.map(status => (
                 <option key={status.code} value={status.code.toLowerCase()}>
                   {status.displayName}
