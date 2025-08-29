@@ -1,7 +1,9 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStoreNumber } from './useStoreNumber';
 import { setSelectedStoreGetter, updateDefaultStore, getDefaultStore } from '../api';
 import { useAuth } from './AuthContext';
+import { logDebug, logError } from '../utils/logger';
 
 type StoreContextType = {
   selectedStore: number | null;
@@ -16,102 +18,98 @@ type StoreContextType = {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const { storeNumber, isLoading, isAuthenticated } = useStoreNumber();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [selectedStore, setSelectedStore] = useState<number | null>(null);
   const [defaultStoreLoading, setDefaultStoreLoading] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Set up the selected store getter for API requests
   useEffect(() => {
-    console.log('🔄 Updating store getter to:', selectedStore);
+    logDebug('🔄 Updating store getter to:', selectedStore);
     setSelectedStoreGetter(() => selectedStore);
   }, [selectedStore]);
-
-  // Fetch default store from API when authenticated
+  
+  // fetch default store from API when authenticated
   useEffect(() => {
     const fetchDefaultStore = async () => {
       if (!isAuthenticated) {
-        setSelectedStore(null);
+        // Only clear store if there was a previously selected store (user was logged in)
+        if (selectedStore !== null) {
+          logDebug('🔄 StoreContext: User logged out, clearing selectedStore');
+          setSelectedStore(null);
+        } else {
+          logDebug('🔄 StoreContext: User not authenticated yet (initial load)');
+        }
         return;
       }
 
       try {
         setDefaultStoreLoading(true);
         const data = await getDefaultStore();
-        console.log('Default store from API:', data);
+        logDebug('Default store from API:', data);
         
         // Handle different response formats
         let defaultStoreNumber: number | null = null;
-        if (data && typeof data.storeNumber === 'number') {
-          defaultStoreNumber = data.storeNumber;
-        } else if (data && typeof data.defaultStore === 'number') {
-          defaultStoreNumber = data.defaultStore;
-        } else if (data && typeof data.storenumber === 'number') {
-          defaultStoreNumber = data.storenumber;
-        } else if (typeof data === 'number') {
+        
+        if (typeof data === 'number') {
           defaultStoreNumber = data;
+        } else if (data && typeof data === 'object') {
+          // Try common property names for store number
+          defaultStoreNumber = data.storenumber || data.store_number || data.storeNumber || data.id || null;
         }
         
         if (defaultStoreNumber) {
-          console.log('🔄 Setting default store from API:', defaultStoreNumber);
           setSelectedStore(defaultStoreNumber);
+        } else {
+          logDebug('🔄 No valid store data from API:', data);
         }
       } catch (error) {
-        console.error('❌ Error fetching default store from API:', error);
-        // Don't set selectedStore to null here, let the fallback logic handle it
+        logError('❌ Error fetching default store from API:', error);
       } finally {
         setDefaultStoreLoading(false);
       }
     };
 
     fetchDefaultStore();
-  }, [isAuthenticated]);
-
-  // Auto-select store when store numbers become available (fallback logic)
-  useEffect(() => {
-    if (storeNumber && storeNumber.length > 0 && !selectedStore && !defaultStoreLoading) {
-      // Fall back to the first store if no default store is set
-      console.log('🔄 Auto-selecting first store (fallback):', storeNumber[0]);
-      setSelectedStore(storeNumber[0]);
-    }
-  }, [storeNumber, selectedStore, defaultStoreLoading]);
-
-  // Clear selected store when user logs out
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setSelectedStore(null);
-    }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, authLoading, selectedStore]);
 
   const handleSetSelectedStore = async (storeNumber: number | null) => {
-    console.log('🔄 Switching to store:', storeNumber);
+    logDebug("handleSetSelectedStore", storeNumber);
     
-    // Update the store getter immediately to ensure API calls use the new store
-    setSelectedStoreGetter(() => storeNumber);
-    
-    // Set the store state and trigger refresh immediately
-    setSelectedStore(storeNumber);
-    setRefreshTrigger(prev => prev + 1);
-    
-    // Update the default store via API
+    // Update the default store via API first
     if (storeNumber) {
       try {
-        console.log('🔄 Updating default store via API...');
         const success = await updateDefaultStore(storeNumber);
         if (success) {
-          console.log('✅ Successfully updated default store via API');
+          logDebug('✅ Successfully updated default store via API');
+          
+          // Update the store getter and state only after successful API call
+          setSelectedStoreGetter(() => storeNumber);
+          setSelectedStore(storeNumber);
+          setRefreshTrigger(prev => prev + 1);
+          
+          // Small delay to ensure state updates are processed before navigation
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 100);
         } else {
-          console.error('❌ Failed to update default store via API');
+          logError('❌ Failed to update default store via API');
         }
       } catch (error) {
-        console.error('❌ Error updating default store via API:', error);
+        logError('❌ Error updating default store via API:', error);
       }
+    } else {
+      // If storeNumber is null, update immediately (for logout scenarios)
+      setSelectedStoreGetter(() => storeNumber);
+      setSelectedStore(storeNumber);
+      setRefreshTrigger(prev => prev + 1);
     }
   };
 
   const refreshData = () => {
-    console.log('🔄 Manual data refresh triggered');
+    logDebug('🔄 Manual data refresh triggered');
     setRefreshTrigger(prev => prev + 1);
   };
 
