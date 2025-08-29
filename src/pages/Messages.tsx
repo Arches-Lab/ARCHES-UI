@@ -279,7 +279,7 @@ export default function Messages() {
                         <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
                           Archived
                         </span>
-                      ) : (
+                      ) : message.createdfor === employeeId ? (
                         <button
                           onClick={() => handleArchiveMessage(message.messageid)}
                           className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
@@ -288,6 +288,8 @@ export default function Messages() {
                           <FaArchive className="w-3 h-3" />
                           Archive
                         </button>
+                      ) : (
+                        <span className="text-gray-400">-</span>
                       )}
                     </td>
                   </tr>
