@@ -1,8 +1,9 @@
 import api from './index';
 
 // Incident API functions
-export const getIncidents = async () => {
-  const { data } = await api.get('/incidents');
+export const getIncidents = async (status?: string) => {
+  const url = status ? `/incidents?status=${encodeURIComponent(status)}` : '/incidents';
+  const { data } = await api.get(url);
   return data;
 };
 
