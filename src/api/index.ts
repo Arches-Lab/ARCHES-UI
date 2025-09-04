@@ -91,5 +91,6 @@ export * from './supply';
 export * from './schedule';
 export * from './scheduleDraft';
 export * from './shift';
+export * from './webauthn';
 
 export default api;

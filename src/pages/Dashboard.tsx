@@ -7,10 +7,22 @@ import IncidentSummary from '../components/IncidentSummary';
 import LeadSummary from '../components/LeadSummary';
 import MySchedule from '../components/MySchedule';
 import ListItemsDisplay from '../components/ListItemsDisplay';
+// import FingerPrintComponent from '../components/FingerPrintComponent';
+import config from '../config/env';
 
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
   const { selectedStore, availableStores } = useStore();
+
+  // const handleFingerprintSuccess = () => {
+  //   console.log('Fingerprint authentication successful!');
+  //   // Add your success logic here
+  // };
+
+  // const handleFingerprintError = (error: string) => {
+  //   console.error('Fingerprint authentication error:', error);
+  //   // Add your error handling logic here
+  // };
 
   useEffect(() => {
     // Only fetch if selectedStore is a valid number (not null, undefined, or 0)
@@ -83,10 +95,14 @@ export default function Dashboard() {
           
           {/* Right Column */}
           <div className="space-y-6">
+            {/* <FingerPrintComponent 
+              onSuccess={handleFingerprintSuccess}
+              onError={handleFingerprintError}
+            /> */}
             <MySchedule />
             <ListItemsDisplay 
               // listId="dc882cc8-c0a5-464a-9297-63205b31e51f" 
-              listId="f62014a2-c905-46fd-b6a5-2b8f0eafcb9f" 
+              listId={config.contactListId} 
               maxItems={10}
             />
             </div>
