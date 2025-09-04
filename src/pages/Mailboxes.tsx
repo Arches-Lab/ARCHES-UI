@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getMailboxes, getActivities } from '../api';
 import { FaInbox, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaEnvelope, FaMapMarkerAlt, FaBox, FaFilter, FaChevronLeft, FaListAlt, FaEye, FaWrench, FaLock, FaKey, FaPhone, FaDollarSign, FaVoicemail, FaCalendar, FaComment, FaFileAlt, FaHandshake, FaChartLine, FaExclamationCircle } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
@@ -46,14 +47,15 @@ export default function Mailboxes() {
   const [currentFilter, setCurrentFilter] = useState<RangeFilter | null>(null);
   const [filterHistory, setFilterHistory] = useState<RangeFilter[]>([]);
   const { selectedStore } = useStore();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Define the initial range filters
   const getInitialRanges = (): RangeFilter[] => {
     return [
-      { label: '100-199', min: 100, max: 199 },
-      { label: '200-299', min: 200, max: 299 },
-      { label: '300-399', min: 300, max: 399 },
-      { label: '400-499', min: 400, max: 499 },
+      { label: '100', min: 100, max: 199 },
+      { label: '200', min: 200, max: 299 },
+      { label: '300', min: 300, max: 399 },
+      { label: '400', min: 400, max: 499 },
     ];
   };
 
@@ -141,9 +143,38 @@ export default function Mailboxes() {
     setFilteredMailboxes(filterMailboxes(mailboxes, currentFilter));
   }, [mailboxes, currentFilter]);
 
+  // Handle URL parameters when mailboxes are loaded
+  useEffect(() => {
+    if (mailboxes.length > 0) {
+      handleUrlParams();
+    }
+  }, [mailboxes]);
+
+  // Handle URL parameters on component mount
+  useEffect(() => {
+    handleUrlParams();
+  }, [searchParams]);
+
+  // Handle mailbox selection after range is set
+  useEffect(() => {
+    const mailboxParam = searchParams.get('mailbox');
+    console.log('useEffect triggered:', { mailboxParam, mailboxesLength: mailboxes.length, currentFilter });
+    
+    if (mailboxParam && mailboxes.length > 0 && currentFilter) {
+      console.log('Searching in full mailboxes array (not filtered)');
+      
+      const mailbox = mailboxes.find(m => m.mailboxnumber.toString() === mailboxParam);
+      if (mailbox) {
+        setSelectedMailbox(mailbox);
+      }
+    }
+  }, [currentFilter, mailboxes, searchParams]);
+
   const handleRangeSelect = (range: RangeFilter) => {
     setCurrentFilter(range);
     setFilterHistory(prev => [...prev, range]);
+    // Update URL with range parameter
+    setSearchParams({ range: range.label });
   };
 
   const handleBackToParent = () => {
@@ -158,10 +189,42 @@ export default function Mailboxes() {
   const handleClearFilters = () => {
     setCurrentFilter(null);
     setFilterHistory([]);
+    setSelectedMailbox(null);
+    // Clear URL parameters
+    setSearchParams({});
   };
 
   const handleMailboxClick = (mailbox: Mailbox) => {
     setSelectedMailbox(mailbox);
+    // Update URL with mailbox parameter
+    setSearchParams({ mailbox: mailbox.mailboxnumber });
+  };
+
+  // Handle URL parameters to auto-select mailbox
+  const handleUrlParams = () => {
+    const mailboxParam = searchParams.get('mailbox');
+    const rangeParam = searchParams.get('range');
+    
+    console.log('URL params:', { mailboxParam, rangeParam, mailboxesLength: mailboxes.length });
+    
+    if (rangeParam) {
+      const range = getInitialRanges().find(r => r.label === rangeParam);
+      if (range) {
+        console.log('Setting range filter:', range);
+        setCurrentFilter(range);
+      }
+    }
+    
+    if (mailboxParam && mailboxes.length > 0) {
+      // First, find and set the appropriate range
+      const range = getInitialRanges().find(r => 
+        parseInt(mailboxParam) >= r.min && parseInt(mailboxParam) <= r.max
+      );
+      if (range) {
+        console.log('Auto-setting range for mailbox:', range);
+        setCurrentFilter(range);
+      }
+    }
   };
 
   const getActivityIcon = (activityType: string) => {
@@ -228,12 +291,7 @@ export default function Mailboxes() {
       return getInitialRanges();
     }
     
-    // If we're at a 100-range, show 50-range sub-ranges
-    if (currentFilter.max - currentFilter.min >= 99) {
-      return getSubRanges(currentFilter);
-    }
-    
-    // If we're at a 50-range, show individual mailboxes (no more filtering)
+    // Always show individual mailboxes when a range is selected
     return [];
   };
 
@@ -261,7 +319,7 @@ export default function Mailboxes() {
   }
 
   const currentRanges = getCurrentRanges();
-  const showMailboxes = currentRanges.length === 0 && currentFilter;
+  const showMailboxes = currentFilter !== null;
 
   return (
     <div className="h-screen flex flex-col">
@@ -269,27 +327,27 @@ export default function Mailboxes() {
       <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">
           <FaInbox className="text-3xl text-blue-600" />
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-semibold">Mailboxes</h2>
-            {/* Filter Breadcrumb */}
-            {filterHistory.length > 0 && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="text-gray-400">/</span>
+          <h2 className="text-2xl font-semibold">Mailboxes</h2>
+          {/* Range Selection Tiles */}
+          <div className="flex items-center gap-2">
+            {getInitialRanges().map((range) => {
+              const rangeMailboxes = filterMailboxes(mailboxes, range);
+              const isSelected = currentFilter?.label === range.label;
+              return (
                 <button
-                  onClick={handleBackToParent}
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                  key={range.label}
+                  onClick={() => handleRangeSelect(range)}
+                  className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                    isSelected
+                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                      : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                  }`}
                 >
-                  <FaChevronLeft className="w-3 h-3" />
-                  Back
+                  {range.min} - {range.max}
+                  {/* {range.label} ({rangeMailboxes.length}) */}
                 </button>
-                <span>/</span>
-                {filterHistory.map((filter, index) => (
-                  <span key={index} className="text-gray-900 font-medium">
-                    {filter.label}
-                  </span>
-                ))}
-              </div>
-            )}
+              );
+            })}
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -312,38 +370,17 @@ export default function Mailboxes() {
       <div className="flex-1 flex">
         {/* Left Panel - Mailboxes */}
         <div className="w-1/2 border-r border-gray-200 flex flex-col">
-          {/* Range Filters */}
-          {currentRanges.length > 0 && (
-            <div className="p-6 bg-white border-b border-gray-200">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {currentRanges.map((range) => {
-                  const rangeMailboxes = filterMailboxes(mailboxes, range);
-                  return (
-                    <button
-                      key={range.label}
-                      onClick={() => handleRangeSelect(range)}
-                      className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all text-center"
-                    >
-                      <div className="text-lg font-semibold text-gray-900">{range.label}</div>
-                      <div className="text-sm text-gray-600">{rangeMailboxes.length} mailboxes</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Mailboxes Grid */}
           {showMailboxes && (
             <div className="flex-1 p-6 overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
+              {/* <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Mailboxes {currentFilter?.label}
                 </h3>
                 <div className="text-sm text-gray-600">
                   {filteredMailboxes.length} mailbox{filteredMailboxes.length !== 1 ? 'es' : ''}
                 </div>
-              </div>
+              </div> */}
 
               {filteredMailboxes.length === 0 ? (
                 <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
@@ -352,7 +389,7 @@ export default function Mailboxes() {
                   <p className="text-gray-600">No mailboxes found in the selected range.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3">
+                <div className="grid grid-cols-10 gap-1">
                   {filteredMailboxes.map((mailbox) => {
                     const mailboxActivities = getActivitiesForMailbox(mailbox.mailboxguid);
                     const isSelected = selectedMailbox?.mailboxid === mailbox.mailboxid;
@@ -389,33 +426,31 @@ export default function Mailboxes() {
 
         {/* Right Panel - Activities */}
         <div className="w-1/2 flex flex-col">
-          {selectedMailbox ? (
-            <>
-
-
-              {/* Activities List */}
-              <div className="flex-1 p-6 overflow-y-auto">
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <FaListAlt className="w-4 h-4 text-purple-500" />
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        Activities ({getActivitiesForMailbox(selectedMailbox.mailboxguid).length})
-                      </h3>
-                    </div>
-                    <ActivityCreation
-                      parentId={selectedMailbox.mailboxguid}
-                      parentType="MAILBOX"
-                      parentName={`Mailbox ${selectedMailbox.mailboxnumber}`}
-                      storeNumber={selectedStore || 1}
-                      onActivityCreated={async () => {
-                        const activitiesData = await getActivities();
-                        setActivities(Array.isArray(activitiesData) ? activitiesData : []);
-                      }}
-                    />
-                  </div>
+          {/* Activities List */}
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <FaListAlt className="w-4 h-4 text-purple-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {selectedMailbox ? `#${selectedMailbox.mailboxnumber} - Activities (${getActivitiesForMailbox(selectedMailbox.mailboxguid).length})` : 'Activities'}
+                  </h3>
+                </div>
+                {selectedMailbox && (
+                  <ActivityCreation
+                    parentId={selectedMailbox.mailboxguid}
+                    parentType="MAILBOX"
+                    parentName={`Mailbox ${selectedMailbox.mailboxnumber}`}
+                    storeNumber={selectedStore || 1}
+                    onActivityCreated={async () => {
+                      const activitiesData = await getActivities();
+                      setActivities(Array.isArray(activitiesData) ? activitiesData : []);
+                    }}
+                  />
+                )}
+              </div>
                   
-                  {(() => {
+                  {selectedMailbox ? (() => {
                     const mailboxActivities = getActivitiesForMailbox(selectedMailbox.mailboxguid);
                     return (
                       <div>
@@ -463,19 +498,15 @@ export default function Mailboxes() {
                         )}
                       </div>
                     );
-                  })()}
+                  })() : (
+                    <div className="text-center py-8">
+                      <FaListAlt className="text-4xl text-gray-400 mx-auto mb-4" />
+                      <h4 className="text-lg font-medium text-gray-900 mb-2">Select a Mailbox</h4>
+                      <p className="text-gray-600">Click on a mailbox to view its activities</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <FaInbox className="text-4xl text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a Mailbox</h3>
-                <p className="text-gray-600">Click on a mailbox to view its activities</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
