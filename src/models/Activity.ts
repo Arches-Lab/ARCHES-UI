@@ -12,4 +12,5 @@ export interface Activity {
     firstname: string;
   };
   createdon: string;
+  mailboxnumber: number
 } 
