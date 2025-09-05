@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { FaUser, FaEnvelope, FaTrash, FaClock, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaTrash, FaClock, FaSpinner, FaFingerprint } from 'react-icons/fa';
 import { SavedUser, emailStorage } from '../utils/emailStorage';
 
 interface SavedUsersListProps {
   onSelectUser: (email: string) => void;
   onSendOtp: (email: string) => void;
+  onFingerprintAuth: (email: string) => void;
   isSendingOtp: boolean;
+  isFingerprintAuth: boolean;
 }
 
-export default function SavedUsersList({ onSelectUser, onSendOtp, isSendingOtp }: SavedUsersListProps) {
+export default function SavedUsersList({ onSelectUser, onSendOtp, onFingerprintAuth, isSendingOtp, isFingerprintAuth }: SavedUsersListProps) {
   const [savedUsers, setSavedUsers] = useState<SavedUser[]>([]);
   const [removingUser, setRemovingUser] = useState<string | null>(null);
 
@@ -26,6 +28,10 @@ export default function SavedUsersList({ onSelectUser, onSendOtp, isSendingOtp }
 
   const handleSendOtp = (email: string) => {
     onSendOtp(email);
+  };
+
+  const handleFingerprintAuth = (email: string) => {
+    onFingerprintAuth(email);
   };
 
   const formatLastLogin = (lastLogin: string) => {
@@ -85,6 +91,19 @@ export default function SavedUsersList({ onSelectUser, onSendOtp, isSendingOtp }
             </div>
             
             <div className="flex items-center gap-2 ml-3">
+              <button
+                onClick={() => handleFingerprintAuth(user.email)}
+                disabled={isFingerprintAuth}
+                className="p-1 text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-colors"
+                title="Login with Fingerprint"
+              >
+                {isFingerprintAuth ? (
+                  <FaSpinner className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FaFingerprint className="h-4 w-4" />
+                )}
+              </button>
+              
               <button
                 onClick={() => handleSendOtp(user.email)}
                 disabled={isSendingOtp}

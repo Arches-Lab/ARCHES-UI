@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaTimes, FaFingerprint, FaSpinner, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../auth/AuthContext';
+import { base64urlToBuffer, bufferToBase64url, isUserVerifyingPlatformAuthenticatorAvailable, getRegistrationOptions, sendRegistrationResponse } from '../api/webauthn';
 
 interface FingerprintRegistrationModalProps {
   onClose: () => void;
@@ -29,25 +30,34 @@ export default function FingerprintRegistrationModal({ onClose }: FingerprintReg
   };
 
   // Start registration process
-  const startRegistration = async (userId: string) => {
-    alert(`startRegistration: ${userId}`);
-    console.log(`startRegistration: ${userId}`);
+  const startRegistration = async (email: string) => {
+    console.log(`startRegistration: ${email}`);
     try {
-      const resp = await fetch(`/api/webauthn/registerRequest?userId=${userId}`);
+      const options = await getRegistrationOptions(email);
+      console.log('Registration options:', options);
+      if (options.error) {
+        throw new Error(options.error);
+      }
+
+      options.challenge = new Uint8Array(base64urlToBuffer(options.challenge));
+      console.log('Safe challenge:', options.challenge);
       
-      if (!resp.ok) {
-        alert(`HTTP error! status: ${resp.status}`);
-        throw new Error(`HTTP error! status: ${resp.status}`);
+      console.log('User ID:', options.user.id); 
+      // Check if it's base64 encoded or just a plain string
+      const isBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(options.user.id);
+      if (isBase64) {
+        options.user.id = new Uint8Array(base64urlToBuffer(options.user.id));
+        console.log('Decoded user ID:', options.user.id);
+      } else {
+        // Convert plain string to Uint8Array using TextEncoder
+        const encoder = new TextEncoder();
+        options.user.id = encoder.encode(options.user.id);
+        console.log('Encoded user ID:', options.user.id);
       }
       
-      const options = await resp.json();
-
-      // Convert base64 → ArrayBuffers for WebAuthn API
-      options.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
-      options.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
-
+      // Create credential using WebAuthn API
       const credential = await navigator.credentials.create({ publicKey: options });
-
+      console.log('Credential:', credential);
       if (!credential) {
         throw new Error('Failed to create credential');
       }
@@ -55,26 +65,24 @@ export default function FingerprintRegistrationModal({ onClose }: FingerprintReg
       // Type assertion to PublicKeyCredential
       const publicKeyCredential = credential as PublicKeyCredential;
 
+      // Prepare credential data for server
       const credentialJSON = {
         id: publicKeyCredential.id,
-        rawId: btoa(String.fromCharCode(...new Uint8Array(publicKeyCredential.rawId))),
+        rawId: bufferToBase64url(publicKeyCredential.rawId),
         type: publicKeyCredential.type,
         response: {
-          attestationObject: btoa(String.fromCharCode(...new Uint8Array((publicKeyCredential.response as AuthenticatorAttestationResponse).attestationObject))),
-          clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(publicKeyCredential.response.clientDataJSON))),
+          attestationObject: bufferToBase64url((publicKeyCredential.response as AuthenticatorAttestationResponse).attestationObject),
+          clientDataJSON: bufferToBase64url(publicKeyCredential.response.clientDataJSON),
         }
       };
-
-      const registerResp = await fetch('/api/webauthn/registerResponse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentialJSON),
-      });
-
-      if (!registerResp.ok) {
-        throw new Error(`Registration failed! status: ${registerResp.status}`);
-      }
-
+      console.log('Credential JSON:', credentialJSON);
+      // Send registration response to server
+      const response = await sendRegistrationResponse(email, credentialJSON);
+      if (response.error) {
+        throw new Error(options.error);
+      }      
+      console.log('Registration response:', response);
+      setStep('success');
       return true;
     } catch (error) {
       console.error('Registration error:', error);
@@ -83,9 +91,8 @@ export default function FingerprintRegistrationModal({ onClose }: FingerprintReg
   };
 
   const handleStartRegistration = async () => {
-    alert(`handleStartRegistration: ${user?.id}`);
-    console.log(`handleStartRegistration: ${user?.id}`);
-    if (!user?.id) {
+    console.log(`handleStartRegistration: ${user?.email}`);
+    if (!user?.email) {
       setErrorMessage('User ID not available');
       setStep('error');
       return;
@@ -108,7 +115,7 @@ export default function FingerprintRegistrationModal({ onClose }: FingerprintReg
     setStep('registering');
 
     try {
-      await startRegistration(user.id);
+      await startRegistration(user.email);
       setStep('success');
     } catch (error) {
       console.error('Fingerprint registration failed:', error);

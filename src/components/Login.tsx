@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { FaEnvelope, FaKey, FaSpinner, FaExclamationTriangle, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import SavedUsersList from './SavedUsersList';
+import { getLoginOptions, verifyLogin, base64urlToBuffer, bufferToBase64url, isUserVerifyingPlatformAuthenticatorAvailable } from '../api/webauthn';
 
 type AuthMethod = 'password' | 'otp';
 
@@ -15,6 +16,8 @@ export default function Login() {
   const [message, setMessage] = useState('');
   const [currentEmailForOtp, setCurrentEmailForOtp] = useState('');
   const { login, loginWithOtp, verifyOtp, authState } = useAuth();
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isSupported, setIsSupported] = useState<boolean | null>(null);
 
   // Debug email state changes
   useEffect(() => {
@@ -99,6 +102,94 @@ export default function Login() {
     setAuthMethod('otp');
     setShowOtpInput(false);
     setMessage('');
+  };
+
+  const initiateFingerprintAuth = async (email: string) => {
+    // TODO: Implement fingerprint authentication
+    console.log('Initiating fingerprint auth for:', email);
+    try {
+      setIsAuthenticating(true);
+      
+      // Check if WebAuthn is supported
+      const supported = await isUserVerifyingPlatformAuthenticatorAvailable();
+      setIsSupported(supported);
+      
+      if (!supported) {
+        setMessage('Fingerprint authentication is not supported on this device.');
+        return;
+      }
+
+      const loginOptions = await getLoginOptions(email);
+      console.log('Login options received:', loginOptions);
+      console.log('AllowCredentials:', loginOptions.allowCredentials);
+
+      const authOptions: PublicKeyCredentialRequestOptions = {
+        challenge: base64urlToBuffer(loginOptions.challenge), // ✅ clean conversion
+        rpId: loginOptions.rpId,
+        userVerification: loginOptions.userVerification as UserVerificationRequirement,
+        timeout: loginOptions.timeout,
+      };
+
+      // Request authentication
+      // console.log('Requesting authentication...');
+      // const credential = await navigator.credentials.get({
+      //   publicKey: authOptions
+      // }) as PublicKeyCredential;
+      console.log('Requesting authentication...');
+      const allowCredentials = loginOptions.allowCredentials?.map(cred => ({
+        id: base64urlToBuffer(cred.id),
+        type: cred.type as PublicKeyCredentialType
+      })) || [];
+      console.log('AllowCredentials being sent to WebAuthn:', allowCredentials);
+      console.log('Number of credentials:', allowCredentials.length);
+      
+      if (allowCredentials.length === 0) {
+        console.warn('No credentials found for user. User may need to register fingerprint first.');
+        setMessage('No fingerprint credentials found. Please register your fingerprint first.');
+        return;
+      }
+      
+      const credential = await navigator.credentials.get({
+        publicKey: {
+          challenge: base64urlToBuffer(loginOptions.challenge),
+          allowCredentials: allowCredentials,
+          userVerification: "preferred",
+          timeout: loginOptions.timeout,
+        }
+      }) as PublicKeyCredential;
+
+      if (!credential) {
+        throw new Error('No credential returned from authenticator');
+      }
+      const authResp = credential.response as AuthenticatorAssertionResponse;
+      const credentialJSON = {
+        id: credential.id,
+        rawId: bufferToBase64url(credential.rawId),
+        type: credential.type,
+        response: {
+          authenticatorData: bufferToBase64url(authResp.authenticatorData),
+          clientDataJSON: bufferToBase64url(authResp.clientDataJSON),
+          signature: bufferToBase64url(authResp.signature),
+          userHandle: authResp.userHandle ? bufferToBase64url(authResp.userHandle) : null,
+        },
+      };
+
+      // Verify the authentication with the server
+      const verificationResult = await verifyLogin(email, credentialJSON);
+      if (verificationResult.success) {
+        console.log('Authentication successful:', verificationResult.user);
+        window.location.href = verificationResult.magicLink || '';
+        setMessage('Authentication successful!');
+      } else {
+        throw new Error(verificationResult.error || 'Authentication verification failed');
+      }
+
+    } catch (error) {
+      console.error('Fingerprint authentication error:', error);
+      setMessage('Fingerprint authentication failed. Please try again.');
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
   return (
@@ -360,7 +451,9 @@ export default function Login() {
         <SavedUsersList
           onSelectUser={handleSelectUser}
           onSendOtp={handleSendOtp}
+          onFingerprintAuth={initiateFingerprintAuth}
           isSendingOtp={authState.isRequestingOtp}
+          isFingerprintAuth={false}
         />
       </div>
     </div>
