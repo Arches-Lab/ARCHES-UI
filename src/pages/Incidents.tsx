@@ -262,18 +262,16 @@ export default function Incidents() {
                     <td className="px-6 py-4 align-top w-2/5">
                       <div className="max-w-full">
                         <div className="space-y-2">
-                          <div className="flex items-start gap-2">
+                          <div className="font-normal text-gray-900" title={incident.description}>
                             {incident.casenumber && (
-                              <span className="font-normal text-blue-600 flex-shrink-0">
-                                Case #{incident.casenumber}:
+                              <span className="text-blue-600">
+                                Case #{incident.casenumber}: 
                               </span>
                             )}
-                            <div className="font-normal text-gray-900" title={incident.description}>
-                              {incident.title}
-                            </div>
+                            {incident.title}
                             <button
                               onClick={() => toggleDescription(incident.incidentid)}
-                              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+                              className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
                               title="Show description"
                             >
                               <FaInfoCircle className="w-3 h-3" />
