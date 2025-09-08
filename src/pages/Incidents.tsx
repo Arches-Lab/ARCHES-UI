@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaFilter, FaExclamationTriangle, FaUser, FaCalendar, FaStore, FaEye, FaPlus, FaSpinner, FaClock } from 'react-icons/fa';
+import { FaFilter, FaExclamationTriangle, FaUser, FaCalendar, FaStore, FaEye, FaPlus, FaSpinner, FaClock, FaInfoCircle } from 'react-icons/fa';
 import { useAuth } from '../auth/AuthContext';
 import { useStore } from '../auth/StoreContext';
 import { getIncidents, getEmployees, createIncident } from '../api';
@@ -18,6 +18,7 @@ export default function Incidents() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('ALLOPEN');
   const [filterAssignedTo, setFilterAssignedTo] = useState<string>('');
+  const [showDescriptionFor, setShowDescriptionFor] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Fetch incidents from API
@@ -97,6 +98,10 @@ export default function Incidents() {
 
   const handleCreateIncident = () => {
     setShowCreateModal(true);
+  };
+
+  const toggleDescription = (incidentId: string) => {
+    setShowDescriptionFor(showDescriptionFor === incidentId ? null : incidentId);
   };
 
   const handleIncidentCreated = async () => {
@@ -234,78 +239,107 @@ export default function Incidents() {
                     Incident
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Assigned
+                    Type
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Assigned To
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Created By/On
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredIncidents.map((incident) => (
                   <tr key={incident.incidentid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 w-1/2 align-top">
+                    {/* Incident Column */}
+                    <td className="px-6 py-4 align-top w-2/5">
                       <div className="max-w-full">
-                        <div className="flex items-start gap-2">
-                          <p className="text-sm text-gray-900 whitespace-pre-wrap" title={incident.description}>
+                        <div className="space-y-2">
+                          <div className="flex items-start gap-2">
                             {incident.casenumber && (
-                              <span className="font-bold text-blue-600 mr-2">
-                                Case #{incident.casenumber}
+                              <span className="font-normal text-blue-600 flex-shrink-0">
+                                Case #{incident.casenumber}:
                               </span>
                             )}
-                            <span className="font-semibold text-gray-900">{incident.title}:</span> {incident.description}
-                            <span className="inline-flex items-center px-1 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full ml-2">
-                              {getIncidentTypeStatusIcon(incident.incidenttypecode)} {getIncidentTypeDisplayName(incident.incidenttypecode)}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top">
-                      <div className="space-y-2">
-                        {/* Assigned To */}
-                        <div className="flex items-center gap-1">
-                          {incident.assignedto ? (
-                            <>
-                              <FaUser className="w-4 h-4" />
-                              <span>
-                                {incident.assignee ? `${incident.assignee.firstname} ${incident.assignee.lastname}` : getEmployeeNameById(incident.assignedto)}
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-gray-400">-</span>
+                            <div className="font-normal text-gray-900" title={incident.description}>
+                              {incident.title}
+                            </div>
+                            <button
+                              onClick={() => toggleDescription(incident.incidentid)}
+                              className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+                              title="Show description"
+                            >
+                              <FaInfoCircle className="w-3 h-3" />
+                            </button>
+                          </div>
+                          {showDescriptionFor === incident.incidentid && (
+                            <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md border">
+                              {incident.description}
+                            </div>
                           )}
                         </div>
-                        
-                        {/* Status Badge */}
-                        <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')}`}>
-                            {getIncidentStatusIcon(incident.status || '')} {getIncidentStatusDisplayName(incident.status || '')}
-                          </span>
-                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px] align-top">
+                    
+                    {/* Type Column */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm align-top w-1/8">
+                      {/* <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full"> */}
+                        {/* {getIncidentTypeStatusIcon(incident.incidenttypecode)}  */}
+                        {getIncidentTypeDisplayName(incident.incidenttypecode)}
+                      {/* </span> */}
+                    </td>
+                    
+                    {/* Assigned To Column */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 align-top w-1/6">
+                      <div className="flex items-center gap-2">
+                        {incident.assignedto ? (
+                          <>
+                            <FaUser className="w-4 h-4 text-gray-400" />
+                            <span>
+                              {incident.assignee ? `${incident.assignee.firstname} ${incident.assignee.lastname}` : getEmployeeNameById(incident.assignedto)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-gray-400">Unassigned</span>
+                        )}
+                      </div>
+                    </td>
+                    
+                    {/* Status Column */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm align-top w-1/8">
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getIncidentStatusColor(incident.status || '')}`}>
+                        {getIncidentStatusIcon(incident.status || '')} {getIncidentStatusDisplayName(incident.status || '')}
+                      </span>
+                    </td>
+                    
+                    {/* Created By/On Column */}
+                    <td className="px-4 py-4 text-sm text-gray-500 align-top w-1/6">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
+                          <FaUser className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs">
                             {incident.creator ? `${incident.creator.firstname} ${incident.creator.lastname}` : 'N/A'}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 text-gray-400">
-                          <FaClock className="w-4 h-4" />
-                          <span>{formatDate(incident.createdon)}</span>
+                          <FaClock className="w-3 h-3" />
+                          <span className="text-xs">{formatDate(incident.createdon)}</span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px] align-top">
+                    
+                    {/* Actions Column */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-top">
                       <button
                         onClick={() => handleViewIncident(incident)}
-                        className="flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors"
+                        className="flex items-center gap-2 px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
                         title="View incident details"
                       >
                         <FaEye className="w-3 h-3" />
