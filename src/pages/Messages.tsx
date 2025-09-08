@@ -1,30 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getMessages, archiveMessage } from '../api';
-import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell, FaPlus, FaArchive, FaFilter } from 'react-icons/fa';
+import { getMessages, archiveMessage, readMessage } from '../api';
+import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell, FaPlus, FaArchive, FaFilter, FaEye } from 'react-icons/fa';
 import CreateMessage from '../components/CreateMessage';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
-
-interface Message {
-  messageid: string;
-  storenumber: number;
-  message: string;
-  createdfor: string | null;
-  notification: boolean;
-  archivedon: string | null;
-  createdby: string;
-  createdon: string;
-  creator: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  },
-  recipient: {
-    email: string | null;
-    lastname: string;
-    firstname: string;
-  }
-}
+import { Message } from '../models';
 
 export default function Messages() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -95,6 +75,18 @@ export default function Messages() {
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error archiving message:', error);
+      // You could add a toast notification here for better UX
+    }
+  };
+
+  const handleReadMessage = async (messageId: string) => {
+    try {
+      await readMessage(messageId);
+      // Refresh the messages list to show updated read status
+      const data = await getMessages(includeArchived);
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error marking message as read:', error);
       // You could add a toast notification here for better UX
     }
   };
@@ -275,22 +267,63 @@ export default function Messages() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
-                      {isArchived(message) ? (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                          Archived
-                        </span>
-                      ) : message.createdfor === employeeId ? (
-                        <button
-                          onClick={() => handleArchiveMessage(message.messageid)}
-                          className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
-                          title="Archive message"
-                        >
-                          <FaArchive className="w-3 h-3" />
-                          Archive
-                        </button>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
+                      <div className="space-y-2">
+                        {/* If archived, show archived date */}
+                        {message.archivedon ? (
+                          <div className="space-y-1">
+                            {/* Show read date if it exists */}
+                            {message.readon && (
+                              <div className="flex items-center gap-1 text-green-600" title="Read on">
+                                <FaEye className="w-3 h-3" />
+                                <span className="text-xs">
+                                  {formatTimestamp(message.readon)}
+                                </span>
+                              </div>
+                            )}
+                            {/* Show archived date */}
+                            <div className="flex items-center gap-1 text-gray-600" title="Archived">
+                              <FaArchive className="w-3 h-3" />
+                              <span className="text-xs">
+                                {formatTimestamp(message.archivedon)}
+                              </span>
+                            </div>
+                          </div>
+                        ) : message.readon ? (
+                          /* If read but not archived, show read date and archive button */
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1 text-green-600" title="Read on">
+                              <FaEye className="w-3 h-3" />
+                              <span className="text-xs">
+                                {formatTimestamp(message.readon)}
+                              </span>
+                            </div>
+                            {message.createdfor === employeeId && (
+                              <button
+                                onClick={() => handleArchiveMessage(message.messageid)}
+                                className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
+                                title="Archive message"
+                              >
+                                <FaArchive className="w-3 h-3" />
+                                Archive
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          /* If unread, show mark as read button */
+                          message.createdfor === employeeId ? (
+                            <button
+                              onClick={() => handleReadMessage(message.messageid)}
+                              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                              title="Mark as read"
+                            >
+                              <FaEye className="w-3 h-3" />
+                              Mark As Read
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 text-xs">Unread</span>
+                          )
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
