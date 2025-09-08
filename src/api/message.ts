@@ -29,3 +29,7 @@ export const archiveMessage = async (messageId: string) => {
   return data;
 };
 
+export const readMessage = async (messageId: string) => {
+  const { data } = await api.put(`/messages/${messageId}/read`);
+  return data;
+};

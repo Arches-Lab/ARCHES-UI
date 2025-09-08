@@ -9,6 +9,7 @@ export * from './Lead';
 export * from './LeadStatus';
 export * from './List';
 export * from './ListItem';
+export * from './Message';
 export * from './Payee';
 export * from './PayeeCategoryTypes';
 export * from './PaymentAccount';
