@@ -107,6 +107,15 @@ export default function SchedulePage() {
     setShowModal(true);
   };
 
+  const handleWeekCellClick = (date: Date, hour: number, employeeId?: string) => {
+    const clickedDateTime = new Date(date);
+    clickedDateTime.setHours(hour, 0, 0, 0);
+    setSelectedDateTime(clickedDateTime);
+    setSelectedEmployeeId(employeeId || null);
+    setSelectedSchedule(null);
+    setShowModal(true);
+  };
+
   const handleScheduleClick = (schedule: Schedule, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedSchedule(schedule);
@@ -121,7 +130,7 @@ export default function SchedulePage() {
     setShowModal(true);
   };
 
-  const handleScheduleDrop = async (itemId: string, newEmployeeId: string, newStartHour: number) => {
+  const handleScheduleDrop = async (itemId: string, newEmployeeId: string, newStartTimeMinutes: number) => {
     try {
       // Check if it's a schedule or draft
       const scheduleToUpdate = schedules.find(s => s.scheduleid === itemId);
@@ -139,6 +148,45 @@ export default function SchedulePage() {
         return;
       }
 
+      // Check if the drop position is the same as the original position
+      const itemToCheck = scheduleToUpdate || draftToUpdate;
+      if (itemToCheck) {
+        const originalStartHour = parseInt(itemToCheck.starttime.split(':')[0]);
+        const originalStartMinute = parseInt(itemToCheck.starttime.split(':')[1]);
+        const originalStartMinutes = originalStartHour * 60 + originalStartMinute;
+        
+        // If same employee and same start time, no need to update
+        if (itemToCheck.employeeid === newEmployeeId && originalStartMinutes === newStartTimeMinutes) {
+          console.log('Drop position is the same as original position, skipping update');
+          return;
+        }
+      }
+
+      // Check if the schedule would go beyond 11:59 PM
+      const itemToValidate = scheduleToUpdate || draftToUpdate;
+      if (itemToValidate) {
+        const originalStartHour = parseInt(itemToValidate.starttime.split(':')[0]);
+        const originalStartMinute = parseInt(itemToValidate.starttime.split(':')[1]);
+        const originalEndHour = parseInt(itemToValidate.endtime.split(':')[0]);
+        const originalEndMinute = parseInt(itemToValidate.endtime.split(':')[1]);
+        
+        // Calculate duration in minutes
+        const originalStartMinutes = originalStartHour * 60 + originalStartMinute;
+        const originalEndMinutes = originalEndHour * 60 + originalEndMinute;
+        const durationMinutes = originalEndMinutes - originalStartMinutes;
+        
+        // Calculate new end time
+        const newEndMinutes = newStartTimeMinutes + durationMinutes;
+        const newEndHour = Math.floor(newEndMinutes / 60);
+        const newEndMinute = newEndMinutes % 60;
+        
+        // Check if the new end time would be beyond 11:59 PM (23:59)
+        if (newEndHour > 23 || (newEndHour === 23 && newEndMinute > 59)) {
+          alert('Schedule cannot extend beyond 11:59 PM. Please choose an earlier start time.');
+          return;
+        }
+      }
+
       if (scheduleToUpdate) {
         // Handle schedule update
         const originalStartHour = parseInt(scheduleToUpdate.starttime.split(':')[0]);
@@ -146,16 +194,20 @@ export default function SchedulePage() {
         const originalEndHour = parseInt(scheduleToUpdate.endtime.split(':')[0]);
         const originalEndMinute = parseInt(scheduleToUpdate.endtime.split(':')[1]);
         
-        // Calculate duration
-        const durationHours = originalEndHour - originalStartHour;
-        const durationMinutes = originalEndMinute - originalStartMinute;
+        // Calculate duration in minutes
+        const originalStartMinutes = originalStartHour * 60 + originalStartMinute;
+        const originalEndMinutes = originalEndHour * 60 + originalEndMinute;
+        const durationMinutes = originalEndMinutes - originalStartMinutes;
         
-        // Calculate new end time
-        const newEndHour = newStartHour + durationHours;
-        const newEndMinute = originalStartMinute; // Keep the same minutes
+        // Calculate new end time using the precise drop time
+        const newEndMinutes = newStartTimeMinutes + durationMinutes;
+        const newStartHour = Math.floor(newStartTimeMinutes / 60);
+        const newStartMinute = newStartTimeMinutes % 60;
+        const newEndHour = Math.floor(newEndMinutes / 60);
+        const newEndMinute = newEndMinutes % 60;
         
         // Format new times
-        const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${originalStartMinute.toString().padStart(2, '0')}`;
+        const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${newStartMinute.toString().padStart(2, '0')}`;
         const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
 
         // // Update the schedule
@@ -176,6 +228,25 @@ export default function SchedulePage() {
           action: 'update'
         };
         await createScheduleDraft(draftData);
+        
+        // Update local state optimistically
+        const newDraft: ScheduleDraft = {
+          scheduledraftid: `temp-${Date.now()}`, // Temporary ID until we get the real one
+          storenumber: scheduleToUpdate.storenumber,
+          employeeid: newEmployeeId,
+          scheduledate: scheduleToUpdate.scheduledate,
+          starttime: newStartTime,
+          endtime: newEndTime,
+          lunchminutes: scheduleToUpdate.lunchminutes,
+          action: 'update',
+          referencescheduleid: scheduleToUpdate.scheduleid,
+          createdon: new Date().toISOString(),
+          createdby: 'current-user' // You might want to get this from auth context
+        };
+        
+        // Add the new draft and remove the original schedule
+        setScheduleDrafts(prev => [...prev, newDraft]);
+        setSchedules(prev => prev.filter(schedule => schedule.scheduleid !== scheduleToUpdate.scheduleid));
 
       } else if (draftToUpdate) {
         // Handle draft update - create a new draft with updated data
@@ -184,16 +255,20 @@ export default function SchedulePage() {
         const originalEndHour = parseInt(draftToUpdate.endtime.split(':')[0]);
         const originalEndMinute = parseInt(draftToUpdate.endtime.split(':')[1]);
         
-        // Calculate duration
-        const durationHours = originalEndHour - originalStartHour;
-        const durationMinutes = originalEndMinute - originalStartMinute;
+        // Calculate duration in minutes
+        const originalStartMinutes = originalStartHour * 60 + originalStartMinute;
+        const originalEndMinutes = originalEndHour * 60 + originalEndMinute;
+        const durationMinutes = originalEndMinutes - originalStartMinutes;
         
-        // Calculate new end time
-        const newEndHour = newStartHour + durationHours;
-        const newEndMinute = originalStartMinute; // Keep the same minutes
+        // Calculate new end time using the precise drop time
+        const newEndMinutes = newStartTimeMinutes + durationMinutes;
+        const newStartHour = Math.floor(newStartTimeMinutes / 60);
+        const newStartMinute = newStartTimeMinutes % 60;
+        const newEndHour = Math.floor(newEndMinutes / 60);
+        const newEndMinute = newEndMinutes % 60;
         
         // Format new times
-        const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${originalStartMinute.toString().padStart(2, '0')}`;
+        const newStartTime = `${newStartHour.toString().padStart(2, '0')}:${newStartMinute.toString().padStart(2, '0')}`;
         const newEndTime = `${newEndHour.toString().padStart(2, '0')}:${newEndMinute.toString().padStart(2, '0')}`;
 
         // Create updated draft
@@ -209,12 +284,26 @@ export default function SchedulePage() {
         };
 
         await updateScheduleDraft(draftToUpdate.scheduledraftid, updatedDraftData);
+        
+        // Update local state optimistically
+        setScheduleDrafts(prev => prev.map(draft => 
+          draft.scheduledraftid === draftToUpdate.scheduledraftid 
+            ? {
+                ...draft,
+                employeeid: newEmployeeId,
+                starttime: newStartTime,
+                endtime: newEndTime
+              }
+            : draft
+        ));
       }
 
-      // Reload data to reflect changes
-      loadData();
+      // No need to reload data - we've updated the local state optimistically
     } catch (err: any) {
       console.error('Error updating schedule/draft:', err);
+      
+      // Revert optimistic updates by reloading data
+      loadData();
       
       // Handle API error response
       if (err.response && err.response.data && err.response.data.error) {
@@ -251,6 +340,24 @@ export default function SchedulePage() {
         return;
       }
 
+      // Check if the drop position is the same as the original position
+      const itemToCheck = scheduleToUpdate || draftToUpdate;
+      if (itemToCheck) {
+        // Parse the original date
+        const originalDateParts = itemToCheck.scheduledate.split('T')[0].split('-');
+        const originalYear = parseInt(originalDateParts[0]);
+        const originalMonth = parseInt(originalDateParts[1]) - 1;
+        const originalDay = parseInt(originalDateParts[2]);
+        const originalDate = new Date(originalYear, originalMonth, originalDay);
+        
+        // If same employee and same date, no need to update
+        if (itemToCheck.employeeid === newEmployeeId && 
+            originalDate.getTime() === newDate.getTime()) {
+          console.log('Week drop position is the same as original position, skipping update');
+          return;
+        }
+      }
+
       if (scheduleToUpdate) {
         // Create a draft for the schedule update
         const draftData: CreateScheduleDraftRequest = {
@@ -264,6 +371,26 @@ export default function SchedulePage() {
           action: 'update'
         };
         await createScheduleDraft(draftData);
+        
+        // Update local state optimistically
+        const newDraft: ScheduleDraft = {
+          scheduledraftid: `temp-${Date.now()}`, // Temporary ID until we get the real one
+          storenumber: scheduleToUpdate.storenumber,
+          employeeid: newEmployeeId,
+          scheduledate: newDateStr,
+          starttime: scheduleToUpdate.starttime,
+          endtime: scheduleToUpdate.endtime,
+          lunchminutes: scheduleToUpdate.lunchminutes || 0,
+          action: 'update',
+          referencescheduleid: scheduleToUpdate.scheduleid,
+          createdon: new Date().toISOString(),
+          createdby: 'current-user' // You might want to get this from auth context
+        };
+        
+        // Add the new draft and remove the original schedule
+        setScheduleDrafts(prev => [...prev, newDraft]);
+        setSchedules(prev => prev.filter(schedule => schedule.scheduleid !== scheduleToUpdate.scheduleid));
+        
       } else if (draftToUpdate) {
         // Create updated draft
         const updatedDraftData: CreateScheduleDraftRequest = {
@@ -278,12 +405,25 @@ export default function SchedulePage() {
         };
 
         await updateScheduleDraft(draftToUpdate.scheduledraftid, updatedDraftData);
+        
+        // Update local state optimistically
+        setScheduleDrafts(prev => prev.map(draft => 
+          draft.scheduledraftid === draftToUpdate.scheduledraftid 
+            ? {
+                ...draft,
+                employeeid: newEmployeeId,
+                scheduledate: newDateStr
+              }
+            : draft
+        ));
       }
 
-      // Reload data to reflect changes
-      loadData();
+      // No need to reload data - we've updated the local state optimistically
     } catch (err: any) {
       console.error('Error updating schedule/draft:', err);
+      
+      // Revert optimistic updates by reloading data
+      loadData();
       
       // Handle API error response
       if (err.response && err.response.data && err.response.data.error) {
@@ -714,7 +854,7 @@ export default function SchedulePage() {
               employees={safeEmployees}
               schedules={safeSchedules}
               scheduleDrafts={safeScheduleDrafts}
-              onCellClick={handleCellClick}
+              onCellClick={handleWeekCellClick}
               onScheduleClick={handleScheduleClick}
               onScheduleDraftClick={handleScheduleDraftClick}
               onScheduleDrop={handleWeekScheduleDrop}

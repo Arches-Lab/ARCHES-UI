@@ -217,7 +217,7 @@ export default function WeekView({
                       >
                         {/* Drag handle bar on the left */}
                         <div 
-                          className="w-3 h-full absolute left-0 top-0 cursor-grab active:cursor-grabbing hover:cursor-grab bg-blue-400"
+                          className="w-3 h-full absolute left-0 top-0 cursor-move active:cursor-move hover:cursor-move bg-blue-400"
                           draggable
                           onDragStart={(e) => handleDragStart(e, schedule)}
                           onDragEnd={handleDragEnd}
@@ -249,7 +249,7 @@ export default function WeekView({
                       >
                         {/* Drag handle bar on the left */}
                         <div 
-                          className="w-3 h-full absolute left-0 top-0 cursor-grab active:cursor-grabbing hover:cursor-grab bg-yellow-400"
+                          className="w-3 h-full absolute left-0 top-0 cursor-move active:cursor-move hover:cursor-move bg-yellow-400"
                           draggable
                           onDragStart={(e) => handleDragStart(e, draft)}
                           onDragEnd={handleDragEnd}
