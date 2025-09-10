@@ -4,7 +4,7 @@ import { Schedule } from '../models/Schedule';
 import { Employee } from '../models/Employee';
 import { Shift } from '../models/Shift';
 import { ScheduleDraft, CreateScheduleDraftRequest } from '../models/ScheduleDraft';
-import { getShifts } from '../api/shift';
+import { getShifts, createShift } from '../api/shift';
 
 interface ScheduleModalProps {
   schedule?: Schedule | null;
@@ -322,6 +322,42 @@ export default function ScheduleModal({
     onSave(updatedFormData);
   };
 
+  const handleSaveAsTemplate = async () => {
+    if (!formData.starttime || !formData.endtime) {
+      alert('Please select start and end times before saving as template');
+      return;
+    }
+
+    try {
+      // Calculate total hours
+      const startTime = new Date(`2000-01-01T${formData.starttime}:00`);
+      const endTime = new Date(`2000-01-01T${formData.endtime}:00`);
+      const totalMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+      const lunchMinutes = formData.lunchminutes || 0;
+      const totalHours = (totalMinutes - lunchMinutes) / 60;
+
+      const shiftData = {
+        storenumber: selectedStore,
+        starttime: formData.starttime,
+        endtime: formData.endtime,
+        totalhours: totalHours,
+        lunchminutes: lunchMinutes,
+        createdby: 'user' // This should ideally come from the current user context
+      };
+
+      await createShift(shiftData);
+      
+      // Refresh the shifts list
+      const shiftsData = await getShifts(selectedStore);
+      setShifts(shiftsData || []);
+      
+      alert('Shift template saved successfully!');
+    } catch (error) {
+      console.error('Error saving shift template:', error);
+      alert('Failed to save shift template. Please try again.');
+    }
+  };
+
   const generateTimeOptions = (): string[] => {
     const times: string[] = [];
     for (let hour = 6; hour <= 20; hour++) {
@@ -335,7 +371,7 @@ export default function ScheduleModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-xl font-semibold text-gray-800">
             {isEditing ? 'Edit Schedule' : 'Create Schedule'}
@@ -376,9 +412,9 @@ export default function ScheduleModal({
           {/* Blank row for spacing */}
           <div className="h-4"></div>
 
-          <div className="flex gap-4">
-            {/* Left Column - Form Fields */}
-            <div className="flex-1 space-y-4">
+          <div className="flex gap-6">
+            {/* Left Half - Form Fields */}
+            <div className="w-1/2 space-y-4">
 
               {/* Start Time */}
               <CustomDropdown
@@ -413,35 +449,52 @@ export default function ScheduleModal({
                   onChange={handleInputChange}
                   min="0"
                   max="120"
-                  className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="0"
                 />
               </div>
+
+              {/* Save as Template Shift Button */}
+              {!isEditing && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleSaveAsTemplate}
+                    className="w-full px-4 py-2 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-colors flex items-center justify-center gap-2"
+                    disabled={!formData.starttime || !formData.endtime}
+                  >
+                    <FaSave />
+                    Save Shift as Template
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Right Column - Saved Shifts (only show when creating new schedule) */}
+            {/* Right Half - Saved Shifts (only show when creating new schedule) */}
             {!isEditing && shifts.length > 0 && (
-              <div className="w-48">
+              <div className="w-1/2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <FaList className="inline mr-2" />
                   Select from Saved Shifts
                 </label>
-                <div className="space-y-1 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2">
+                <div className="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-md p-3">
                   {loadingShifts ? (
-                    <div className="text-center text-sm text-gray-500 py-2">Loading shifts...</div>
+                    <div className="text-center text-sm text-gray-500 py-4">Loading shifts...</div>
                   ) : (
                     shifts.map((shift) => (
                       <button
                         key={shift.shiftid}
                         type="button"
                         onClick={() => handleShiftSelect(shift)}
-                        className="w-full text-left p-1.5 hover:bg-blue-50 rounded border border-gray-200 hover:border-blue-300 transition-colors text-xs"
+                        className="w-full text-left p-3 hover:bg-blue-50 rounded border border-gray-200 hover:border-blue-300 transition-colors"
                       >
-                        <div className="font-medium text-gray-900 truncate">
-                          {shift.starttime.substring(0, 5)}-{shift.endtime.substring(0, 5)}
-                        </div>
-                        <div className="text-gray-500 truncate">
-                          {shift.totalhours}h • {shift.lunchminutes}m
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-gray-900">
+                            {shift.starttime.substring(0, 5)} - {shift.endtime.substring(0, 5)}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {shift.totalhours}h • {shift.lunchminutes}m break
+                          </span>
                         </div>
                       </button>
                     ))

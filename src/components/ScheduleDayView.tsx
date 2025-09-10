@@ -12,7 +12,7 @@ interface DayViewProps {
   onCellClick: (date: Date, hour: number, employeeId?: string) => void;
   onScheduleClick: (schedule: Schedule, e: React.MouseEvent) => void;
   onScheduleDraftClick: (draft: ScheduleDraft, e: React.MouseEvent) => void;
-  onScheduleDrop: (scheduleId: string, newEmployeeId: string, newStartHour: number) => void;
+  onScheduleDrop: (scheduleId: string, newEmployeeId: string, newStartTimeMinutes: number) => void;
   formatTime: (hour: number) => string;
   getSchedulesForTimeSlot: (date: Date, hour: number) => (Schedule & { type: 'schedule' } | ScheduleDraft & { type: 'draft' })[];
 }
@@ -30,7 +30,7 @@ export default function DayView({
   getSchedulesForTimeSlot
 }: DayViewProps) {
   const [draggedItem, setDraggedItem] = useState<Schedule | ScheduleDraft | null>(null);
-  const [dragOverCell, setDragOverCell] = useState<{ employeeId: string; hour: number } | null>(null);
+  const [dragOverCell, setDragOverCell] = useState<{ employeeId: string; hour: number; minute: number } | null>(null);
 
   const handleDragStart = (e: React.DragEvent, item: Schedule | ScheduleDraft) => {
     setDraggedItem(item);
@@ -47,7 +47,21 @@ export default function DayView({
   const handleDragOver = (e: React.DragEvent, employeeId: string, hour: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setDragOverCell({ employeeId, hour });
+    
+    // Calculate which 15-minute segment within the hour slot the mouse is over
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    const position = x / width; // 0 to 1
+    
+    // Determine which 15-minute segment (0, 15, 30, 45)
+    let minute = 0;
+    if (position >= 0.75) minute = 45;
+    else if (position >= 0.5) minute = 30;
+    else if (position >= 0.25) minute = 15;
+    else minute = 0;
+    
+    setDragOverCell({ employeeId, hour, minute });
   };
 
   const handleDragLeave = () => {
@@ -56,9 +70,11 @@ export default function DayView({
 
   const handleDrop = (e: React.DragEvent, employeeId: string, hour: number) => {
     e.preventDefault();
-    if (draggedItem) {
+    if (draggedItem && dragOverCell) {
       const itemId = 'scheduleid' in draggedItem ? draggedItem.scheduleid : draggedItem.scheduledraftid;
-      onScheduleDrop(itemId, employeeId, hour);
+      // Pass the precise time (hour + minute) to the parent
+      const preciseTime = dragOverCell.hour * 60 + dragOverCell.minute; // Convert to total minutes
+      onScheduleDrop(itemId, employeeId, preciseTime);
     }
     setDraggedItem(null);
     setDragOverCell(null);
@@ -66,6 +82,26 @@ export default function DayView({
 
   const isDropTarget = (employeeId: string, hour: number) => {
     return dragOverCell?.employeeId === employeeId && dragOverCell?.hour === hour;
+  };
+
+  const getDropTargetStyle = (employeeId: string, hour: number) => {
+    if (!isDropTarget(employeeId, hour)) return '';
+    
+    const minute = dragOverCell?.minute || 0;
+    const leftPosition = (minute / 60) * 100; // Convert minutes to percentage
+    const width = 25; // 15 minutes = 25% of hour
+    
+    return {
+      position: 'absolute' as const,
+      top: '2px',
+      bottom: '2px',
+      left: `${leftPosition}%`,
+      width: `${width}%`,
+      backgroundColor: 'rgba(34, 197, 94, 0.2)', // Green with transparency
+      border: '2px solid rgb(34, 197, 94)',
+      borderRadius: '4px',
+      zIndex: 5
+    };
   };
 
   // Calculate total hours for each employee
@@ -163,37 +199,50 @@ export default function DayView({
                 return (
                   <td
                     key={hour}
-                    className={`p-1 border-r relative min-h-16 cursor-pointer transition-colors ${
-                      isDropTarget(employee.employeeid, hour) 
-                        ? 'bg-green-100 border-2 border-green-400' 
-                        : 'hover:bg-blue-50'
-                    }`}
+                    className={`p-1 border-r relative min-h-16 cursor-pointer transition-colors hover:bg-blue-50`}
                     onClick={() => onCellClick(currentDate, hour, employee.employeeid)}
                     onDragOver={(e) => handleDragOver(e, employee.employeeid, hour)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, employee.employeeid, hour)}
-                  />
+                  >
+                    {/* Show 15-minute drop target indicator */}
+                    {isDropTarget(employee.employeeid, hour) && (
+                      <div style={getDropTargetStyle(employee.employeeid, hour)} />
+                    )}
+                  </td>
                 );
               }
               
               return (
                 <td
                   key={hour}
-                  className={`p-1 border-r relative min-h-16 cursor-pointer transition-colors ${
-                    isDropTarget(employee.employeeid, hour) 
-                      ? 'bg-green-100 border-2 border-green-400' 
-                      : 'hover:bg-blue-50'
-                  }`}
+                  className={`p-1 border-r relative min-h-16 cursor-pointer transition-colors hover:bg-blue-50`}
                   onClick={() => onCellClick(currentDate, hour, employee.employeeid)}
                   onDragOver={(e) => handleDragOver(e, employee.employeeid, hour)}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, employee.employeeid, hour)}
                 >
+                  {/* Show 15-minute drop target indicator */}
+                  {isDropTarget(employee.employeeid, hour) && (
+                    <div style={getDropTargetStyle(employee.employeeid, hour)} />
+                  )}
                   {employeeSchedules.map((item) => {
-                    // Calculate how many hours this item spans
+                    // Calculate positioning and width for 15-minute precision within hourly slots
                     const startHour = parseInt(item.starttime.split(':')[0]);
+                    const startMinute = parseInt(item.starttime.split(':')[1]);
                     const endHour = parseInt(item.endtime.split(':')[0]);
-                    const spanHours = Math.max(1, endHour - startHour);
+                    const endMinute = parseInt(item.endtime.split(':')[1]);
+                    
+                    // Calculate position within the hour slot (0-3 for 15-minute increments)
+                    const startPosition = startMinute / 15; // 0, 0.25, 0.5, 0.75
+                    const endPosition = endMinute / 15;
+                    
+                    // Calculate width as fraction of the hour slot
+                    const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+                    const widthFraction = durationMinutes / 60; // Fraction of hour
+                    
+                    // Calculate left position as fraction of the hour slot
+                    const leftFraction = startPosition / 4; // 0, 0.25, 0.5, 0.75
                     
                     const isSchedule = item.type === 'schedule';
                     const itemId = isSchedule ? item.scheduleid : item.scheduledraftid;
@@ -216,18 +265,18 @@ export default function DayView({
                         key={itemId}
                         className={`mb-1 border rounded text-xs transition-all ${draggingClasses}`}
                         style={{
-                          width: `${spanHours * 100}%`,
+                          width: `${widthFraction * 100}%`,
                           position: 'absolute',
                           top: '2px',
                           bottom: '2px',
-                          left: '0px',
+                          left: `${leftFraction * 100}%`,
                           zIndex: isDragging ? 20 : 10
                         }}
                         onClick={isSchedule ? (e) => onScheduleClick(item as Schedule, e) : (e) => onScheduleDraftClick(item as ScheduleDraft, e)}
                       >
                         {/* Drag handle bar on the left */}
                         <div 
-                          className={`w-3 h-full absolute left-0 top-0 cursor-grab active:cursor-grabbing hover:cursor-grab ${
+                          className={`w-3 h-full absolute left-0 top-0 cursor-move active:cursor-move hover:cursor-move ${
                             isSchedule ? 'bg-blue-400' : 'bg-yellow-400'
                           }`}
                           draggable={true}
