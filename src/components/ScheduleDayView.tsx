@@ -84,15 +84,15 @@ export default function DayView({
     return dragOverCell?.employeeId === employeeId && dragOverCell?.hour === hour;
   };
 
-  const getDropTargetStyle = (employeeId: string, hour: number) => {
-    if (!isDropTarget(employeeId, hour)) return '';
+  const getDropTargetStyle = (employeeId: string, hour: number): React.CSSProperties | undefined => {
+    if (!isDropTarget(employeeId, hour)) return undefined;
     
     const minute = dragOverCell?.minute || 0;
     const leftPosition = (minute / 60) * 100; // Convert minutes to percentage
     const width = 25; // 15 minutes = 25% of hour
     
     return {
-      position: 'absolute' as const,
+      position: 'absolute',
       top: '2px',
       bottom: '2px',
       left: `${leftPosition}%`,
@@ -206,7 +206,7 @@ export default function DayView({
                     onDrop={(e) => handleDrop(e, employee.employeeid, hour)}
                   >
                     {/* Show 15-minute drop target indicator */}
-                    {isDropTarget(employee.employeeid, hour) && (
+                    {isDropTarget(employee.employeeid, hour) && getDropTargetStyle(employee.employeeid, hour) && (
                       <div style={getDropTargetStyle(employee.employeeid, hour)} />
                     )}
                   </td>
@@ -223,7 +223,7 @@ export default function DayView({
                   onDrop={(e) => handleDrop(e, employee.employeeid, hour)}
                 >
                   {/* Show 15-minute drop target indicator */}
-                  {isDropTarget(employee.employeeid, hour) && (
+                  {isDropTarget(employee.employeeid, hour) && getDropTargetStyle(employee.employeeid, hour) && (
                     <div style={getDropTargetStyle(employee.employeeid, hour)} />
                   )}
                   {employeeSchedules.map((item) => {
