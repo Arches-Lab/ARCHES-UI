@@ -10,6 +10,7 @@ export * from './LeadStatus';
 export * from './List';
 export * from './ListItem';
 export * from './Message';
+export * from './TimeCard';
 export * from './Payee';
 export * from './PayeeCategoryTypes';
 export * from './PaymentAccount';
