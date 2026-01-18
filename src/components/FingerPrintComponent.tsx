@@ -61,7 +61,7 @@ export default function FingerPrintComponent({ onSuccess, onError }: FingerPrint
             // Convert plain string to Uint8Array using TextEncoder
             const encoder = new TextEncoder();
             const uint8Array = encoder.encode(loginOptions.challenge);
-            challenge = uint8Array.buffer;
+            // challenge = uint8Array.buffer;
           }
         } else if (Array.isArray(loginOptions.challenge)) {
           // If it's already an array of numbers
@@ -76,7 +76,7 @@ export default function FingerPrintComponent({ onSuccess, onError }: FingerPrint
         throw new Error(`Failed to convert challenge: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
       
-      console.log('Challenge converted successfully:', challenge);
+      // console.log('Challenge converted successfully:', challenge);
 
       // Create authentication options
       // const authOptions: PublicKeyCredentialRequestOptions = {
