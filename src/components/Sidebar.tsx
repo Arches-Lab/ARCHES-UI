@@ -16,6 +16,7 @@ const menuGroups = [
     label: 'Management',
     items: [
       { to: '/employees', label: 'Employees', icon: <FaUsers /> },
+      { to: '/employee-timecards', label: 'Attendance', icon: <FaClock /> },
       { to: '/supplies', label: 'Supplies', icon: <FaBoxes /> },
       { to: '/list-items', label: 'Lists', icon: <FaList /> },
     ]
@@ -31,6 +32,7 @@ const menuGroups = [
       { to: '/tasks', label: 'Tasks', icon: <FaTasks /> },
       { to: '/incidents', label: 'Incidents', icon: <FaExclamationTriangle /> },
       { to: '/texts', label: 'Dropoffs', icon: <FaSms /> },
+      { to: '/my-timecards', label: 'My Timecards', icon: <FaClock /> },
     ]
   },
   // {

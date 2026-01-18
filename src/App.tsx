@@ -26,6 +26,7 @@ import Expenses from './pages/Expenses';
 import ExpenseCategories from './pages/ExpenseCategories';
 import Payees from './pages/Payees';
 import PaymentAccounts from './pages/PaymentAccounts';
+import EmployeeTimecards from './pages/EmployeeTimecards';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -94,6 +95,8 @@ function App() {
               <Route path="expense-categories" element={<ExpenseCategories />} />
               <Route path="payees" element={<Payees />} />
               <Route path="payment-accounts" element={<PaymentAccounts />} />
+              <Route path="my-timecards" element={<EmployeeTimecards useCurrentUser={true} />} />
+              <Route path="employee-timecards" element={<EmployeeTimecards />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
 

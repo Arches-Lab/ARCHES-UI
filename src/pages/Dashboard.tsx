@@ -7,6 +7,7 @@ import IncidentSummary from '../components/IncidentSummary';
 import LeadSummary from '../components/LeadSummary';
 import MySchedule from '../components/MySchedule';
 import ListItemsDisplay from '../components/ListItemsDisplay';
+import MyTimeCard from '../components/MyTimeCard';
 // import FingerPrintComponent from '../components/FingerPrintComponent';
 import config from '../config/env';
 
@@ -95,6 +96,8 @@ export default function Dashboard() {
           
           {/* Right Column */}
           <div className="space-y-6">
+            <MyTimeCard />
+            {/* <EmployeeTimeCardSummary /> */}
             {/* <FingerPrintComponent 
               onSuccess={handleFingerprintSuccess}
               onError={handleFingerprintError}
