@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaUser, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
+import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
 import { getStoreOperations, createStoreOperation } from '../api/storeOperations';
@@ -7,7 +7,6 @@ import { StoreOperation } from '../models';
 
 interface StoreOperationFormData {
   operationdate: string;
-  associateName: string;
   posa: number;
   posb: number;
   posc: number;
@@ -45,7 +44,6 @@ export default function StoreOperations() {
 
   const defaultFormData: StoreOperationFormData = {
     operationdate: getCurrentLocalDate(),
-    associateName: '',
     posa: 0,
     posb: 0,
     posc: 0,
@@ -153,10 +151,16 @@ export default function StoreOperations() {
         storenumber: selectedStore,
         operation: operationType,
         operationdate: formData.operationdate || getCurrentLocalDate(),
-        associateName: formData.associateName,
         posa: formData.posa || 0,
         posb: formData.posb || 0,
         posc: formData.posc || 0,
+        hundreds: formData.hundreds,
+        fifties: formData.fifties,
+        twenties: formData.twenties,
+        tens: formData.tens,
+        fives: formData.fives,
+        twos: formData.twos,
+        ones: formData.ones,
         cash: totalCash,
         coins: 0,
         totalCash,
@@ -321,22 +325,6 @@ export default function StoreOperations() {
                   value={formData.operationdate}
                   onChange={(e) => handleInputChange('operationdate', e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  required
-                />
-              </div>
-
-              {/* Associate Name */}
-              <div className="flex-1 min-w-[160px]">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <FaUser className="inline w-4 h-4 mr-1" />
-                  Associate Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.associateName}
-                  onChange={(e) => handleInputChange('associateName', e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  placeholder="Enter associate name"
                   required
                 />
               </div>
