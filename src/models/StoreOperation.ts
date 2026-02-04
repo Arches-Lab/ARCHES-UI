@@ -10,6 +10,10 @@ export interface StoreOperation {
   coins: number | null;        
   collected: number | null;    
   collectedpos: number | null; // Collected POS amount
+  associateName?: string | null;
+  totalCash?: number | null;
+  posTotal?: number | null;
+  overShort?: number | null;
   note: string | null;         // Optional note field
   createdby: string;           
   creator: {
