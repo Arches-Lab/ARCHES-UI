@@ -9,6 +9,8 @@ export interface StoreOperation {
   posACash?: number | null;
   posBCash?: number | null;
   posCCash?: number | null;
+  reserveCash?: number | null;
+  reserveCoins?: number | null;
   cash: number | null;         
   coins: number | null;        
   totalCash?: number | null;
