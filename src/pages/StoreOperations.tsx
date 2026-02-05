@@ -161,7 +161,7 @@ export default function StoreOperations() {
     let latestOpenOperation: StoreOperation | null = null;
     let latestCloseOperation: StoreOperation | null = null;
     operations.forEach((operation) => {
-      const operationDate = getLocalDateString(operation.operationdate);
+      const operationDate = operation.operationdate;
       if (operationDate !== today) {
         return;
       }
