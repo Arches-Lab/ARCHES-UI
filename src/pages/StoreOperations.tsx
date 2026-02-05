@@ -36,6 +36,7 @@ export default function StoreOperations() {
   const [operationsError, setOperationsError] = useState<string | null>(null);
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   const [notePosition, setNotePosition] = useState({ x: 0, y: 0 });
+  const [showSummary, setShowSummary] = useState(false);
 
   const getCurrentLocalDate = () => {
     const now = new Date();
@@ -71,6 +72,10 @@ export default function StoreOperations() {
   const billOptions = useMemo(() => Array.from({ length: 101 }, (_, index) => index), []);
 
   const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+  const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(value || 0);
 
   const totalCash = useMemo(() => {
     const total = (formData.hundreds * 100)
@@ -211,6 +216,7 @@ export default function StoreOperations() {
     setOperationType(null);
     setFormData(defaultFormData);
     setError(null);
+    setShowSummary(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -288,6 +294,15 @@ export default function StoreOperations() {
                   <FaTimes className="w-4 h-4" />
                   Cancel
                 </button>
+                {operationType === 'CLOSE' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowSummary(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-700 border border-green-200 rounded-md hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                  >
+                    Summarize
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
@@ -688,6 +703,135 @@ export default function StoreOperations() {
           </div>
         </div>
       )}
+
+      {showSummary && operationType === 'CLOSE' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <style>
+            {`@media print {
+              body * { visibility: hidden; }
+              .summary-print-area, .summary-print-area * { visibility: visible; }
+              .summary-print-area { position: absolute; inset: 0; width: 100%; }
+            }`}
+          </style>
+          <div className="summary-print-area w-full max-w-3xl rounded-lg bg-white shadow-lg border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Close Summary</h3>
+                <p className="text-sm text-gray-500">Review the close operation details before saving.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSummary(false)}
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                aria-label="Close summary"
+              >
+                <FaTimes className="h-4 w-4" />
+                Close
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs uppercase text-gray-500">Date</p>
+                  <p className="text-sm font-medium text-gray-900">{formData.operationdate}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">Associate Name</p>
+                  <p className="text-sm font-medium text-gray-900">{user?.email || 'Unknown'}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS A Amount</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.posa)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS B Amount</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.posb)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS C Amount</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.posc)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">Reserve Cash</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.reservecash)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">Reserve Coins</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.reservecoins)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS A Cash</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.posacash)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS B Cash</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.posbcash)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS C Cash</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(formData.posccash)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">POS Total Cash</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(posTotal)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">Total Cash</p>
+                  <p className="text-sm font-medium text-gray-900">{formatCurrency(totalCash)}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase text-gray-500">Over / Short</p>
+                  <p className={`text-sm font-medium ${overShort > 0 ? 'text-green-600' : overShort < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                    {formatCurrency(overShort)}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-gray-500">Cash Denominations</p>
+                <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-700">
+                  <div>#100 Bills: <span className="font-medium text-gray-900">{formData.hundreds}</span></div>
+                  <div>#50 Bills: <span className="font-medium text-gray-900">{formData.fifties}</span></div>
+                  <div>#20 Bills: <span className="font-medium text-gray-900">{formData.twenties}</span></div>
+                  <div>#10 Bills: <span className="font-medium text-gray-900">{formData.tens}</span></div>
+                  <div>#5 Bills: <span className="font-medium text-gray-900">{formData.fives}</span></div>
+                  <div>#2 Bills: <span className="font-medium text-gray-900">{formData.twos}</span></div>
+                  <div>#1 Bills: <span className="font-medium text-gray-900">{formData.ones}</span></div>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase text-gray-500">Note</p>
+                <p className="text-sm text-gray-900 whitespace-pre-wrap">{formData.note || '—'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Print
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSummary(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}
