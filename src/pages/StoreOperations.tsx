@@ -614,6 +614,8 @@ export default function StoreOperations() {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POS-C</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CASH</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COIN</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POS Cash</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual Cash</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NOTE</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By/On</th>
                 </tr>
@@ -634,6 +636,8 @@ export default function StoreOperations() {
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.posc}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.reservecash}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.reservecoins}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.postotalcash}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.collectedcash}</td>
                     <td className="px-4 py-2 text-xs text-gray-900 max-w-[200px]">
                       {operation.note ? (
                         <div 

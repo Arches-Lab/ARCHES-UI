@@ -15,6 +15,8 @@ export interface StoreOperation {
   coins: number | null;        
   totalCash?: number | null;
   posTotal?: number | null;
+  postotalcash?: number | null;
+  collectedcash?: number | null;
   overShort?: number | null;
   hundreds?: number | null;
   fifties?: number | null;
