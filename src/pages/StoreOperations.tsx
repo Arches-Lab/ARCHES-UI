@@ -10,6 +10,9 @@ interface StoreOperationFormData {
   posa: number;
   posb: number;
   posc: number;
+  posACash: number;
+  posBCash: number;
+  posCCash: number;
   hundreds: number;
   fifties: number;
   twenties: number;
@@ -17,8 +20,6 @@ interface StoreOperationFormData {
   fives: number;
   twos: number;
   ones: number;
-  collected: number | null;
-  collectedpos: number | null;
   note: string;
 }
 
@@ -47,6 +48,9 @@ export default function StoreOperations() {
     posa: 0,
     posb: 0,
     posc: 0,
+    posACash: 0,
+    posBCash: 0,
+    posCCash: 0,
     hundreds: 0,
     fifties: 0,
     twenties: 0,
@@ -54,8 +58,6 @@ export default function StoreOperations() {
     fives: 0,
     twos: 0,
     ones: 0,
-    collected: null,
-    collectedpos: null,
     note: '',
   };
 
@@ -85,9 +87,9 @@ export default function StoreOperations() {
   ]);
 
   const posTotal = useMemo(() => {
-    const total = formData.posa + formData.posb + formData.posc;
+    const total = formData.posACash + formData.posBCash + formData.posCCash;
     return roundCurrency(total);
-  }, [formData.posa, formData.posb, formData.posc]);
+  }, [formData.posACash, formData.posBCash, formData.posCCash]);
 
   const overShort = useMemo(() => {
     return roundCurrency(totalCash - posTotal);
@@ -127,7 +129,7 @@ export default function StoreOperations() {
   const handleInputChange = (field: keyof StoreOperationFormData, value: string | number) => {
     setFormData({
       ...formData,
-      [field]: field === 'collected' && operationType === 'OPEN' ? null : value,
+      [field]: value,
     });
   };
 
@@ -154,6 +156,9 @@ export default function StoreOperations() {
         posa: formData.posa || 0,
         posb: formData.posb || 0,
         posc: formData.posc || 0,
+        posACash: formData.posACash || 0,
+        posBCash: formData.posBCash || 0,
+        posCCash: formData.posCCash || 0,
         hundreds: formData.hundreds,
         fifties: formData.fifties,
         twenties: formData.twenties,
@@ -166,8 +171,6 @@ export default function StoreOperations() {
         totalCash,
         posTotal,
         overShort,
-        collected: formData.collected,
-        collectedpos: formData.collectedpos,
         note: formData.note || null,
         createdby: user.id || user.email || 'Unknown',
       };
@@ -214,16 +217,6 @@ export default function StoreOperations() {
 
   const getOperationTypeColor = (type: string) => {
     return type === 'OPEN' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-  };
-
-  const getCollectedDifference = (collected: number | null, collectedpos: number | null) => {
-    if (collected === null || collectedpos === null) return null;
-    return collected - collectedpos;
-  };
-
-  const shouldHighlightCollected = (collected: number | null, collectedpos: number | null) => {
-    if (collected === null || collectedpos === null) return false;
-    return collected < collectedpos;
   };
 
   if (!selectedStore) {
@@ -367,167 +360,171 @@ export default function StoreOperations() {
                   required
                 />
               </div>
-
-              {/* COLLECTED - Only show for CLOSE */}
-              {operationType === 'CLOSE' && (
-                <div className="flex-1 min-w-[120px]">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <FaMoneyBillWave className="inline w-4 h-4 mr-1" />
-                    COLLECTED
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.collected ?? ''}
-                    onChange={(e) => handleInputChange('collected', parseFloat(e.target.value) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                    required
-                  />
-                </div>
-              )}
-
-              {/* COLLECTED POS - Only show for CLOSE */}
-              {operationType === 'CLOSE' && (
-                <div className="flex-1 min-w-[120px]">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <FaMoneyBillWave className="inline w-4 h-4 mr-1" />
-                    COLLECTED POS
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.collectedpos ?? ''}
-                    onChange={(e) => handleInputChange('collectedpos', parseFloat(e.target.value) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                    required
-                  />
-                </div>
-              )}
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <FaMoneyBillWave className="w-4 h-4" />
-                Cash Denominations
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#100 Bills</label>
-                  <select
-                    value={formData.hundreds}
-                    onChange={(e) => handleInputChange('hundreds', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`hundreds-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
+            {operationType === 'CLOSE' && (
+              <>
+                <div className="flex flex-wrap gap-4 items-end">
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">POS-A Cash</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.posACash}
+                      onChange={(e) => handleInputChange('posACash', parseFloat(e.target.value) || 0)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      required
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">POS-B Cash</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.posBCash}
+                      onChange={(e) => handleInputChange('posBCash', parseFloat(e.target.value) || 0)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      required
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">POS-C Cash</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.posCCash}
+                      onChange={(e) => handleInputChange('posCCash', parseFloat(e.target.value) || 0)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      required
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#50 Bills</label>
-                  <select
-                    value={formData.fifties}
-                    onChange={(e) => handleInputChange('fifties', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`fifties-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <FaMoneyBillWave className="w-4 h-4" />
+                    Cash Denominations
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#100 Bills</label>
+                      <select
+                        value={formData.hundreds}
+                        onChange={(e) => handleInputChange('hundreds', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`hundreds-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#50 Bills</label>
+                      <select
+                        value={formData.fifties}
+                        onChange={(e) => handleInputChange('fifties', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`fifties-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#20 Bills</label>
+                      <select
+                        value={formData.twenties}
+                        onChange={(e) => handleInputChange('twenties', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`twenties-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#10 Bills</label>
+                      <select
+                        value={formData.tens}
+                        onChange={(e) => handleInputChange('tens', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`tens-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#5 Bills</label>
+                      <select
+                        value={formData.fives}
+                        onChange={(e) => handleInputChange('fives', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`fives-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#2 Bills</label>
+                      <select
+                        value={formData.twos}
+                        onChange={(e) => handleInputChange('twos', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`twos-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">#1 Bills</label>
+                      <select
+                        value={formData.ones}
+                        onChange={(e) => handleInputChange('ones', parseInt(e.target.value, 10) || 0)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      >
+                        {billOptions.map((option) => (
+                          <option key={`ones-${option}`} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Total Cash</label>
+                      <input
+                        type="text"
+                        value={totalCash.toFixed(2)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
+                        readOnly
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">POS Total</label>
+                      <input
+                        type="text"
+                        value={posTotal.toFixed(2)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
+                        readOnly
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Over / Short</label>
+                      <input
+                        type="text"
+                        value={overShort.toFixed(2)}
+                        className={`block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 h-10 ${
+                          overShort > 0 ? 'text-green-600' : overShort < 0 ? 'text-red-600' : 'text-gray-500'
+                        }`}
+                        readOnly
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#20 Bills</label>
-                  <select
-                    value={formData.twenties}
-                    onChange={(e) => handleInputChange('twenties', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`twenties-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#10 Bills</label>
-                  <select
-                    value={formData.tens}
-                    onChange={(e) => handleInputChange('tens', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`tens-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#5 Bills</label>
-                  <select
-                    value={formData.fives}
-                    onChange={(e) => handleInputChange('fives', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`fives-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#2 Bills</label>
-                  <select
-                    value={formData.twos}
-                    onChange={(e) => handleInputChange('twos', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`twos-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">#1 Bills</label>
-                  <select
-                    value={formData.ones}
-                    onChange={(e) => handleInputChange('ones', parseInt(e.target.value, 10) || 0)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  >
-                    {billOptions.map((option) => (
-                      <option key={`ones-${option}`} value={option}>{option}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Total Cash</label>
-                  <input
-                    type="text"
-                    value={totalCash.toFixed(2)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
-                    readOnly
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">POS Total</label>
-                  <input
-                    type="text"
-                    value={posTotal.toFixed(2)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
-                    readOnly
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Over / Short</label>
-                  <input
-                    type="text"
-                    value={overShort.toFixed(2)}
-                    className={`block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 h-10 ${
-                      overShort > 0 ? 'text-green-600' : overShort < 0 ? 'text-red-600' : 'text-gray-500'
-                    }`}
-                    readOnly
-                  />
-                </div>
-              </div>
-            </div>
+              </>
+            )}
 
             {/* Note field - Full width */}
             <div className="w-full">
@@ -584,9 +581,6 @@ export default function StoreOperations() {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POS-C</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CASH</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COIN</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COLLECTED</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COLLECTED POS</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DIFF</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NOTE</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By/On</th>
                 </tr>
@@ -607,33 +601,6 @@ export default function StoreOperations() {
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.posc}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.cash}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.coins}</td>
-                    <td className={`px-4 py-2 whitespace-nowrap text-xs ${
-                      shouldHighlightCollected(operation.collected, operation.collectedpos) 
-                        ? 'text-red-600 font-semibold bg-red-50' 
-                        : 'text-gray-900'
-                    }`}>
-                      {operation.collected !== null ? operation.collected : '-'}
-                    </td>
-                    <td className={`px-4 py-2 whitespace-nowrap text-xs ${
-                      shouldHighlightCollected(operation.collected, operation.collectedpos) 
-                        ? 'text-red-600 font-semibold bg-red-50' 
-                        : 'text-gray-900'
-                    }`}>
-                      {operation.collectedpos !== null ? operation.collectedpos : '-'}
-                    </td>
-                    <td className={`px-4 py-2 whitespace-nowrap text-xs ${
-                      (() => {
-                        const diff = getCollectedDifference(operation.collected, operation.collectedpos);
-                        if (diff === null || operation.operation !== 'CLOSE') return 'text-gray-900';
-                        return diff < 0 ? 'text-red-600 font-semibold bg-red-50' : 'text-gray-900';
-                      })()
-                    }`}>
-                      {(() => {
-                        const diff = getCollectedDifference(operation.collected, operation.collectedpos);
-                        if (diff === null || operation.operation !== 'CLOSE') return '-';
-                        return diff < 0 ? diff : '-';
-                      })()}
-                    </td>
                     <td className="px-4 py-2 text-xs text-gray-900 max-w-[200px]">
                       {operation.note ? (
                         <div 
