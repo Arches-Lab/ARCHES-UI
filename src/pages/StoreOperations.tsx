@@ -10,11 +10,11 @@ interface StoreOperationFormData {
   posa: number;
   posb: number;
   posc: number;
-  posACash: number;
-  posBCash: number;
-  posCCash: number;
-  reserveCash: number;
-  reserveCoins: number;
+  posacash: number;
+  posbcash: number;
+  posccash: number;
+  reservecash: number;
+  reservecoins: number;
   hundreds: number;
   fifties: number;
   twenties: number;
@@ -47,14 +47,14 @@ export default function StoreOperations() {
 
   const defaultFormData: StoreOperationFormData = {
     operationdate: getCurrentLocalDate(),
-    posa: 0,
-    posb: 0,
-    posc: 0,
-    posACash: 0,
-    posBCash: 0,
-    posCCash: 0,
-    reserveCash: 0,
-    reserveCoins: 0,
+    posa: 200,
+    posb: 200,
+    posc: 200,
+    posacash: 0,
+    posbcash: 0,
+    posccash: 0,
+    reservecash: 140,
+    reservecoins: 70,
     hundreds: 0,
     fifties: 0,
     twenties: 0,
@@ -92,9 +92,9 @@ export default function StoreOperations() {
   ]);
 
   const posTotal = useMemo(() => {
-    const total = formData.posACash + formData.posBCash + formData.posCCash;
+    const total = formData.posacash + formData.posbcash + formData.posccash;
     return roundCurrency(total);
-  }, [formData.posACash, formData.posBCash, formData.posCCash]);
+  }, [formData.posacash, formData.posbcash, formData.posccash]);
 
   const overShort = useMemo(() => {
     return roundCurrency(totalCash - posTotal);
@@ -161,11 +161,11 @@ export default function StoreOperations() {
         posa: formData.posa || 0,
         posb: formData.posb || 0,
         posc: formData.posc || 0,
-        posACash: formData.posACash || 0,
-        posBCash: formData.posBCash || 0,
-        posCCash: formData.posCCash || 0,
-        reserveCash: formData.reserveCash || 0,
-        reserveCoins: formData.reserveCoins || 0,
+        posacash: formData.posacash || 0,
+        posbcash: formData.posbcash || 0,
+        posccash: formData.posccash || 0,
+        reservecash: formData.reservecash || 0,
+        reservecoins: formData.reservecoins || 0,
         hundreds: formData.hundreds,
         fifties: formData.fifties,
         twenties: formData.twenties,
@@ -173,11 +173,11 @@ export default function StoreOperations() {
         fives: formData.fives,
         twos: formData.twos,
         ones: formData.ones,
-        cash: totalCash,
-        coins: 0,
-        totalCash,
-        posTotal,
-        overShort,
+        // cash: totalCash,
+        // coins: 0,
+        collectedcash: totalCash,
+        postotalcash: posTotal,
+        overshort: overShort,
         note: formData.note || null,
         createdby: user.id || user.email || 'Unknown',
       };
@@ -360,8 +360,8 @@ export default function StoreOperations() {
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.reserveCash}
-                      onChange={(e) => handleInputChange('reserveCash', parseFloat(e.target.value) || 0)}
+                      value={formData.reservecash}
+                      onChange={(e) => handleInputChange('reservecash', parseFloat(e.target.value) || 0)}
                       className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
@@ -371,8 +371,8 @@ export default function StoreOperations() {
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.reserveCoins}
-                      onChange={(e) => handleInputChange('reserveCoins', parseFloat(e.target.value) || 0)}
+                      value={formData.reservecoins}
+                      onChange={(e) => handleInputChange('reservecoins', parseFloat(e.target.value) || 0)}
                       className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
@@ -389,8 +389,8 @@ export default function StoreOperations() {
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.posACash}
-                      onChange={(e) => handleInputChange('posACash', parseFloat(e.target.value) || 0)}
+                      value={formData.posacash}
+                      onChange={(e) => handleInputChange('posacash', parseFloat(e.target.value) || 0)}
                       className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
@@ -400,8 +400,8 @@ export default function StoreOperations() {
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.posBCash}
-                      onChange={(e) => handleInputChange('posBCash', parseFloat(e.target.value) || 0)}
+                      value={formData.posbcash}
+                      onChange={(e) => handleInputChange('posbcash', parseFloat(e.target.value) || 0)}
                       className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
@@ -411,14 +411,14 @@ export default function StoreOperations() {
                     <input
                       type="number"
                       step="0.01"
-                      value={formData.posCCash}
-                      onChange={(e) => handleInputChange('posCCash', parseFloat(e.target.value) || 0)}
+                      value={formData.posccash}
+                      onChange={(e) => handleInputChange('posccash', parseFloat(e.target.value) || 0)}
                       className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
                   </div>
                   <div className="flex-1 min-w-[120px]">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">POS Total</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">POS Total Cash Collected</label>
                     <input
                       type="text"
                       value={posTotal.toFixed(2)}
@@ -519,7 +519,7 @@ export default function StoreOperations() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Total Cash</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Actual Cash Collected</label>
                       <input
                         type="text"
                         value={totalCash.toFixed(2)}
@@ -632,8 +632,8 @@ export default function StoreOperations() {
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.posa}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.posb}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.posc}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.cash}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.coins}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.reservecash}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.reservecoins}</td>
                     <td className="px-4 py-2 text-xs text-gray-900 max-w-[200px]">
                       {operation.note ? (
                         <div 
