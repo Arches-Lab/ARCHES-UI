@@ -1,9 +1,26 @@
-import { useState, useEffect } from 'react';
-import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaUser, FaMoneyBillWave, FaCoins, FaStickyNote } from 'react-icons/fa';
+import { useState, useEffect, useMemo } from 'react';
+import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
 import { getStoreOperations, createStoreOperation } from '../api/storeOperations';
 import { StoreOperation } from '../models';
+
+interface StoreOperationFormData {
+  operationdate: string;
+  posa: number;
+  posb: number;
+  posc: number;
+  hundreds: number;
+  fifties: number;
+  twenties: number;
+  tens: number;
+  fives: number;
+  twos: number;
+  ones: number;
+  collected: number | null;
+  collectedpos: number | null;
+  note: string;
+}
 
 export default function StoreOperations() {
   const { selectedStore } = useStore();
@@ -25,17 +42,56 @@ export default function StoreOperations() {
     return `${year}-${month}-${day}`;
   };
 
-  const [formData, setFormData] = useState<Partial<StoreOperation>>({
+  const defaultFormData: StoreOperationFormData = {
     operationdate: getCurrentLocalDate(),
-    posa: 200,
-    posb: 200,
-    posc: 200,
-    cash: 140,
-    coins: 70,
-    collected: 0,
-    collectedpos: 0,
+    posa: 0,
+    posb: 0,
+    posc: 0,
+    hundreds: 0,
+    fifties: 0,
+    twenties: 0,
+    tens: 0,
+    fives: 0,
+    twos: 0,
+    ones: 0,
+    collected: null,
+    collectedpos: null,
     note: '',
-  });
+  };
+
+  const [formData, setFormData] = useState<StoreOperationFormData>(defaultFormData);
+
+  const billOptions = useMemo(() => Array.from({ length: 101 }, (_, index) => index), []);
+
+  const roundCurrency = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
+
+  const totalCash = useMemo(() => {
+    const total = (formData.hundreds * 100)
+      + (formData.fifties * 50)
+      + (formData.twenties * 20)
+      + (formData.tens * 10)
+      + (formData.fives * 5)
+      + (formData.twos * 2)
+      + (formData.ones * 1);
+    return roundCurrency(total);
+  }, [
+    formData.fifties,
+    formData.fives,
+    formData.hundreds,
+    formData.ones,
+    formData.tens,
+    formData.twenties,
+    formData.twos,
+  ]);
+
+  const posTotal = useMemo(() => {
+    const total = formData.posa + formData.posb + formData.posc;
+    return roundCurrency(total);
+  }, [formData.posa, formData.posb, formData.posc]);
+
+  const overShort = useMemo(() => {
+    return roundCurrency(totalCash - posTotal);
+  }, [posTotal, totalCash]);
 
   // Fetch operations list
   useEffect(() => {
@@ -65,20 +121,10 @@ export default function StoreOperations() {
 
   const handleOperationSelect = (type: 'OPEN' | 'CLOSE') => {
     setOperationType(type);
-    setFormData({
-      operationdate: getCurrentLocalDate(),
-      posa: 200,
-      posb: 200,
-      posc: 200,
-      cash: 140,
-      coins: 70,
-      collected: 0,
-      collectedpos: 0,
-      note: '',
-    });
+    setFormData(defaultFormData);
   };
 
-  const handleInputChange = (field: keyof StoreOperation, value: string | number) => {
+  const handleInputChange = (field: keyof StoreOperationFormData, value: string | number) => {
     setFormData({
       ...formData,
       [field]: field === 'collected' && operationType === 'OPEN' ? null : value,
@@ -108,10 +154,20 @@ export default function StoreOperations() {
         posa: formData.posa || 0,
         posb: formData.posb || 0,
         posc: formData.posc || 0,
-        cash: formData.cash || 0,
-        coins: formData.coins || 0,
-        collected: formData.collected || null,
-        collectedpos: formData.collectedpos || null,
+        hundreds: formData.hundreds,
+        fifties: formData.fifties,
+        twenties: formData.twenties,
+        tens: formData.tens,
+        fives: formData.fives,
+        twos: formData.twos,
+        ones: formData.ones,
+        cash: totalCash,
+        coins: 0,
+        totalCash,
+        posTotal,
+        overShort,
+        collected: formData.collected,
+        collectedpos: formData.collectedpos,
         note: formData.note || null,
         createdby: user.id || user.email || 'Unknown',
       };
@@ -128,17 +184,7 @@ export default function StoreOperations() {
       
       // Reset form
       setOperationType(null);
-      setFormData({
-        operationdate: getCurrentLocalDate(),
-        posa: 200,
-        posb: 200,
-        posc: 200,
-        cash: 140,
-        coins: 70,
-        collected: 0,
-        collectedpos: 0,
-        note: '',
-      });
+      setFormData(defaultFormData);
       
       // Show success message (optional)
       console.log('Store operation created successfully!');
@@ -153,17 +199,7 @@ export default function StoreOperations() {
 
   const handleCancel = () => {
     setOperationType(null);
-    setFormData({
-      operationdate: getCurrentLocalDate(),
-      posa: 200,
-      posb: 200,
-      posc: 200,
-      cash: 140,
-      coins: 70,
-      collected: 0,
-      collectedpos: 0,
-      note: '',
-    });
+    setFormData(defaultFormData);
     setError(null);
   };
 
@@ -286,11 +322,10 @@ export default function StoreOperations() {
                 </label>
                 <input
                   type="date"
-                  value={formData.operationdate || ''}
+                  value={formData.operationdate}
                   onChange={(e) => handleInputChange('operationdate', e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
-                  readOnly
                 />
               </div>
 
@@ -299,8 +334,9 @@ export default function StoreOperations() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">POS-A</label>
                 <input
                   type="number"
-                  value={formData.posa || ''}
-                  onChange={(e) => handleInputChange('posa', parseInt(e.target.value) || 0)}
+                  step="0.01"
+                  value={formData.posa}
+                  onChange={(e) => handleInputChange('posa', parseFloat(e.target.value) || 0)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
                 />
@@ -311,8 +347,9 @@ export default function StoreOperations() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">POS-B</label>
                 <input
                   type="number"
-                  value={formData.posb || ''}
-                  onChange={(e) => handleInputChange('posb', parseInt(e.target.value) || 0)}
+                  step="0.01"
+                  value={formData.posb}
+                  onChange={(e) => handleInputChange('posb', parseFloat(e.target.value) || 0)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
                 />
@@ -323,38 +360,9 @@ export default function StoreOperations() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">POS-C</label>
                 <input
                   type="number"
-                  value={formData.posc || ''}
-                  onChange={(e) => handleInputChange('posc', parseInt(e.target.value) || 0)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  required
-                />
-              </div>
-
-              {/* CASH */}
-              <div className="flex-1 min-w-[100px]">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <FaMoneyBillWave className="inline w-4 h-4 mr-1" />
-                  CASH
-                </label>
-                <input
-                  type="number"
-                  value={formData.cash || ''}
-                  onChange={(e) => handleInputChange('cash', parseInt(e.target.value) || 0)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  required
-                />
-              </div>
-
-              {/* COIN */}
-              <div className="flex-1 min-w-[100px]">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <FaCoins className="inline w-4 h-4 mr-1" />
-                  COIN
-                </label>
-                <input
-                  type="number"
-                  value={formData.coins || ''}
-                  onChange={(e) => handleInputChange('coins', parseInt(e.target.value) || 0)}
+                  step="0.01"
+                  value={formData.posc}
+                  onChange={(e) => handleInputChange('posc', parseFloat(e.target.value) || 0)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
                 />
@@ -369,8 +377,9 @@ export default function StoreOperations() {
                   </label>
                   <input
                     type="number"
-                    value={formData.collected || ''}
-                    onChange={(e) => handleInputChange('collected', parseInt(e.target.value) || 0)}
+                    step="0.01"
+                    value={formData.collected ?? ''}
+                    onChange={(e) => handleInputChange('collected', parseFloat(e.target.value) || 0)}
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                     required
                   />
@@ -386,13 +395,138 @@ export default function StoreOperations() {
                   </label>
                   <input
                     type="number"
-                    value={formData.collectedpos || ''}
-                    onChange={(e) => handleInputChange('collectedpos', parseInt(e.target.value) || 0)}
+                    step="0.01"
+                    value={formData.collectedpos ?? ''}
+                    onChange={(e) => handleInputChange('collectedpos', parseFloat(e.target.value) || 0)}
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                     required
                   />
                 </div>
               )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <FaMoneyBillWave className="w-4 h-4" />
+                Cash Denominations
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#100 Bills</label>
+                  <select
+                    value={formData.hundreds}
+                    onChange={(e) => handleInputChange('hundreds', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`hundreds-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#50 Bills</label>
+                  <select
+                    value={formData.fifties}
+                    onChange={(e) => handleInputChange('fifties', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`fifties-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#20 Bills</label>
+                  <select
+                    value={formData.twenties}
+                    onChange={(e) => handleInputChange('twenties', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`twenties-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#10 Bills</label>
+                  <select
+                    value={formData.tens}
+                    onChange={(e) => handleInputChange('tens', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`tens-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#5 Bills</label>
+                  <select
+                    value={formData.fives}
+                    onChange={(e) => handleInputChange('fives', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`fives-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#2 Bills</label>
+                  <select
+                    value={formData.twos}
+                    onChange={(e) => handleInputChange('twos', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`twos-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">#1 Bills</label>
+                  <select
+                    value={formData.ones}
+                    onChange={(e) => handleInputChange('ones', parseInt(e.target.value, 10) || 0)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  >
+                    {billOptions.map((option) => (
+                      <option key={`ones-${option}`} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Total Cash</label>
+                  <input
+                    type="text"
+                    value={totalCash.toFixed(2)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
+                    readOnly
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">POS Total</label>
+                  <input
+                    type="text"
+                    value={posTotal.toFixed(2)}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
+                    readOnly
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Over / Short</label>
+                  <input
+                    type="text"
+                    value={overShort.toFixed(2)}
+                    className={`block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 h-10 ${
+                      overShort > 0 ? 'text-green-600' : overShort < 0 ? 'text-red-600' : 'text-gray-500'
+                    }`}
+                    readOnly
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Note field - Full width */}
@@ -401,7 +535,7 @@ export default function StoreOperations() {
                 Note (Optional)
               </label>
               <textarea
-                value={formData.note || ''}
+                value={formData.note}
                 onChange={(e) => handleInputChange('note', e.target.value)}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
                 rows={1}
