@@ -13,6 +13,8 @@ interface StoreOperationFormData {
   posACash: number;
   posBCash: number;
   posCCash: number;
+  reserveCash: number;
+  reserveCoins: number;
   hundreds: number;
   fifties: number;
   twenties: number;
@@ -51,6 +53,8 @@ export default function StoreOperations() {
     posACash: 0,
     posBCash: 0,
     posCCash: 0,
+    reserveCash: 0,
+    reserveCoins: 0,
     hundreds: 0,
     fifties: 0,
     twenties: 0,
@@ -62,6 +66,7 @@ export default function StoreOperations() {
   };
 
   const [formData, setFormData] = useState<StoreOperationFormData>(defaultFormData);
+  const showReserveFields = operationType === 'OPEN' || operationType === 'CLOSE';
 
   const billOptions = useMemo(() => Array.from({ length: 101 }, (_, index) => index), []);
 
@@ -159,6 +164,8 @@ export default function StoreOperations() {
         posACash: formData.posACash || 0,
         posBCash: formData.posBCash || 0,
         posCCash: formData.posCCash || 0,
+        reserveCash: formData.reserveCash || 0,
+        reserveCoins: formData.reserveCoins || 0,
         hundreds: formData.hundreds,
         fifties: formData.fifties,
         twenties: formData.twenties,
@@ -345,6 +352,33 @@ export default function StoreOperations() {
                   required
                 />
               </div>
+
+              {showReserveFields && (
+                <>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Reserve Cash</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.reserveCash}
+                      onChange={(e) => handleInputChange('reserveCash', parseFloat(e.target.value) || 0)}
+                      className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      required
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Reserve Coins</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.reserveCoins}
+                      onChange={(e) => handleInputChange('reserveCoins', parseFloat(e.target.value) || 0)}
+                      className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      required
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {operationType === 'CLOSE' && (
