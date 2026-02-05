@@ -6,10 +6,11 @@ export interface StoreOperation {
   posa: number | null;         
   posb: number | null;         
   posc: number | null;         
+  posACash?: number | null;
+  posBCash?: number | null;
+  posCCash?: number | null;
   cash: number | null;         
   coins: number | null;        
-  collected: number | null;    
-  collectedpos: number | null; // Collected POS amount
   totalCash?: number | null;
   posTotal?: number | null;
   overShort?: number | null;
