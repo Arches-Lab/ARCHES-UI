@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaCalendar, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
+import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
 import { getStoreOperations, createStoreOperation } from '../api/storeOperations';
@@ -152,7 +152,7 @@ export default function StoreOperations() {
       const operationData = {
         storenumber: selectedStore,
         operation: operationType,
-        operationdate: formData.operationdate || getCurrentLocalDate(),
+        operationdate: getCurrentLocalDate(),
         posa: formData.posa || 0,
         posb: formData.posb || 0,
         posc: formData.posc || 0,
@@ -307,21 +307,6 @@ export default function StoreOperations() {
             )}
 
             <div className="flex flex-wrap gap-4 items-end">
-              {/* Date */}
-              <div className="flex-1 min-w-[120px]">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <FaCalendar className="inline w-4 h-4 mr-1" />
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={formData.operationdate}
-                  onChange={(e) => handleInputChange('operationdate', e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
-                  required
-                />
-              </div>
-
               {/* A */}
               <div className="flex-1 min-w-[80px]">
                 <label className="block text-sm font-medium text-gray-700 mb-2">POS-A</label>
@@ -330,7 +315,7 @@ export default function StoreOperations() {
                   step="0.01"
                   value={formData.posa}
                   onChange={(e) => handleInputChange('posa', parseFloat(e.target.value) || 0)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
                 />
               </div>
@@ -343,7 +328,7 @@ export default function StoreOperations() {
                   step="0.01"
                   value={formData.posb}
                   onChange={(e) => handleInputChange('posb', parseFloat(e.target.value) || 0)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
                 />
               </div>
@@ -356,7 +341,7 @@ export default function StoreOperations() {
                   step="0.01"
                   value={formData.posc}
                   onChange={(e) => handleInputChange('posc', parseFloat(e.target.value) || 0)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                  className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                   required
                 />
               </div>
@@ -372,7 +357,7 @@ export default function StoreOperations() {
                       step="0.01"
                       value={formData.posACash}
                       onChange={(e) => handleInputChange('posACash', parseFloat(e.target.value) || 0)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
                   </div>
@@ -383,7 +368,7 @@ export default function StoreOperations() {
                       step="0.01"
                       value={formData.posBCash}
                       onChange={(e) => handleInputChange('posBCash', parseFloat(e.target.value) || 0)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
                     />
                   </div>
@@ -394,8 +379,17 @@ export default function StoreOperations() {
                       step="0.01"
                       value={formData.posCCash}
                       onChange={(e) => handleInputChange('posCCash', parseFloat(e.target.value) || 0)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
+                      className="no-spinner block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 h-10"
                       required
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[120px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">POS Total</label>
+                    <input
+                      type="text"
+                      value={posTotal.toFixed(2)}
+                      className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
+                      readOnly
                     />
                   </div>
                 </div>
@@ -500,17 +494,8 @@ export default function StoreOperations() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">POS Total</label>
-                      <input
-                        type="text"
-                        value={posTotal.toFixed(2)}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 h-10"
-                        readOnly
-                      />
-                    </div>
-                    <div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="md:col-span-1">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Over / Short</label>
                       <input
                         type="text"
@@ -521,24 +506,38 @@ export default function StoreOperations() {
                         readOnly
                       />
                     </div>
+                    <div className="md:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Note (Optional)
+                      </label>
+                      <textarea
+                        value={formData.note}
+                        onChange={(e) => handleInputChange('note', e.target.value)}
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                        rows={1}
+                        placeholder="Add any additional notes about this operation..."
+                      />
+                    </div>
                   </div>
                 </div>
               </>
             )}
 
-            {/* Note field - Full width */}
-            <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Note (Optional)
-              </label>
-              <textarea
-                value={formData.note}
-                onChange={(e) => handleInputChange('note', e.target.value)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
-                rows={1}
-                placeholder="Add any additional notes about this operation..."
-              />
-            </div>
+            {/* Note field - Full width (for OPEN operations) */}
+            {operationType === 'OPEN' && (
+              <div className="w-full">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Note (Optional)
+                </label>
+                <textarea
+                  value={formData.note}
+                  onChange={(e) => handleInputChange('note', e.target.value)}
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                  rows={1}
+                  placeholder="Add any additional notes about this operation..."
+                />
+              </div>
+            )}
 
             <div className="pt-6 border-t border-gray-200">
             </div>
