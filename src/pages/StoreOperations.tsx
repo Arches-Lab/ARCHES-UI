@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
-import { getStoreOperations, createStoreOperation } from '../api/storeOperations';
+import { getStoreOperations, createStoreOperation, getStoreOperationById } from '../api/storeOperations';
 import { StoreOperation } from '../models';
 
 interface StoreOperationFormData {
@@ -37,16 +37,35 @@ export default function StoreOperations() {
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   const [notePosition, setNotePosition] = useState({ x: 0, y: 0 });
   const [showSummary, setShowSummary] = useState(false);
+  const [latestOpenOperationId, setLatestOpenOperationId] = useState<string | null>(null);
+  const [latestCloseOperationId, setLatestCloseOperationId] = useState<string | null>(null);
 
-  const getCurrentLocalDate = () => {
+  const getCurrentLocalDate = useCallback(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }, []);
+
+  const getLocalDateString = (dateValue: string) => {
+    const parsedDate = new Date(dateValue);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return dateValue.split('T')[0] || dateValue;
+    }
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  const defaultFormData: StoreOperationFormData = {
+  const getSafeNumber = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return 0;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const defaultFormData: StoreOperationFormData = useMemo(() => ({
     operationdate: getCurrentLocalDate(),
     posa: 200,
     posb: 200,
@@ -64,7 +83,7 @@ export default function StoreOperations() {
     twos: 0,
     ones: 0,
     note: '',
-  };
+  }), [getCurrentLocalDate]);
 
   const [formData, setFormData] = useState<StoreOperationFormData>(defaultFormData);
   const showReserveFields = operationType === 'OPEN' || operationType === 'CLOSE';
@@ -130,6 +149,88 @@ export default function StoreOperations() {
 
     fetchOperations();
   }, [selectedStore]);
+
+  useEffect(() => {
+    if (operations.length === 0) {
+      setLatestOpenOperationId(null);
+      setLatestCloseOperationId(null);
+      return;
+    }
+
+    const today = getCurrentLocalDate();
+    let latestOpenOperation: StoreOperation | null = null;
+    let latestCloseOperation: StoreOperation | null = null;
+    operations.forEach((operation) => {
+      const operationDate = getLocalDateString(operation.operationdate);
+      if (operationDate !== today) {
+        return;
+      }
+
+      if (operation.operation === 'OPEN') {
+        latestOpenOperation = operation;
+      }
+
+      if (operation.operation === 'CLOSE') {
+        latestCloseOperation = operation;
+      }
+    });
+
+    setLatestOpenOperationId(latestOpenOperation?.storeoperationid ?? null);
+    setLatestCloseOperationId(latestCloseOperation?.storeoperationid ?? null);
+  }, [operations, getCurrentLocalDate]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const prefillFormData = async () => {
+      if (!operationType) return;
+
+      const operationId = operationType === 'OPEN' ? latestOpenOperationId : latestCloseOperationId;
+
+      if (!operationId) {
+        setFormData(defaultFormData);
+        return;
+      }
+
+      try {
+        const operationData = await getStoreOperationById(operationId);
+
+        if (!isActive || !operationData) return;
+
+        setFormData({
+          operationdate: operationData.operationdate
+            ? getLocalDateString(operationData.operationdate)
+            : getCurrentLocalDate(),
+          posa: getSafeNumber(operationData.posa),
+          posb: getSafeNumber(operationData.posb),
+          posc: getSafeNumber(operationData.posc),
+          posacash: getSafeNumber(operationData.posacash ?? operationData.posaCash),
+          posbcash: getSafeNumber(operationData.posbcash),
+          posccash: getSafeNumber(operationData.posccash),
+          reservecash: getSafeNumber(operationData.reservecash),
+          reservecoins: getSafeNumber(operationData.reservecoins),
+          hundreds: getSafeNumber(operationData.hundreds),
+          fifties: getSafeNumber(operationData.fifties),
+          twenties: getSafeNumber(operationData.twenties),
+          tens: getSafeNumber(operationData.tens),
+          fives: getSafeNumber(operationData.fives),
+          twos: getSafeNumber(operationData.twos),
+          ones: getSafeNumber(operationData.ones),
+          note: operationData.note ?? '',
+        });
+      } catch (err) {
+        if (isActive) {
+          console.error('Error fetching store operation details:', err);
+        }
+      }
+    };
+
+    prefillFormData();
+
+    return () => {
+      isActive = false;
+    };
+  }, [defaultFormData, latestCloseOperationId, latestOpenOperationId, operationType]);
 
   const handleOperationSelect = (type: 'OPEN' | 'CLOSE') => {
     setOperationType(type);
