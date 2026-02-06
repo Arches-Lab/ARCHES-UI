@@ -229,25 +229,25 @@ export default function Leads() {
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse border border-gray-200">
+            <table className="min-w-full border-collapse">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Lead
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact Name
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contact Information
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Assigned To
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     
                   </th>
                 </tr>
@@ -255,12 +255,12 @@ export default function Leads() {
               <tbody className="bg-white">
                 {filteredLeads.map((lead) => (
                   <tr key={lead.leadid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 w-2/3 align-top border border-gray-200">
+                    <td className="px-6 py-4 w-2/3 align-top">
                       <p className="text-sm text-gray-900 whitespace-pre-wrap" title={lead.description}>
                         {lead.description}
                       </p>
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500 min-w-[150px] align-top border border-gray-200">
+                    <td className="px-3 py-4 text-sm text-gray-500 min-w-[150px] align-top">
                       {lead.contactname ? (
                         <div className="flex items-center gap-2">
                           <FaUserTie className="w-4 h-4 text-blue-500" />
@@ -270,7 +270,7 @@ export default function Leads() {
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-3 py-4 text-sm text-gray-500 min-w-[150px] align-top border border-gray-200">
+                    <td className="px-3 py-4 text-sm text-gray-500 min-w-[150px] align-top">
                       <div className="space-y-2">
                         {lead.phone && (
                           <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function Leads() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top border border-gray-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top">
                       {/* Assigned To */}
                       {lead.assigned ? (
                         <div className="flex items-center gap-1">
@@ -312,13 +312,13 @@ export default function Leads() {
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px] align-top border border-gray-200">
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px] align-top">
                       {/* Status Badge */}
                       <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
                         {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
                       </span>
                     </td>
-                    <td className="px-2 py-4 whitespace-nowrap text-sm font-medium min-w-[80px] align-top border border-gray-200">
+                    <td className="px-2 py-4 whitespace-nowrap text-sm font-medium min-w-[80px] align-top">
                       <div className="flex items-center justify-end gap-3">
                         <div className="relative flex items-center group">
                           <FaUser className="w-4 h-4 cursor-help text-gray-500" />
