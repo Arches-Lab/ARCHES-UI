@@ -16,6 +16,7 @@ export interface StoreOperation {
   postotalcash?: number | null;
   collectedcash?: number | null;
   overShort?: number | null;
+  overshort?: number | null;
   hundreds?: number | null;
   fifties?: number | null;
   twenties?: number | null;

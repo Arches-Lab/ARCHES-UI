@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaMoneyBillWave, FaStickyNote } from 'react-icons/fa';
+import { FaStore, FaSpinner, FaExclamationTriangle, FaSave, FaTimes, FaMoneyBillWave, FaStickyNote, FaUser } from 'react-icons/fa';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
 import { getStoreOperations, createStoreOperation, getStoreOperationById } from '../api/storeOperations';
@@ -36,6 +36,8 @@ export default function StoreOperations() {
   const [operationsError, setOperationsError] = useState<string | null>(null);
   const [hoveredNote, setHoveredNote] = useState<string | null>(null);
   const [notePosition, setNotePosition] = useState({ x: 0, y: 0 });
+  const [hoveredCreator, setHoveredCreator] = useState<{ name: string; date: string } | null>(null);
+  const [creatorPosition, setCreatorPosition] = useState({ x: 0, y: 0 });
   const [showSummary, setShowSummary] = useState(false);
   const [latestOpenOperationId, setLatestOpenOperationId] = useState<string | null>(null);
   const [latestCloseOperationId, setLatestCloseOperationId] = useState<string | null>(null);
@@ -160,10 +162,11 @@ export default function StoreOperations() {
     const today = getCurrentLocalDate();
     let latestOpenOperation: StoreOperation | null = null;
     let latestCloseOperation: StoreOperation | null = null;
-    operations.forEach((operation) => {
+    
+    for (const operation of operations) {
       const operationDate = operation.operationdate;
       if (operationDate !== today) {
-        return;
+        continue;
       }
 
       if (operation.operation === 'OPEN') {
@@ -173,7 +176,7 @@ export default function StoreOperations() {
       if (operation.operation === 'CLOSE') {
         latestCloseOperation = operation;
       }
-    });
+    }
 
     setLatestOpenOperationId(latestOpenOperation?.storeoperationid ?? null);
     setLatestCloseOperationId(latestCloseOperation?.storeoperationid ?? null);
@@ -732,8 +735,9 @@ export default function StoreOperations() {
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">COIN</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">POS Cash</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual Cash</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Over/Short</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NOTE</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By/On</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -754,6 +758,15 @@ export default function StoreOperations() {
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.reservecoins}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.postotalcash}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">{operation.collectedcash}</td>
+                    <td className={`px-4 py-2 whitespace-nowrap text-xs font-medium ${
+                      (operation.overshort ?? operation.overShort ?? 0) > 0 
+                        ? 'text-green-600' 
+                        : (operation.overshort ?? operation.overShort ?? 0) < 0 
+                        ? 'text-red-600' 
+                        : 'text-gray-500'
+                    }`}>
+                      {((operation.overshort ?? operation.overShort ?? 0) as number).toFixed(2)}
+                    </td>
                     <td className="px-4 py-2 text-xs text-gray-900 max-w-[200px]">
                       {operation.note ? (
                         <div 
@@ -773,10 +786,23 @@ export default function StoreOperations() {
                         ''
                       )}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
-                      {operation.creator ? `${operation.creator.firstname} ${operation.creator.lastname}` : operation.createdby}
-                      {/* <br /> */}
-                      <span className="text-gray-400">({formatDate(operation.createdon)})</span>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <div 
+                        className="inline-flex items-center cursor-pointer text-gray-600 hover:text-gray-800"
+                        onMouseEnter={(e) => {
+                          const creatorName = operation.creator 
+                            ? `${operation.creator.firstname} ${operation.creator.lastname}` 
+                            : operation.createdby;
+                          setHoveredCreator({ 
+                            name: creatorName, 
+                            date: formatDate(operation.createdon) 
+                          });
+                          setCreatorPosition({ x: e.clientX, y: e.clientY });
+                        }}
+                        onMouseLeave={() => setHoveredCreator(null)}
+                      >
+                        <FaUser className="w-4 h-4" />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -787,23 +813,63 @@ export default function StoreOperations() {
       </div>
 
       {/* Note Overlay */}
-      {hoveredNote && (
-        <div 
-          className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-md"
-          style={{
-            left: notePosition.x + 10,
-            top: notePosition.y - 10,
-            transform: 'translateY(-100%)'
-          }}
-        >
-          <div className="flex items-start gap-2">
-            <FaStickyNote className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-gray-900 whitespace-pre-wrap">
-              {hoveredNote}
+      {hoveredNote && (() => {
+        const offset = 10;
+        const mouseX = notePosition.x;
+        
+        // Use transform to align right edge with mouse pointer
+        // If it would overflow on the left, position at left edge instead
+        const wouldOverflowLeft = mouseX < 200; // Rough estimate for tooltip width
+        
+        return (
+          <div 
+            className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 max-w-md pointer-events-none"
+            style={{
+              left: wouldOverflowLeft ? offset : mouseX,
+              top: notePosition.y - 10,
+              transform: wouldOverflowLeft ? 'translateY(-100%)' : 'translateX(-100%) translateY(-100%)'
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <FaStickyNote className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                {hoveredNote}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
+      {/* Creator Overlay */}
+      {hoveredCreator && (() => {
+        const offset = 10;
+        const mouseX = creatorPosition.x;
+        
+        // Use transform to align right edge with mouse pointer
+        // If it would overflow on the left, position at left edge instead
+        const wouldOverflowLeft = mouseX < 300; // Rough estimate for wider tooltip width
+        
+        return (
+          <div 
+            className="fixed z-50 bg-white border border-gray-300 rounded-lg shadow-lg p-4 pointer-events-none"
+            style={{
+              left: wouldOverflowLeft ? offset : mouseX,
+              top: creatorPosition.y - 10,
+              transform: wouldOverflowLeft ? 'translateY(-100%)' : 'translateX(-100%) translateY(-100%)',
+              minWidth: '200px',
+              maxWidth: '280px'
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <FaUser className="w-4 h-4 text-gray-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-gray-900">
+                <div className="font-medium">{hoveredCreator.name}</div>
+                <div className="text-gray-500 text-xs mt-1">{hoveredCreator.date}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {showSummary && operationType === 'CLOSE' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
