@@ -11,4 +11,10 @@ export const getStoreOperations = async (storeNumber: number) => {
 export const createStoreOperation = async (operation: Omit<StoreOperation, 'storeoperationid' | 'createdon' | 'creator' | 'createdby'>) => {
   const { data } = await api.post('/store-operations', operation);
   return data;
-}; 
+};
+
+// Get store operation by id
+export const getStoreOperationById = async (storeoperationid: string) => {
+  const { data } = await api.get(`/store-operations/${storeoperationid}`);
+  return data;
+};
