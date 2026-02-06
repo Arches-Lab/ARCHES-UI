@@ -229,38 +229,38 @@ export default function Leads() {
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full border-collapse border border-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                     Lead
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                     Contact Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                     Contact Information
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                     Assigned To
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
                     
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white">
                 {filteredLeads.map((lead) => (
                   <tr key={lead.leadid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 w-2/5 align-top">
+                    <td className="px-6 py-4 w-2/3 align-top border border-gray-200">
                       <p className="text-sm text-gray-900 whitespace-pre-wrap" title={lead.description}>
                         {lead.description}
                       </p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[200px] align-top">
+                    <td className="px-3 py-4 text-sm text-gray-500 min-w-[150px] align-top border border-gray-200">
                       {lead.contactname ? (
                         <div className="flex items-center gap-2">
                           <FaUserTie className="w-4 h-4 text-blue-500" />
@@ -270,7 +270,7 @@ export default function Leads() {
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[200px] align-top">
+                    <td className="px-3 py-4 text-sm text-gray-500 min-w-[150px] align-top border border-gray-200">
                       <div className="space-y-2">
                         {lead.phone && (
                           <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function Leads() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top border border-gray-200">
                       {/* Assigned To */}
                       {lead.assigned ? (
                         <div className="flex items-center gap-1">
@@ -312,14 +312,14 @@ export default function Leads() {
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px] align-top">
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px] align-top border border-gray-200">
                       {/* Status Badge */}
                       <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getLeadStatusColor(lead.status || '')}`}>
                         {getLeadStatusIcon(lead.status || '')} {getLeadStatusDisplayName(lead.status || '')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[150px] align-top">
-                      <div className="flex items-center gap-3">
+                    <td className="px-2 py-4 whitespace-nowrap text-sm font-medium min-w-[80px] align-top border border-gray-200">
+                      <div className="flex items-center justify-end gap-3">
                         <div className="relative flex items-center group">
                           <FaUser className="w-4 h-4 cursor-help text-gray-500" />
                           <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 whitespace-nowrap">
@@ -333,7 +333,7 @@ export default function Leads() {
                           title="View lead details"
                         >
                           <FaEye className="w-3 h-3" />
-                          View
+                          {/* View */}
                         </button>
                       </div>
                     </td>
