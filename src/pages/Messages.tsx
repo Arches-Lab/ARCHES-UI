@@ -244,12 +244,14 @@ export default function Messages() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => handleReply(message)}
-                className="text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                Reply
-              </button>
+              {isRecipient && (
+                <button
+                  onClick={() => handleReply(message)}
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  Reply
+                </button>
+              )}
               {hasReplies && (
                 <button
                   onClick={() => toggleReplies(message.messageId)}
