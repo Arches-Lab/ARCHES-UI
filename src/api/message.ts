@@ -2,15 +2,13 @@ import api from './index';
 
 // Messages API functions
 export const getMessages = async (archived?: boolean | null) => {
-  const params = new URLSearchParams();
+  const params: Record<string, string> = {};
   if (archived !== null && archived !== undefined) {
-    params.append('archived', archived.toString());
+    // Use 0/1 - some backends expect numeric booleans; "false" can cause 500 in certain stacks
+    params.archived = archived ? '1' : '0';
   }
-  
-  const queryString = params.toString();
-  const url = queryString ? `/messages?${queryString}` : '/messages';
-  
-  const { data } = await api.get(url);
+
+  const { data } = await api.get('/messages', { params });
   return data;
 };
 
@@ -18,6 +16,7 @@ export const createMessage = async (messageData: {
   storenumber: number;
   message: string;
   createdfor?: string;
+  parentmessageid?: number | null;
   notification: boolean;
 }) => {
   const { data } = await api.post('/messages', messageData);

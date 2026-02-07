@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getMessages, archiveMessage, readMessage } from '../api';
-import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaStore, FaBell, FaPlus, FaArchive, FaFilter, FaEye } from 'react-icons/fa';
+import { FaEnvelope, FaSpinner, FaExclamationTriangle, FaClock, FaUser, FaInbox, FaPlus, FaEye, FaArchive, FaBell } from 'react-icons/fa';
 import CreateMessage from '../components/CreateMessage';
 import { useStore } from '../auth/StoreContext';
 import { useAuth } from '../auth/AuthContext';
@@ -11,8 +11,10 @@ export default function Messages() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
   const [showAssignedOnly, setShowAssignedOnly] = useState(false);
   const [includeArchived, setIncludeArchived] = useState<boolean | null>(false);
+  const [collapsedThreadIds, setCollapsedThreadIds] = useState<Record<string, boolean>>({});
   const { selectedStore } = useStore();
   const { user, employeeId } = useAuth();
 
@@ -66,29 +68,207 @@ export default function Messages() {
     ? messages.filter(message => message.createdfor === employeeId)
     : messages;
 
+  type ThreadMessage = {
+    messageId: string;
+    parentMessageId: string | null;
+    content: string;
+    createdAt: string;
+    senderName: string;
+    recipientName: string;
+    raw: Message;
+  };
+
+  const normalizeMessage = (message: Message): ThreadMessage => {
+    // Supports both the new message shape and the existing model fields.
+    const messageId = (message as unknown as { messageId?: string }).messageId ?? (message as unknown as { messageid: string }).messageid;
+    const parentMessageId =
+      (message as unknown as { parentMessageId?: string | null }).parentMessageId ??
+      ((message as unknown as { parentmessageid?: number | string | null }).parentmessageid ?? null);
+    const content =
+      (message as unknown as { content?: string }).content ?? (message as unknown as { message: string }).message ?? '';
+    const createdAt =
+      (message as unknown as { createdAt?: string }).createdAt ?? (message as unknown as { createdon: string }).createdon ?? '';
+    const senderName =
+      (message as unknown as { senderName?: string }).senderName ??
+      ((message as unknown as { creator?: { firstname?: string; lastname?: string } }).creator
+        ? `${(message as unknown as { creator: { firstname?: string } }).creator.firstname ?? ''} ${(message as unknown as {
+            creator: { lastname?: string };
+          }).creator.lastname ?? ''}`.trim()
+        : 'Unknown');
+    const recipient =
+      (message as unknown as { recipient?: { firstname?: string; lastname?: string } | null }).recipient;
+    const recipientName = recipient
+      ? `${recipient.firstname ?? ''} ${recipient.lastname ?? ''}`.trim() || 'All'
+      : 'All';
+
+    return {
+      messageId,
+      parentMessageId: parentMessageId ? parentMessageId.toString() : null,
+      content,
+      createdAt,
+      senderName,
+      recipientName,
+      raw: message,
+    };
+  };
+
+  const normalizedMessages = filteredMessages.map(normalizeMessage);
+  const messagesById = new Map<string, ThreadMessage>();
+  const childrenByParentId = new Map<string, ThreadMessage[]>();
+  normalizedMessages.forEach((message) => {
+    messagesById.set(message.messageId, message);
+    const key = message.parentMessageId ?? 'root';
+    const siblings = childrenByParentId.get(key);
+    if (siblings) {
+      siblings.push(message);
+    } else {
+      childrenByParentId.set(key, [message]);
+    }
+  });
+
+  const getTimestamp = (timestamp: string) => {
+    const parsed = new Date(timestamp).getTime();
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const rootMessages = normalizedMessages.filter((message) => {
+    if (!message.parentMessageId) {
+      return true;
+    }
+    return !messagesById.has(message.parentMessageId);
+  });
+
+  const toggleReplies = (messageId: string) => {
+    setCollapsedThreadIds((prev) => ({
+      ...prev,
+      [messageId]: !prev[messageId],
+    }));
+  };
+
+  const handleReply = (message: ThreadMessage) => {
+    setReplyToMessage(message.raw);
+    setShowCreateModal(true);
+  };
+
   const handleArchiveMessage = async (messageId: string) => {
     try {
       await archiveMessage(messageId);
-      // Refresh the messages list to show updated archive status
-      // Re-fetch messages after archiving
       const data = await getMessages(includeArchived);
       setMessages(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error archiving message:', error);
-      // You could add a toast notification here for better UX
+    } catch (err) {
+      console.error('Error archiving message:', err);
     }
   };
 
   const handleReadMessage = async (messageId: string) => {
     try {
       await readMessage(messageId);
-      // Refresh the messages list to show updated read status
       const data = await getMessages(includeArchived);
       setMessages(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error marking message as read:', error);
-      // You could add a toast notification here for better UX
+    } catch (err) {
+      console.error('Error marking message as read:', err);
     }
+  };
+
+  const renderThread = (message: ThreadMessage, depth: number) => {
+    const children = childrenByParentId.get(message.messageId) ?? [];
+    const sortedChildren = [...children].sort(
+      (a, b) => getTimestamp(a.createdAt) - getTimestamp(b.createdAt)
+    );
+    const hasReplies = sortedChildren.length > 0;
+    const isCollapsed = collapsedThreadIds[message.messageId] ?? false;
+    const indent = depth * 24;
+    const raw = message.raw;
+    const isRecipient = raw.createdfor === employeeId;
+    const isCreator = raw.createdby === employeeId;
+    const isAllMessage = raw.createdfor === null || message.recipientName === 'All';
+    const canManageAsCreator = isCreator && isAllMessage;
+
+    return (
+      <div key={message.messageId} style={{ marginLeft: indent }}>
+        <div className={`border rounded-lg p-4 border-gray-200 space-y-3 ${raw.notification ? 'bg-red-50 border-l-4 border-l-red-500' : 'bg-white'}`}>
+          <div className="flex items-start gap-2">
+            {raw.notification && (
+              <FaBell className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+            )}
+            <p className="text-sm text-gray-900 whitespace-pre-wrap" title={message.content}>
+              {message.content}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-3 rounded-md border border-slate-300 bg-slate-100 px-3 py-1.5 text-slate-700">
+              <div className="flex items-center gap-1">
+                <FaInbox className="w-4 h-4 text-indigo-500" />
+                <span>{message.recipientName}</span>
+              </div>
+              {!raw.readon && (isRecipient || canManageAsCreator) && (
+                <button
+                  onClick={() => handleReadMessage(message.messageId)}
+                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                  title="Mark as read"
+                >
+                  <FaEye className="w-4 h-4" />
+                  Mark as read
+                </button>
+              )}
+              {raw.readon && (!isAllMessage || canManageAsCreator) && (
+                <div className="flex items-center gap-1 text-green-600" title="Read on">
+                  <FaEye className="w-4 h-4" />
+                  <span>{formatTimestamp(raw.readon)}</span>
+                </div>
+              )}
+              {raw.archivedon ? (
+                <div className="flex items-center gap-1 text-gray-600" title="Archived">
+                  <FaArchive className="w-4 h-4" />
+                  <span>{formatTimestamp(raw.archivedon)}</span>
+                </div>
+              ) : depth === 0 && raw.readon && (!isAllMessage || canManageAsCreator) && (
+                <button
+                  onClick={() => handleArchiveMessage(message.messageId)}
+                  className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
+                  title="Archive message"
+                >
+                  <FaArchive className="w-4 h-4" />
+                  Archive
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-3 rounded-md border border-slate-300 bg-slate-100 px-3 py-1.5 text-slate-700">
+              <div className="flex items-center gap-1">
+                <FaUser className="w-4 h-4" />
+                <span>{message.senderName}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <FaClock className="w-4 h-4" />
+                <span>{formatTimestamp(message.createdAt)}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleReply(message)}
+                className="text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                Reply
+              </button>
+              {hasReplies && (
+                <button
+                  onClick={() => toggleReplies(message.messageId)}
+                  className="text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {isCollapsed ? 'Show replies' : 'Hide replies'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {!isCollapsed && hasReplies && (
+          <div className="mt-3 space-y-3">
+            {sortedChildren.map((child) => renderThread(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -177,7 +357,10 @@ export default function Messages() {
             {filteredMessages.length} message{filteredMessages.length !== 1 ? 's' : ''}
           </div>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              setReplyToMessage(null);
+              setShowCreateModal(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           >
             <FaPlus className="w-4 h-4" />
@@ -200,136 +383,8 @@ export default function Messages() {
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Message
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created For
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created By/On
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                                  {filteredMessages.map((message) => (
-                    <tr key={message.messageid} className={`hover:bg-gray-50 ${
-                      isArchived(message) ? 'bg-gray-50 opacity-75' : ''
-                    } ${
-                      message.notification ? 'bg-red-50' : ''
-                    }`}>
-                      <td className={`px-6 py-4 w-1/2 ${
-                        message.notification ? 'border-l-4 border-red-500' : ''
-                      }`}>
-                        <div className="max-w-full">
-                          <div className="flex items-start gap-2">
-                            {message.notification && (
-                              <FaBell className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                            )}
-                            <p className="text-sm text-gray-900 whitespace-pre-wrap" title={message.message}>
-                              {message.message}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[120px]">
-                      {message.createdfor ? (
-                        <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
-                            {message.recipient.firstname} {message.recipient.lastname}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 min-w-[150px]">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                          <FaUser className="w-4 h-4" />
-                          <span>
-                            {message.creator.firstname} {message.creator.lastname}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-gray-400">
-                          <FaClock className="w-4 h-4" />
-                          <span>{formatTimestamp(message.createdon)}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[100px]">
-                      <div className="space-y-2">
-                        {/* If archived, show archived date */}
-                        {message.archivedon ? (
-                          <div className="space-y-1">
-                            {/* Show read date if it exists */}
-                            {message.readon && (
-                              <div className="flex items-center gap-1 text-green-600" title="Read on">
-                                <FaEye className="w-3 h-3" />
-                                <span className="text-xs">
-                                  {formatTimestamp(message.readon)}
-                                </span>
-                              </div>
-                            )}
-                            {/* Show archived date */}
-                            <div className="flex items-center gap-1 text-gray-600" title="Archived">
-                              <FaArchive className="w-3 h-3" />
-                              <span className="text-xs">
-                                {formatTimestamp(message.archivedon)}
-                              </span>
-                            </div>
-                          </div>
-                        ) : message.readon ? (
-                          /* If read but not archived, show read date and archive button */
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1 text-green-600" title="Read on">
-                              <FaEye className="w-3 h-3" />
-                              <span className="text-xs">
-                                {formatTimestamp(message.readon)}
-                              </span>
-                            </div>
-                            {message.createdfor === employeeId && (
-                              <button
-                                onClick={() => handleArchiveMessage(message.messageid)}
-                                className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
-                                title="Archive message"
-                              >
-                                <FaArchive className="w-3 h-3" />
-                                Archive
-                              </button>
-                            )}
-                          </div>
-                        ) : (
-                          /* If unread, show mark as read button */
-                          message.createdfor === employeeId ? (
-                            <button
-                              onClick={() => handleReadMessage(message.messageid)}
-                              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                              title="Mark as read"
-                            >
-                              <FaEye className="w-3 h-3" />
-                              Mark As Read
-                            </button>
-                          ) : (
-                            <span className="text-gray-400 text-xs">Unread</span>
-                          )
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-4">
+          {rootMessages.map((message) => renderThread(message, 0))}
         </div>
       )}
 
@@ -338,6 +393,7 @@ export default function Messages() {
         <CreateMessage
           onMessageCreated={async () => {
             setShowCreateModal(false);
+            setReplyToMessage(null);
             // Re-fetch messages after creating a new message
             try {
               const data = await getMessages(includeArchived);
@@ -346,7 +402,12 @@ export default function Messages() {
               console.error('Error refreshing messages after creation:', error);
             }
           }}
-          onCancel={() => setShowCreateModal(false)}
+          onCancel={() => {
+            setShowCreateModal(false);
+            setReplyToMessage(null);
+          }}
+          onCancelReply={() => setReplyToMessage(null)}
+          parentMessage={replyToMessage}
         />
       )}
     </div>
