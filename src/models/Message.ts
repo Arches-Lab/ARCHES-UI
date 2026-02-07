@@ -3,19 +3,20 @@ export interface Message {
   storenumber: number;
   message: string;
   createdfor: string | null;
+  parentmessageid?: number | null;
   notification: boolean;
   archivedon: string | null;
   readon: string | null;
   createdby: string;
   createdon: string;
-  creator: {
+  creator?: {
     email: string | null;
     lastname: string;
     firstname: string;
-  };
-  recipient: {
+  } | null;
+  recipient?: {
     email: string | null;
     lastname: string;
     firstname: string;
-  };
+  } | null;
 }
