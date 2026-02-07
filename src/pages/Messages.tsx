@@ -222,7 +222,7 @@ export default function Messages() {
                   <FaArchive className="w-4 h-4" />
                   <span>{formatTimestamp(raw.archivedon)}</span>
                 </div>
-              ) : depth === 0 && raw.readon && (!isAllMessage || canManageAsCreator) && (
+              ) : depth === 0 && raw.readon && isRecipient && (
                 <button
                   onClick={() => handleArchiveMessage(message.messageId)}
                   className="flex items-center gap-1 text-gray-600 hover:text-gray-800 transition-colors"
