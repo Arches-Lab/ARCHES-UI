@@ -92,5 +92,9 @@ export * from './schedule';
 export * from './scheduleDraft';
 export * from './shift';
 export * from './webauthn';
+export * from './product';
+export * from './productTransaction';
+export * from './inventoryReconcile';
+export * from './inventoryReconcileItem';
 
 export default api;
