@@ -33,6 +33,10 @@ import InventoryReconciles from './pages/InventoryReconciles';
 import InventoryReconcileCreate from './pages/InventoryReconcileCreate';
 import InventoryReconcileDetail from './pages/InventoryReconcileDetail';
 import ReorderReport from './pages/ReorderReport';
+import Metrics from './pages/Metrics';
+import MetricForm from './pages/MetricForm';
+import MetricDetail from './pages/MetricDetail';
+import MetricTrend from './pages/MetricTrend';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -107,6 +111,11 @@ function App() {
               <Route path="inventory-reconciles/new" element={<InventoryReconcileCreate />} />
               <Route path="inventory-reconciles/:inventoryReconcileId" element={<InventoryReconcileDetail />} />
               <Route path="reorder-report" element={<ReorderReport />} />
+              <Route path="metrics" element={<Metrics />} />
+              <Route path="metrics/new" element={<MetricForm />} />
+              <Route path="metrics/:metricId" element={<MetricDetail />} />
+              <Route path="metrics/:metricId/edit" element={<MetricForm />} />
+              <Route path="metrics/:metricId/trend" element={<MetricTrend />} />
               <Route path="my-timecards" element={<EmployeeTimecards useCurrentUser={true} />} />
               <Route path="employee-timecards" element={<EmployeeTimecards />} />
               <Route path="*" element={<Navigate to="/" replace />} />

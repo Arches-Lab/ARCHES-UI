@@ -7,6 +7,8 @@ export * from './IncidentStatus';
 export * from './IncidentTypes';
 export * from './Lead';
 export * from './LeadStatus';
+export * from './Metric';
+export * from './MetricLog';
 export * from './Product';
 export * from './ProductTransaction';
 export * from './InventoryReconcile';
