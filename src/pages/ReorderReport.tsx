@@ -40,14 +40,13 @@ export default function ReorderReport() {
       return;
     }
 
-    const headers = ['SKU', 'Product Name', 'Current Balance', 'Reorder Level', 'Reorder Quantity', 'Store Number'];
+    const headers = ['SKU', 'Product Name', 'Current Balance', 'Reorder Level', 'Reorder Quantity'];
     const rows = reportItems.map(item => [
       item.sku,
       item.productname,
       item.currentbalance.toString(),
       item.reorderlevel.toString(),
-      item.reorderquantity.toString(),
-      item.storenumber.toString()
+      item.reorderquantity.toString()
     ]);
 
     const csvContent = [
@@ -126,7 +125,6 @@ export default function ReorderReport() {
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Current Balance</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Quantity</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Store</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -148,9 +146,6 @@ export default function ReorderReport() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-blue-600">
                       {item.reorderquantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                      {item.storenumber}
                     </td>
                   </tr>
                 ))}
