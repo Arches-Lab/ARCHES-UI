@@ -27,6 +27,16 @@ import ExpenseCategories from './pages/ExpenseCategories';
 import Payees from './pages/Payees';
 import PaymentAccounts from './pages/PaymentAccounts';
 import EmployeeTimecards from './pages/EmployeeTimecards';
+import Products from './pages/Products';
+import ProductTransactions from './pages/ProductTransactions';
+import InventoryReconciles from './pages/InventoryReconciles';
+import InventoryReconcileCreate from './pages/InventoryReconcileCreate';
+import InventoryReconcileDetail from './pages/InventoryReconcileDetail';
+import ReorderReport from './pages/ReorderReport';
+import Metrics from './pages/Metrics';
+import MetricForm from './pages/MetricForm';
+import MetricDetail from './pages/MetricDetail';
+import MetricTrend from './pages/MetricTrend';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -95,6 +105,17 @@ function App() {
               <Route path="expense-categories" element={<ExpenseCategories />} />
               <Route path="payees" element={<Payees />} />
               <Route path="payment-accounts" element={<PaymentAccounts />} />
+              <Route path="products" element={<Products />} />
+              <Route path="product-transactions" element={<ProductTransactions />} />
+              <Route path="inventory-reconciles" element={<InventoryReconciles />} />
+              <Route path="inventory-reconciles/new" element={<InventoryReconcileCreate />} />
+              <Route path="inventory-reconciles/:inventoryReconcileId" element={<InventoryReconcileDetail />} />
+              <Route path="reorder-report" element={<ReorderReport />} />
+              <Route path="metrics" element={<Metrics />} />
+              <Route path="metrics/new" element={<MetricForm />} />
+              <Route path="metrics/:metricId" element={<MetricDetail />} />
+              <Route path="metrics/:metricId/edit" element={<MetricForm />} />
+              <Route path="metrics/:metricId/trend" element={<MetricTrend />} />
               <Route path="my-timecards" element={<EmployeeTimecards useCurrentUser={true} />} />
               <Route path="employee-timecards" element={<EmployeeTimecards />} />
               <Route path="*" element={<Navigate to="/" replace />} />

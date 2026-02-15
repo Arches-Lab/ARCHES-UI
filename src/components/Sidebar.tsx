@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard, FaChevronDown, FaChevronRight, FaBoxOpen, FaExchangeAlt, FaClipboardList, FaExclamationCircle, FaChartLine } from 'react-icons/fa';
 
 const menuGroups = [
   {
@@ -17,8 +17,19 @@ const menuGroups = [
     items: [
       { to: '/employees', label: 'Employees', icon: <FaUsers /> },
       { to: '/employee-timecards', label: 'Attendance', icon: <FaClock /> },
-      { to: '/supplies', label: 'Supplies', icon: <FaBoxes /> },
       { to: '/list-items', label: 'Lists', icon: <FaList /> },
+    ]
+  },
+  {
+    id: 'inventory',
+    label: 'Inventory',
+    items: [
+      { to: '/supplies', label: 'Supplies', icon: <FaBoxes /> },
+      { to: '/products', label: 'Products', icon: <FaBoxOpen /> },
+      { to: '/product-transactions', label: 'Product Transactions', icon: <FaExchangeAlt /> },
+      { to: '/inventory-reconciles', label: 'Inventory Reconciles', icon: <FaClipboardList /> },
+      { to: '/reorder-report', label: 'Reorder Report', icon: <FaExclamationCircle /> },
+      { to: '/metrics', label: 'Metrics', icon: <FaChartLine /> },
     ]
   },
   {
@@ -71,7 +82,7 @@ const menuGroups = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['main', 'management', 'business']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['main', 'management', 'inventory', 'business']);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => 
