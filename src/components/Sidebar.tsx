@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard, FaChevronDown, FaChevronRight, FaBoxOpen, FaExchangeAlt, FaClipboardList, FaExclamationCircle } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard, FaChevronDown, FaChevronRight, FaBoxOpen, FaExchangeAlt, FaClipboardList, FaExclamationCircle, FaChartLine } from 'react-icons/fa';
 
 const menuGroups = [
   {
@@ -29,6 +29,7 @@ const menuGroups = [
       { to: '/product-transactions', label: 'Product Transactions', icon: <FaExchangeAlt /> },
       { to: '/inventory-reconciles', label: 'Inventory Reconciles', icon: <FaClipboardList /> },
       { to: '/reorder-report', label: 'Reorder Report', icon: <FaExclamationCircle /> },
+      { to: '/metrics', label: 'Metrics', icon: <FaChartLine /> },
     ]
   },
   {
