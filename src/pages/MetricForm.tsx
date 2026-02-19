@@ -15,7 +15,7 @@ const VALUE_TYPES = [
 
 const AGGREGATION_TYPES = [
   { label: 'Sum', value: 'SUM' },
-  { label: 'Average', value: 'AVERAGE' },
+  { label: 'Average', value: 'AVG' },
   { label: 'Minimum', value: 'MIN' },
   { label: 'Maximum', value: 'MAX' }
 ];
