@@ -146,28 +146,30 @@ export default function InventoryCounts() {
             <p className="text-sm text-gray-600">Create and manage inventory reconciliations</p>
           </div>
         </div>
-        <div className="flex flex-row items-center gap-2 flex-wrap">
-          <button
-            onClick={handleOpenPrintInventoryList}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          >
-            <FaPrint className="w-4 h-4" />
-            Print inventory list
-          </button>
-          <button
-            onClick={() => !hasOpenReconcile && navigate('/inventory-reconciles/new')}
-            disabled={hasOpenReconcile}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              hasOpenReconcile
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'text-white bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            <FaPlus className="w-4 h-4" />
-            New Reconcile
-          </button>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-row items-center gap-2">
+            <button
+              onClick={handleOpenPrintInventoryList}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <FaPrint className="w-4 h-4" />
+              Print inventory list
+            </button>
+            <button
+              onClick={() => !hasOpenReconcile && navigate('/inventory-reconciles/new')}
+              disabled={hasOpenReconcile}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border border-transparent rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                hasOpenReconcile
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'text-white bg-blue-600 hover:bg-blue-700'
+              }`}
+            >
+              <FaPlus className="w-4 h-4" />
+              New Reconcile
+            </button>
+          </div>
           {hasOpenReconcile && (
-            <p className="text-xs text-gray-600 w-full text-right">
+            <p className="text-xs text-gray-600 text-right">
               You already have an open inventory reconcile. Complete it before creating a new one.
             </p>
           )}
