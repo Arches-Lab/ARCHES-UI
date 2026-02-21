@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { FaClipboardList, FaPlus, FaSpinner, FaExclamationTriangle, FaCheckCircle, FaEye, FaUser, FaClock } from 'react-icons/fa';
+import { FaClipboardList, FaPlus, FaSpinner, FaExclamationTriangle, FaCheckCircle, FaEye, FaUser, FaClock, FaPrint } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useSelectedStore } from '../auth/useSelectedStore';
-import { getInventoryReconciles, completeInventoryReconcile } from '../api';
+import { getInventoryReconciles, completeInventoryReconcile, getProducts } from '../api';
 import { InventoryReconcile } from '../models/InventoryReconcile';
+import InventoryCheckPrintView, { InventoryCheckItem } from '../components/InventoryCheckPrintView';
 
 export default function InventoryCounts() {
   const { selectedStore } = useSelectedStore();
@@ -11,6 +12,8 @@ export default function InventoryCounts() {
   const [reconciles, setReconciles] = useState<InventoryReconcile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInventoryPrintView, setShowInventoryPrintView] = useState(false);
+  const [inventoryListProducts, setInventoryListProducts] = useState<InventoryCheckItem[]>([]);
 
   const getReconcileId = (reconcile: InventoryReconcile): string => reconcile.inventoryreconcileid ?? '';
   // Prevent creating multiple open counts for the same store
@@ -93,6 +96,23 @@ export default function InventoryCounts() {
     return reconcile.completedby || '-';
   };
 
+  const handleOpenPrintInventoryList = async () => {
+    try {
+      const data = await getProducts(true);
+      setInventoryListProducts(
+        (Array.isArray(data) ? data : []).map((p) => ({
+          productid: p.productid,
+          sku: p.sku,
+          productname: p.productname
+        }))
+      );
+      setShowInventoryPrintView(true);
+    } catch (err) {
+      console.error('Error loading products for inventory list:', err);
+      alert('Failed to load products for inventory list');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -126,7 +146,14 @@ export default function InventoryCounts() {
             <p className="text-sm text-gray-600">Create and manage inventory reconciliations</p>
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-row items-center gap-2 flex-wrap">
+          <button
+            onClick={handleOpenPrintInventoryList}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <FaPrint className="w-4 h-4" />
+            Print inventory list
+          </button>
           <button
             onClick={() => !hasOpenReconcile && navigate('/inventory-reconciles/new')}
             disabled={hasOpenReconcile}
@@ -140,7 +167,7 @@ export default function InventoryCounts() {
             New Reconcile
           </button>
           {hasOpenReconcile && (
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 w-full text-right">
               You already have an open inventory reconcile. Complete it before creating a new one.
             </p>
           )}
@@ -233,6 +260,16 @@ export default function InventoryCounts() {
           </div>
         </div>
       )}
+
+      <InventoryCheckPrintView
+        open={showInventoryPrintView}
+        onClose={() => setShowInventoryPrintView(false)}
+        items={inventoryListProducts}
+        title="Inventory check list"
+        subtitle={`${new Date().toLocaleDateString(undefined, { dateStyle: 'long' })} — Active products. Write counts in the Count column.`}
+        emptyMessage="No active products to list."
+        sortBy="productname"
+      />
     </div>
   );
 }
