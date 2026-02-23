@@ -27,4 +27,5 @@ export * from './Task';
 export * from './Text';
 export * from './Schedule';
 export * from './ScheduleDraft';
-export * from './Shift'; 
+export * from './Shift';
+export * from './Applicant'; 

@@ -147,7 +147,13 @@ export default function EmployeeDetail() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <FaUsers className="text-3xl text-blue-600" />
+          <div>
+            <h2 className="text-2xl font-semibold">{employee.firstname} {employee.lastname}</h2>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/employees')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -155,68 +161,43 @@ export default function EmployeeDetail() {
             <FaArrowLeft className="w-4 h-4" />
             Back to Employees
           </button>
-          <div className="flex items-center gap-3">
-            <FaUsers className="text-3xl text-blue-600" />
-            <div>
-              <h2 className="text-2xl font-semibold">Employee Details</h2>
-            </div>
-          </div>
+          <button
+            onClick={handleEditEmployee}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <FaEdit className="w-4 h-4" />
+            Edit Employee
+          </button>
         </div>
-        <button
-          onClick={handleEditEmployee}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FaEdit className="w-4 h-4" />
-          Edit Employee
-        </button>
       </div>
 
       {/* Employee Details */}
       <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-2xl font-medium text-blue-600">
-              {(employee.firstname || '').charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">
-              {employee.firstname} {employee.lastname}
-            </h1>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <FaUser className="text-gray-400 w-4 h-4" />
             <div>
               <p className="text-sm text-gray-500">Name</p>
               <p className="text-gray-900">{employee.firstname} {employee.lastname}</p>
             </div>
+          </div> */}
+          <div className="flex items-center gap-2">
+            <FaEnvelope className="text-gray-400 w-4 h-4 shrink-0" />
+            <span className="text-sm text-gray-500">Email:</span>
+            <span className="text-gray-900">{employee.email || 'No email'}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <FaEnvelope className="text-gray-400 w-4 h-4" />
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="text-gray-900">{employee.email || 'No email'}</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <FaBuilding className="text-gray-400 w-4 h-4 shrink-0" />
+            <span className="text-sm text-gray-500">Role:</span>
+            <span className="text-gray-900">{employee.role ? getEmployeeRoleDisplayName(employee.role) : 'N/A'}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <FaBuilding className="text-gray-400 w-4 h-4" />
-            <div>
-              <p className="text-sm text-gray-500">Role</p>
-              <p className="text-gray-900">{employee.role ? getEmployeeRoleDisplayName(employee.role) : 'N/A'}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <FaUser className="text-gray-400 w-4 h-4" />
-            <div>
-              <p className="text-sm text-gray-500">Status</p>
-              <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee.active ? 'Active' : 'Inactive')}`}>
-                {getStatusIcon(employee.active ? 'Active' : 'Inactive')}
-                {employee.active ? 'Active' : 'Inactive'}
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <FaUser className="text-gray-400 w-4 h-4 shrink-0" />
+            <span className="text-sm text-gray-500">Status:</span>
+            <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(employee.active ? 'Active' : 'Inactive')}`}>
+              {getStatusIcon(employee.active ? 'Active' : 'Inactive')}
+              {employee.active ? 'Active' : 'Inactive'}
+            </span>
           </div>
         </div>
       </div>

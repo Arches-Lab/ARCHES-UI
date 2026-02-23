@@ -98,5 +98,6 @@ export * from './product';
 export * from './productTransaction';
 export * from './inventoryReconcile';
 export * from './inventoryReconcileItem';
+export * from './applicant';
 
 export default api;

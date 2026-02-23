@@ -33,6 +33,8 @@ import InventoryReconciles from './pages/InventoryReconciles';
 import InventoryReconcileCreate from './pages/InventoryReconcileCreate';
 import InventoryReconcileDetail from './pages/InventoryReconcileDetail';
 import ReorderReport from './pages/ReorderReport';
+import Applicants from './pages/Applicants';
+import ApplicantDetail from './pages/ApplicantDetail';
 import Metrics from './pages/Metrics';
 import MetricForm from './pages/MetricForm';
 import MetricDetail from './pages/MetricDetail';
@@ -94,6 +96,8 @@ function App() {
               <Route path="tasks/:taskId" element={<TaskDetail />} />
               <Route path="incidents" element={<Incidents />} />
               <Route path="incidents/:incidentId" element={<IncidentDetail />} />
+              <Route path="applicants" element={<Applicants />} />
+              <Route path="applicants/:applicantId" element={<ApplicantDetail />} />
               <Route path="supplies" element={<Supplies />} />
               <Route path="texts" element={<Texts />} />
               <Route path="schedule" element={<Schedule />} />
