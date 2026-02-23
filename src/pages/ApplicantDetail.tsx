@@ -184,7 +184,6 @@ export default function ApplicantDetail() {
             <h2 className="text-2xl font-semibold">
               {applicant.firstname} {applicant.lastname}
             </h2>
-            <p className="text-sm text-gray-600">{applicant.positionapplied}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

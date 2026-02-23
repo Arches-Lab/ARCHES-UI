@@ -10,12 +10,6 @@ export const APPLICANT_STATUSES = [
 
 export type ApplicantStatus = (typeof APPLICANT_STATUSES)[number];
 
-export interface Creator {
-  firstname?: string;
-  lastname?: string;
-  email?: string;
-}
-
 export interface Applicant {
   applicantid?: string;
   storenumber: number;
@@ -34,7 +28,11 @@ export interface Applicant {
   createdby: string;
   createdon: string;
   convertedtoemployeeid?: string;
-  creator?: Creator;
+  creator?: {
+    firstname?: string;
+    lastname?: string;
+    email?: string;
+  }
 }
 
 export interface CreateApplicantRequest {
