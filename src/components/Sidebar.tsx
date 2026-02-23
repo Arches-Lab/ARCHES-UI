@@ -17,6 +17,7 @@ const menuGroups = [
     items: [
       { to: '/employees', label: 'Employees', icon: <FaUsers /> },
       { to: '/employee-timecards', label: 'Attendance', icon: <FaClock /> },
+      { to: '/applicants', label: 'Applicants', icon: <FaUserPlus /> },
       { to: '/list-items', label: 'Lists', icon: <FaList /> },
     ]
   },

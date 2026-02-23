@@ -5,10 +5,12 @@ import { Activity } from '../models';
 import ActivityCreation from './ActivityCreation';
 
 interface ActivitiesListProps {
-  parentType: 'LEAD' | 'MAILBOX' | 'TASK' | 'INCIDENT' | 'EMPLOYEE';
+  parentType: 'LEAD' | 'MAILBOX' | 'TASK' | 'INCIDENT' | 'EMPLOYEE' | 'APPLICANT';
   parentId: string;
   title?: string;
   storeNumber?: number;
+  /** Change this value to force a refetch (e.g. after parent entity is updated) */
+  refreshTrigger?: number | string;
 }
 
 // Activity type definitions matching ActivityCreation.tsx
@@ -24,7 +26,7 @@ const activityTypes = [
   { type: 'OTHER', label: 'Other', icon: <FaComment className="text-gray-400" /> },
 ];
 
-export default function ActivitiesList({ parentType, parentId, title = "Activities", storeNumber }: ActivitiesListProps) {
+export default function ActivitiesList({ parentType, parentId, title = "Activities", storeNumber, refreshTrigger }: ActivitiesListProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export default function ActivitiesList({ parentType, parentId, title = "Activiti
 
   useEffect(() => {
     fetchActivities();
-  }, [parentId, parentType]);
+  }, [parentId, parentType, refreshTrigger]);
 
   const formatTimestamp = (timestamp: string) => {
     try {
