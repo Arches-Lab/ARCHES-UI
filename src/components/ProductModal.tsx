@@ -8,6 +8,7 @@ interface ProductModalProps {
     storenumber: number;
     sku: string;
     productname: string;
+    description?: string;
     reorderlevel: number;
     reorderquantity: number;
     isactive: boolean;
@@ -20,6 +21,7 @@ export default function ProductModal({ product, onSave, onCancel, selectedStore 
   const [formData, setFormData] = useState({
     sku: '',
     productname: '',
+    description: '',
     reorderlevel: 0,
     reorderquantity: 0,
     isactive: true
@@ -32,6 +34,7 @@ export default function ProductModal({ product, onSave, onCancel, selectedStore 
       setFormData({
         sku: product.sku || '',
         productname: product.productname || '',
+        description: product.description ?? '',
         reorderlevel: product.reorderlevel ?? 0,
         reorderquantity: product.reorderquantity ?? 0,
         isactive: product.isactive
@@ -39,11 +42,12 @@ export default function ProductModal({ product, onSave, onCancel, selectedStore 
     }
   }, [product]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = 'checked' in e.target ? e.target.checked : undefined;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (name === 'reorderlevel' || name === 'reorderquantity') ? parseInt(value, 10) || 0 : value
+      [name]: type === 'checkbox' && checked !== undefined ? checked : (name === 'reorderlevel' || name === 'reorderquantity') ? parseInt(String(value), 10) || 0 : value
     }));
   };
 
@@ -115,6 +119,21 @@ export default function ProductModal({ product, onSave, onCancel, selectedStore 
               />
               <FaBoxOpen className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              rows={3}
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Product description"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

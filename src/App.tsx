@@ -21,6 +21,7 @@ import StoreOperations from './pages/StoreOperations';
 import Texts from './pages/Texts';
 import Schedule from './pages/Schedule';
 import MySchedule from './components/MySchedule';
+import CalendarPage from './pages/CalendarPage';
 import ListItems from './pages/ListItems';
 import Expenses from './pages/Expenses';
 import ExpenseCategories from './pages/ExpenseCategories';
@@ -101,7 +102,8 @@ function App() {
               <Route path="supplies" element={<Supplies />} />
               <Route path="texts" element={<Texts />} />
               <Route path="schedule" element={<Schedule />} />
-              <Route path="my-schedule" element={<MySchedule />} /> 
+              <Route path="my-schedule" element={<MySchedule />} />
+              <Route path="calendar" element={<CalendarPage />} /> 
               <Route path="recent-activities" element={<RecentActivities />} />
               <Route path="store-operations" element={<StoreOperations />} />
               <Route path="list-items" element={<ListItems />} />

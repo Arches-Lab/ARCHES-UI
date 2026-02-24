@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBoxOpen, FaPlus, FaEdit, FaExchangeAlt, FaSpinner, FaExclamationTriangle, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { FaBoxOpen, FaPlus, FaEdit, FaExchangeAlt, FaSpinner, FaExclamationTriangle, FaSort, FaSortUp, FaSortDown, FaInfoCircle } from 'react-icons/fa';
 import { getProducts, createProduct, updateProduct } from '../api';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../models/Product';
 import { useSelectedStore } from '../auth/useSelectedStore';
@@ -16,6 +16,7 @@ export default function Products() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [sortBy, setSortBy] = useState<'sku' | 'productname'>('productname');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [descriptionPopoverId, setDescriptionPopoverId] = useState<string | null>(null);
 
   const sortedProducts = [...products].sort((a, b) => {
     const key = sortBy;
@@ -161,10 +162,10 @@ export default function Products() {
       ) : (
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full table-fixed divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-28 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
                       type="button"
                       onClick={() => {
@@ -181,7 +182,7 @@ export default function Products() {
                       {sortBy === 'sku' ? (sortDir === 'asc' ? <FaSortUp className="w-3 h-3" /> : <FaSortDown className="w-3 h-3" />) : <FaSort className="w-3 h-3 opacity-40 group-hover:opacity-70" />}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="w-96 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
                       type="button"
                       onClick={() => {
@@ -198,33 +199,59 @@ export default function Products() {
                       {sortBy === 'productname' ? (sortDir === 'asc' ? <FaSortUp className="w-3 h-3" /> : <FaSortDown className="w-3 h-3" />) : <FaSort className="w-3 h-3 opacity-40 group-hover:opacity-70" />}
                     </button>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Qty</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="w-20 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Level</th>
+                  <th className="w-20 px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder Qty</th>
+                  <th className="w-24 pl-4 pr-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="w-48 pl-2 pr-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sortedProducts.map((product) => (
                   <tr key={product.productid} className={product.isactive ? 'hover:bg-gray-50' : 'bg-gray-50 opacity-80'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="w-28 px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate" title={product.sku}>
                       {product.sku}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {product.productname}
+                    <td className="w-96 px-4 py-4 break-words relative">
+                      <div className="flex items-start gap-1.5">
+                        <span className="text-sm text-gray-900">{product.productname}</span>
+                        {product.description && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setDescriptionPopoverId((id) => (id === product.productid ? null : product.productid))}
+                              className="flex-shrink-0 mt-0.5 p-0.5 text-blue-500 hover:text-blue-600 transition-colors"
+                              title="View description"
+                            >
+                              <FaInfoCircle className="w-3.5 h-3.5" />
+                            </button>
+                            {descriptionPopoverId === product.productid && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-10"
+                                  aria-hidden
+                                  onClick={() => setDescriptionPopoverId(null)}
+                                />
+                                <div className="absolute left-4 top-full mt-1 z-20 min-w-[200px] max-w-[24rem] rounded-md border border-gray-200 bg-white px-3 py-2 shadow-lg text-left text-xs text-gray-600">
+                                  {product.description}
+                                </div>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td className="w-20 px-2 py-4 whitespace-nowrap text-xs text-gray-700 text-center">
                       {product.reorderlevel}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td className="w-20 px-2 py-4 whitespace-nowrap text-xs text-gray-700 text-center">
                       {product.reorderquantity}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="w-24 pl-4 pr-2 py-4 whitespace-nowrap text-sm font-medium">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${product.isactive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                         {product.isactive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="w-48 pl-2 pr-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end items-center gap-4">
                         <Link
                           to={`/product-transactions?productid=${encodeURIComponent(product.productid)}`}
