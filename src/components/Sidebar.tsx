@@ -8,6 +8,7 @@ const menuGroups = [
     label: 'Main',
     items: [
       { to: '/', label: 'Dashboard', icon: <FaTachometerAlt /> },
+      { to: '/calendar', label: 'Calendar', icon: <FaCalendarAlt /> },
       { to: '/recent-activities', label: 'Recent Activities', icon: <FaCalendarAlt /> },
     ]
   },
