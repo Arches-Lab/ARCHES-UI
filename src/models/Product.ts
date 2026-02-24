@@ -3,6 +3,7 @@ export interface Product {
   storenumber: number;
   sku: string;
   productname: string;
+  description?: string;
   reorderlevel: number;
   reorderquantity: number;
   isactive: boolean;
@@ -15,6 +16,7 @@ export interface CreateProductRequest {
   storenumber: number;
   sku: string;
   productname: string;
+  description?: string;
   reorderlevel: number;
   reorderquantity: number;
   isactive: boolean;
@@ -24,6 +26,7 @@ export interface UpdateProductRequest {
   storenumber: number;
   sku?: string;
   productname?: string;
+  description?: string;
   reorderlevel?: number;
   reorderquantity?: number;
   isactive?: boolean;
