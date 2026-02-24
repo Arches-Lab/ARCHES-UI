@@ -37,7 +37,6 @@ export const createCalendarEvent = async (
   storeNumber: number,
   payload: CreateCalendarEventRequest
 ): Promise<CalendarEventResponse> => {
-  alert(JSON.stringify({ storeNumber, ...payload }));
   const { data } = await api.post('/calendar', { storeNumber, ...payload });
   return data;
 };
