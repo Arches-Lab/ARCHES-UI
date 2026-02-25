@@ -40,6 +40,9 @@ import Metrics from './pages/Metrics';
 import MetricForm from './pages/MetricForm';
 import MetricDetail from './pages/MetricDetail';
 import MetricTrend from './pages/MetricTrend';
+import Trainings from './pages/Trainings';
+import TrainingAssignments from './pages/TrainingAssignments';
+import EmployeeTraining from './pages/EmployeeTraining';
 import MainLayout from './layouts/MainLayout';
 import { AuthProvider } from './auth/AuthContext';
 import { StoreProvider } from './auth/StoreContext';
@@ -124,6 +127,9 @@ function App() {
               <Route path="metrics/:metricId/trend" element={<MetricTrend />} />
               <Route path="my-timecards" element={<EmployeeTimecards useCurrentUser={true} />} />
               <Route path="employee-timecards" element={<EmployeeTimecards />} />
+              <Route path="trainings" element={<Trainings />} />
+              <Route path="training-assignments" element={<TrainingAssignments />} />
+              <Route path="my-training" element={<EmployeeTraining />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
 

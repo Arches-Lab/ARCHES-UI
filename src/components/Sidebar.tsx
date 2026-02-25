@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard, FaChevronDown, FaChevronRight, FaBoxOpen, FaExchangeAlt, FaClipboardList, FaExclamationCircle, FaChartLine } from 'react-icons/fa';
+import { FaTachometerAlt, FaUser, FaCog, FaUsers, FaEnvelope, FaLightbulb, FaInbox, FaUserPlus, FaTasks, FaExclamationTriangle, FaBoxes, FaCalendarAlt, FaStore, FaSms, FaClock, FaCalendarCheck, FaList, FaDollarSign, FaTag, FaUserFriends, FaCreditCard, FaChevronDown, FaChevronRight, FaBoxOpen, FaExchangeAlt, FaClipboardList, FaExclamationCircle, FaChartLine, FaGraduationCap } from 'react-icons/fa';
 
 const menuGroups = [
   {
@@ -13,6 +13,14 @@ const menuGroups = [
     ]
   },
   {
+    id: 'mystuff',
+    label: 'MY STUFF',
+    items: [
+      { to: '/my-training', label: 'My Training', icon: <FaGraduationCap /> },
+      { to: '/my-timecards', label: 'My Timecards', icon: <FaClock /> },
+    ]
+  },
+  {
     id: 'management',
     label: 'Management',
     items: [
@@ -20,6 +28,8 @@ const menuGroups = [
       { to: '/employee-timecards', label: 'Attendance', icon: <FaClock /> },
       { to: '/applicants', label: 'Applicants', icon: <FaUserPlus /> },
       { to: '/list-items', label: 'Lists', icon: <FaList /> },
+      { to: '/trainings', label: 'Training', icon: <FaGraduationCap /> },
+      { to: '/training-assignments', label: 'Training Assignments', icon: <FaGraduationCap /> },
     ]
   },
   {
@@ -45,7 +55,6 @@ const menuGroups = [
       { to: '/tasks', label: 'Tasks', icon: <FaTasks /> },
       { to: '/incidents', label: 'Incidents', icon: <FaExclamationTriangle /> },
       { to: '/texts', label: 'Dropoffs', icon: <FaSms /> },
-      { to: '/my-timecards', label: 'My Timecards', icon: <FaClock /> },
     ]
   },
   // {
@@ -84,7 +93,7 @@ const menuGroups = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['main', 'management', 'inventory', 'business']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['main', 'mystuff', 'management', 'inventory', 'business']);
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => 
