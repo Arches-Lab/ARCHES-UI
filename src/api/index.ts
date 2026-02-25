@@ -100,5 +100,7 @@ export * from './inventoryReconcile';
 export * from './inventoryReconcileItem';
 export * from './applicant';
 export * from './calendar';
+export * from './training';
+export * from './trainingAssignment';
 
 export default api;

@@ -28,4 +28,6 @@ export * from './Text';
 export * from './Schedule';
 export * from './ScheduleDraft';
 export * from './Shift';
-export * from './Applicant'; 
+export * from './Applicant';
+export * from './Training';
+export * from './TrainingAssignment';

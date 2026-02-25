@@ -16,6 +16,7 @@ const SOURCE_COLORS: Record<string, string> = {
   InventoryCount: '#22c55e',
   EmployeeReview: '#a855f7',
   StoreOperation: '#ef4444',
+  TrainingAssignment: '#a855f7',
   ApplicantInterview: '#22c55e'
 };
 
@@ -36,13 +37,14 @@ function mapToFullCalendarEvents(rows: CalendarEventResponse[]) {
     allDay: ev.allday ?? false,
     backgroundColor:
       SOURCE_COLORS[ev.source] ?? EVENT_TYPE_COLORS[ev.eventType] ?? defaultColor,
-    extendedProps: { eventType: ev.eventType }
+    extendedProps: { eventType: ev.eventType, source: ev.source }
   }));
 }
 
 type EventModalState =
   | { open: true; mode: 'add'; start: string; end: string; allDay?: boolean }
   | { open: true; mode: 'edit'; id: string; title: string; start: string; end: string; allDay: boolean; eventType: string }
+  | { open: true; mode: 'summary'; title: string; start: string; end: string; allDay: boolean; source: string; eventType?: string }
   | null;
 
 export default function CalendarPage() {
@@ -63,15 +65,35 @@ export default function CalendarPage() {
 
   const handleEventClick = useCallback((info: EventClickArg) => {
     const ev = info.event;
-    const eventType = (ev.extendedProps as { eventType?: string })?.eventType ?? 'MEETING';
+    const extended = ev.extendedProps as { eventType?: string; source?: string };
+    const source = extended?.source ?? 'Calendar';
+    const eventType = extended?.eventType ?? 'MEETING';
+    const title = ev.title;
+    const start = ev.startStr ?? ev.start?.toISOString() ?? '';
+    const end = ev.endStr ?? ev.end?.toISOString() ?? '';
+    const allDay = ev.allDay ?? false;
+
+    if (source !== 'Calendar') {
+      setEventModal({
+        open: true,
+        mode: 'summary',
+        title,
+        start,
+        end,
+        allDay,
+        source,
+        eventType
+      });
+      return;
+    }
     setEventModal({
       open: true,
       mode: 'edit',
-      id: ev.id,
-      title: ev.title,
-      start: ev.startStr ?? ev.start?.toISOString() ?? '',
-      end: ev.endStr ?? ev.end?.toISOString() ?? '',
-      allDay: ev.allDay ?? false,
+      id: ev.id ?? '',
+      title,
+      start,
+      end,
+      allDay,
       eventType
     });
   }, []);
@@ -201,7 +223,7 @@ export default function CalendarPage() {
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <FaCalendarPlus className="text-blue-600" />
-                {eventModal.mode === 'edit' ? 'Edit event' : 'Add event'}
+                {eventModal.mode === 'summary' ? 'Event details' : eventModal.mode === 'edit' ? 'Edit event' : 'Add event'}
               </h3>
               <button
                 type="button"
@@ -211,6 +233,35 @@ export default function CalendarPage() {
                 <FaTimes className="w-5 h-5" />
               </button>
             </div>
+            {eventModal.mode === 'summary' ? (
+              <div className="p-4 space-y-3">
+                <div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Title</span>
+                  <p className="text-gray-900 font-medium mt-0.5">{eventModal.title}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Source</span>
+                  <p className="text-gray-900 mt-0.5">{eventModal.source}</p>
+                </div>
+                <div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">When</span>
+                  <p className="text-gray-900 mt-0.5">
+                    {eventModal.allDay
+                      ? `${eventModal.start.slice(0, 10)} — ${eventModal.end.slice(0, 10)} (all day)`
+                      : `${eventModal.start} — ${eventModal.end}`}
+                  </p>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={closeEventModal}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
             <form onSubmit={handleEventSubmit} className="p-4 space-y-4">
               <div>
                 <label htmlFor="event-title" className="block text-sm font-medium text-gray-700 mb-1">
@@ -306,6 +357,7 @@ export default function CalendarPage() {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}
